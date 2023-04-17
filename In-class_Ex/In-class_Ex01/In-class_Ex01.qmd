@@ -2,3 +2,58 @@
 title: "In-class_Ex01"
 author: "Oh Jia Wen"
 ---
+
+## Getting started
+
+1.  Using p_load() of pacman package to load tidyverse on
+
+```{r}
+pacman:: p_load(tidyverse) 
+```
+
+2.  Importing data
+
+```{r}
+exam_data <- read_csv("data/Exam_data.csv")
+```
+
+## Plotting the graph 
+
+### 1) Horizontal Bar Graph 
+
+Changing the colors of plot panel background of theme_minimal() to light blue and the color of grid lines to white.
+
+#### Output:
+
+```{r}
+ggplot(data= exam_data,
+       aes(x = RACE)) +
+       geom_bar() +
+       coord_flip() +
+       theme_minimal() +
+       theme(panel.background = element_rect(fill = 'lightblue') ,
+       panel.grid.minor=element_line(colour="white"),
+       panel.grid.major=element_line(colour="white")) +
+       ggtitle("Horizontal Bar Chart: \nLight Blue theme and White grid lines ") +  
+       theme(plot.title = element_text(hjust = 0.5))
+```
+### 2) Vertical Bar Graph
+
+With reference to the critics on the earlier slide, create a makeover looks similar to the figure on the right.
+
+#### Output:
+
+```{r}
+ggplot(data= exam_data,
+      aes(x = fct_infreq(RACE))) +
+      geom_bar() +
+      xlab("Race") +
+      ylab("No.of\nPupils") +
+      ylim(0,220) +
+      geom_text(aes(label = paste(..count..,",", scales::percent(..count../sum(..count..),accuracy = 0.1))), 
+      stat= "count", vjust = -0.5) +
+      ggtitle("Vertical Bar Chart: \nSorted Frequency + Labelling ") +
+      theme(plot.title = element_text(hjust = 0.5))
+```
+  
+
