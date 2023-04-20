@@ -17,9 +17,9 @@ pacman:: p_load(tidyverse)
 exam_data <- read_csv("data/Exam_data.csv")
 ```
 
-## Plotting the graph 
+## Plotting the graph
 
-### 1) Horizontal Bar Graph 
+### 1) Horizontal Bar Graph
 
 Changing the colors of plot panel background of theme_minimal() to light blue and the color of grid lines to white.
 
@@ -37,11 +37,12 @@ ggplot(data= exam_data,
        ggtitle("Horizontal Bar Chart: \nLight Blue theme and White grid lines ") +  
        theme(plot.title = element_text(hjust = 0.5))
 ```
+
 ### 2) Vertical Bar Graph
 
 With reference to the critics on the earlier slide, create a makeover looks similar to the figure on the right.
 
-#### Output:
+#### Output 1:
 
 ```{r}
 ggplot(data= exam_data,
@@ -55,5 +56,97 @@ ggplot(data= exam_data,
       ggtitle("Vertical Bar Chart: \nSorted Frequency + Labelling ") +
       theme(plot.title = element_text(hjust = 0.5))
 ```
-  
 
+#### Output 2: Forcats Package.:
+
+```{r}
+exam_data %>%
+  mutate(RACE = fct_infreq(RACE)) %>%
+  ggplot(aes(x = RACE)) + 
+  geom_bar()+
+  ylim(0,220) +
+  geom_text(stat="count", 
+      aes(label=paste0(..count.., ", ", 
+      round(..count../sum(..count..)*100,
+            1), "%")),
+      vjust=-1) +
+  xlab("Race") +
+  ylab("No. of\nPupils") +
+  theme(axis.title.y=element_text(angle = 0))
+```
+
+### 3) : Histogram
+
+-   Adding mean and median lines on the histogram plot.
+
+-   Change fill color and line color
+
+#### Output:
+
+```{r}
+ggplot(data= exam_data,
+       aes(x = MATHS)) +
+       geom_histogram(color="black",fill="light blue",bins = 30) +
+       geom_vline(aes(xintercept=mean(MATHS)),
+            color="red", linetype="dashed", size=1) +
+       geom_vline(aes(xintercept=median(MATHS)),
+            color="black", linetype="dashed", size=1) +
+       ggtitle("Histogram: \nAdd lines and color ") +  
+       theme(plot.title = element_text(hjust = 0.5))
+```
+
+#### 3.1) By Gender
+
+-   The background histograms show the distribution of English scores for all pupils.
+
+#### Output:
+
+```{r}
+d <- exam_data   
+d_bg <- d[, -3] 
+
+ggplot(d, aes(x = ENGLISH)) +
+       geom_histogram (data= d_bg, bins=30, alpha = 0.2) +
+       geom_histogram (bins=30, color = 'black') +
+       facet_wrap(~ GENDER) + 
+       theme_bw()       
+
+```
+
+```{r}
+d <- exam_data   
+d_bg <- d[, -3]  
+
+ggplot(d, aes(x = ENGLISH, fill = GENDER)) +
+  geom_histogram(data = d_bg, fill = "grey", alpha = .5) +
+  geom_histogram(colour = "black") +
+  facet_wrap(~ GENDER) +
+  theme_bw() 
+
+```
+
+```{r}
+d <- exam_data   
+d_bg <- d[, -3] 
+
+ggplot(data = exam_data, aes(x = ENGLISH, fill= GENDER, )) +
+    geom_histogram(bins = 30) +
+    facet_wrap(~ GENDER) +
+    guides(fill = FALSE) 
+```
+
+### 4) Scatterplot Graph
+
+-   The scatterplot show the relationship between English and Maths for all pupils.
+
+#### Output:
+
+```{r}
+ggplot(data = exam_data, 
+        aes (x= MATHS, y= ENGLISH)) +
+        geom_point() +
+        geom_hline(yintercept=50, linetype="dashed", color = "darkgrey") +
+        geom_vline(xintercept=50, linetype="dashed", color = "darkgrey") +
+        coord_cartesian(xlim=c(0,100), ylim=c(0,100)) 
+
+```
