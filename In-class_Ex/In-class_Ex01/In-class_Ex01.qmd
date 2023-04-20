@@ -135,7 +135,7 @@ ggplot(data = exam_data, aes(x = ENGLISH, fill= GENDER, )) +
     guides(fill = FALSE) 
 ```
 
-### 4) Scatterplot Graph
+### 4) Scatterplot
 
 -   The scatterplot show the relationship between English and Maths for all pupils.
 
