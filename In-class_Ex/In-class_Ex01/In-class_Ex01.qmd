@@ -75,7 +75,7 @@ exam_data %>%
   theme(axis.title.y=element_text(angle = 0))
 ```
 
-### 3) : Histogram
+### 3) Histogram
 
 -   Adding mean and median lines on the histogram plot.
 
