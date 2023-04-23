@@ -16,3 +16,176 @@ pacman::p_load(ggrepel, patchwork, ggthemes, hrbrthemes,tidyverse)
 ```{r}
 exam_data <- read_csv("data/Exam_data.csv")
 ```
+
+## Plotting the graph with **ggrepel**
+
+### 1) English scores vs Maths scores for Primary 3
+
+#### Output:
+
+```{r}
+#| warning: false
+ggplot(data=exam_data, 
+       aes(x= MATHS, y=ENGLISH)) +
+       geom_point() +
+       geom_smooth(method=lm, size=0.5) +  
+       geom_label_repel(aes(label = ID), fontface = "bold") +
+       coord_cartesian(xlim=c(0,100), ylim=c(0,100)) +
+       ggtitle("English scores versus Maths scores for Primary 3") +
+       theme(plot.title = element_text(hjust = 0.5))
+```
+
+### 2) Distribution of Maths score
+
+#### Output:
+
+```{r}
+ggplot(data=exam_data, 
+       aes(x= MATHS)) +
+       geom_histogram(bins= 30, color= "grey30", fill = "grey95") +
+       coord_cartesian(xlim=c(0,100)) +
+       theme_grey() + 
+       ggtitle("Distribution of Maths scores") +
+       theme(plot.title = element_text(hjust = 0.5))
+```
+
+#### 2.1) ggtheme package
+
+-   Themes [here](https://yutannihilation.github.io/allYourFigureAreBelongToUs/ggthemes/)
+
+#### Output:
+
+```{r}
+ggplot(data = exam_data, 
+       aes(x=MATHS)) + 
+       geom_histogram(bins=30, color= "grey30", fill = "grey95") +
+       coord_cartesian(xlim=c(0,100)) +
+      theme_economist() +
+       ggtitle("Distribution of Maths scores") +
+       theme(plot.title = element_text(hjust = 0.5))
+```
+
+#### 2.2) hrbthems package
+
+-   Themes [here](https://cinc.rud.is/web/packages/hrbrthemes/)
+
+#### Output:
+
+```{r}
+ggplot(data = exam_data, 
+       aes(x=MATHS)) + 
+       geom_histogram(bins=20, boundary = 100,  
+       color= "grey30", fill = "grey95") +
+       coord_cartesian(xlim=c(0,100)) +
+       theme_ipsum() +
+       ggtitle("Distribution of Maths scores") +
+       theme(plot.title = element_text(hjust = 0.5))
+```
+
+##### 2.2.1) hrbthems package: theme revision
+
+-   axis_title_size argument is used to increase the font size of the axis title to 18,
+-   base_size argument is used to increase the default axis label to 15, and,
+-   grid argument is used to remove the x-axis grid lines.
+
+#### Output:
+
+```{r}
+ggplot(data = exam_data, 
+       aes(x=MATHS)) + 
+       geom_histogram(bins=20, boundary = 100,  
+       color= "grey30", fill = "grey95") +
+       coord_cartesian(xlim=c(0,100)) +
+       theme_ipsum(grid = "y",axis_title_size = 18, base_size =15) +
+       ggtitle("Distribution of Maths scores") +
+       theme(plot.title = element_text(hjust = 0.5))
+```
+
+### 3) Creating multiple graphs
+
+Create composite plot by combining multiple graphs. Firstly, to create three statistical graphics.
+
+#### 3.1) Distribution of Maths Scores
+
+#### Output:
+
+```{r}
+p1 <- ggplot(data = exam_data, 
+       aes(x=MATHS)) + 
+       geom_histogram(bins=20, boundary = 100,  
+       color= "grey30", fill = "grey95") +
+       coord_cartesian(xlim=c(0,100)) +
+       ggtitle("Distribution of Maths scores") +
+       theme(plot.title = element_text(hjust = 0.5))
+```
+
+#### 3.2) Distribution of English Scores
+
+#### Output:
+
+```{r}
+p2 <- ggplot(data = exam_data, 
+       aes(x=ENGLISH)) + 
+       geom_histogram(bins=20, boundary = 100,  
+       color= "grey30", fill = "grey95") +
+       coord_cartesian(xlim=c(0,100)) +
+       ggtitle("Distribution of English scores") +
+       theme(plot.title = element_text(hjust = 0.5))
+```
+
+#### 3.3) English scores vs Maths scores for Primary 3
+
+#### Output :
+
+```{r}
+#| warning: false
+p3 <- ggplot(data=exam_data, 
+       aes(x= MATHS, y=ENGLISH)) +
+       geom_point() +
+       geom_smooth(method=lm, size=0.5) +  
+       coord_cartesian(xlim=c(0,100), ylim=c(0,100)) +
+       ggtitle("English scores versus \nMaths scores for Primary 3") +
+       theme(plot.title = element_text(hjust = 0.5))
+```
+
+### 4) Plotting multiple graphs
+
+Point to note:
+
+-   Two-Column Layout using the Plus Sign +.
+
+-   Parenthesis () to create a subplot group.
+
+Two-Row Layout using the Division Sign /
+
+###### [Source](https://r4va.netlify.app/chap02.html)
+
+#### 4.1) Combine 3.1 and 3.2
+
+In this output, we will combine Distribution of Maths Scores and Distribution of English Scores.
+
+#### Output :
+
+```{r}
+p1 + p2
+```
+
+#### 4.2) Combine 3.1, 3.2, and 3.3
+
+Point to note:
+
+-   "|" operator to stack two ggplot2 graphs,
+
+-   "/" operator to place the plots beside each other,
+
+-   "()" operator the define the sequence of the plotting.
+
+###### [Source](https://r4va.netlify.app/chap02.html)
+
+In this output, we will combine Distribution of Maths Scores, Distribution of English Scores, and English scores vs Maths scores for Primary 3 by stacking 3.1 and 3.2 on the left and 3.3 on the right.
+
+#### Output :
+
+```{r}
+p1 / p2 | p3
+```
