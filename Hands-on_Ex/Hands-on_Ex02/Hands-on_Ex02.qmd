@@ -8,6 +8,7 @@ author: "Oh Jia Wen"
 1.  Using p_load() of pacman package to load the required libraries
 
 ```{r}
+#| warning:  false
 pacman::p_load(ggrepel, patchwork, ggthemes, hrbrthemes,tidyverse) 
 ```
 
@@ -35,7 +36,7 @@ ggplot(data=exam_data,
        theme(plot.title = element_text(hjust = 0.5))
 ```
 
-### 2) Distribution of Maths score
+### 2) Distribution of Maths scores
 
 #### Output:
 
@@ -207,8 +208,4 @@ In this output, we will add patchwork and ggtheme.
 ```{r}
 patchwork <- p1 / p2 | p3
 patchwork & theme_economist(base_size = 15) 
-```
-```{r}
-pp <- p1 / p2 | p3 
-pp & theme_economist()
 ```
