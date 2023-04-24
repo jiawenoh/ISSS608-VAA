@@ -115,7 +115,7 @@ p1 <- ggplot(data = exam_data,
        geom_histogram(bins=20, boundary = 100,  
        color= "grey30", fill = "grey95") +
        coord_cartesian(xlim=c(0,100)) +
-       ggtitle("Distribution of Maths scores") +
+       ggtitle("Distribution of \nMaths scores") +
        theme(plot.title = element_text(hjust = 0.5))
 ```
 
@@ -129,7 +129,7 @@ p2 <- ggplot(data = exam_data,
        geom_histogram(bins=20, boundary = 100,  
        color= "grey30", fill = "grey95") +
        coord_cartesian(xlim=c(0,100)) +
-       ggtitle("Distribution of English scores") +
+       ggtitle("Distribution of \nEnglish scores") +
        theme(plot.title = element_text(hjust = 0.5))
 ```
 
@@ -144,7 +144,7 @@ p3 <- ggplot(data=exam_data,
        geom_point() +
        geom_smooth(method=lm, size=0.5) +  
        coord_cartesian(xlim=c(0,100), ylim=c(0,100)) +
-       ggtitle("English scores versus \nMaths scores for Primary 3") +
+       ggtitle("English scores vs Maths \nscores for Primary 3") +
        theme(plot.title = element_text(hjust = 0.5))
 ```
 
@@ -188,4 +188,27 @@ In this output, we will combine Distribution of Maths Scores, Distribution of En
 
 ```{r}
 p1 / p2 | p3
+```
+
+#### 4.3) Insert 3.2 into 3.3
+In this output, we will insert Distribution of English Scores on top of English scores vs Maths scores for Primary 3.
+
+#### Output :
+
+```{r}
+p3 + inset_element(p2, left = 0.02, bottom = 0.6, right = 0.4, top = 1)
+```
+
+#### 4.4) Add patchwork and ggtheme to 4.2
+In this output, we will add patchwork and ggtheme. 
+
+#### Output :
+
+```{r}
+patchwork <- p1 / p2 | p3
+patchwork & theme_economist(base_size = 15) 
+```
+```{r}
+pp <- p1 / p2 | p3 
+pp & theme_economist()
 ```
