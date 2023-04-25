@@ -2,29 +2,45 @@ project:
   type: website
 
 website:
-  title: "ISSS608-VAA"
-  navbar:
-    left:
-      - text: "Hands-on Exercise"
-        menu:
+  sidebar:
+    style: "docked"
+    search: true
+    title: Welcome
+    tools:
+      - icon: github
+        href: https://github.com/jiawenoh/ISSS608-VAA
+      - icon: linkedin
+        href: https://www.linkedin.com/in/jia-wen-oh/
+    background: dark
+    reader-mode: true
+    collapse-level: 1
+    contents:
+      - section: "About"
+        contents: 
+          - text: "Home"
+            href: "_site/index.html"
+         
+      - section: "Hands-on Exercise"
+        contents:
           - text: "Hands-on Exercise 1"
             href: "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.html"
           - text: "Hands-on Exercise 2"
             href: "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02.html"
-      - text: "In-class Exercise"
-        menu:
+          - text: "Hands-on Exercise 3"
+            href: "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html"
+
+      - section: "In-class Exercise"
+        contents:
           - text: "In-class Exercise 1"
             href: "In-class_Ex/In-class_Ex01/In-class_Ex01.html"
-    right:
-      - href: index.qmd
-        text: Home
-      - about.qmd
-
+            
 format:
   html:
+    grid:
+      sidebar-width: 350px
     theme: sandstone
     css: styles.css
     toc: true
 
+     
 editor: visual
-
