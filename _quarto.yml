@@ -18,7 +18,9 @@ website:
       - section: "About"
         contents: 
           - text: "Home"
-            href: "_site/index.html"
+            href: "index.qmd"
+          - text: "About Me"
+            href: "about_me.qmd"
          
       - section: "Hands-on Exercise"
         contents:
