@@ -1,6 +1,7 @@
 ---
 title: "Hands-on_Ex02"
 author: "Oh Jia Wen"
+date: 4/22/2022
 ---
 
 ## Getting started

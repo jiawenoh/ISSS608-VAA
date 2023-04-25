@@ -1,11 +1,13 @@
 ---
 title: "Hands-on_Ex03"
 author: "Oh Jia Wen"
+date: 4/29/2022
 ---
 
 ## Getting started
 
 1.  Using p_load() of pacman package to load the required libraries
+
 ```{r}
 pacman::p_load(ggiraph, plotly, patchwork, DT, tidyverse) 
 ```
