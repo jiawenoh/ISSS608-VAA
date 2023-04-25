@@ -38,9 +38,8 @@ website:
             
 format:
   html:
-    grid:
-      sidebar-width: 350px
-    theme: sandstone
+    theme: 
+      dark: flatly
     css: styles.css
     toc: true
 
