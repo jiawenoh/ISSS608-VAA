@@ -176,7 +176,7 @@ p1 + p2
 
 Point to note:
 
--   "|" operator to stack two ggplot2 graphs,
+-   "\|" operator to stack two ggplot2 graphs,
 
 -   "/" operator to place the plots beside each other,
 
@@ -193,6 +193,7 @@ p1 / p2 | p3
 ```
 
 #### 4.3) Insert 3.2 into 3.3
+
 In this output, we will insert Distribution of English Scores on top of English scores vs Maths scores for Primary 3.
 
 #### Output :
@@ -202,7 +203,8 @@ p3 + inset_element(p2, left = 0.02, bottom = 0.6, right = 0.4, top = 1)
 ```
 
 #### 4.4) Add patchwork and ggtheme to 4.2
-In this output, we will add patchwork and ggtheme. 
+
+In this output, we will add patchwork and ggtheme.
 
 #### Output :
 
