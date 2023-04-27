@@ -4,7 +4,7 @@ author: "Oh Jia Wen"
 date: 4/19/2022
 ---
 
-## Getting started
+# Getting started
 
 1.  Using p_load() of pacman package to load tidyverse on
 
@@ -18,9 +18,9 @@ pacman:: p_load(tidyverse)
 exam_data <- read_csv("data/Exam_data.csv")
 ```
 
-## Plotting the graph
+# Plotting the graph
 
-### 1) Horizontal Bar Graph
+## 1) Horizontal Bar Graph
 
 Changing the colors of plot panel background of theme_minimal() to light blue and the color of grid lines to white.
 
@@ -39,7 +39,7 @@ ggplot(data= exam_data,
        theme(plot.title = element_text(hjust = 0.5))
 ```
 
-### 2) Vertical Bar Graph
+## 2) Vertical Bar Graph
 
 With reference to the critics on the earlier slide, create a makeover looks similar to the figure on the right.
 
@@ -76,7 +76,7 @@ exam_data %>%
   theme(axis.title.y=element_text(angle = 0))
 ```
 
-### 3) Histogram
+## 3) Histogram
 
 -   Adding mean and median lines on the histogram plot.
 
@@ -96,7 +96,7 @@ ggplot(data= exam_data,
        theme(plot.title = element_text(hjust = 0.5))
 ```
 
-#### 3.1) By Gender
+### 3.1) By Gender
 
 -   The background histograms show the distribution of English scores for all pupils.
 
@@ -136,7 +136,7 @@ ggplot(data = exam_data, aes(x = ENGLISH, fill= GENDER, )) +
     guides(fill = FALSE) 
 ```
 
-### 4) Scatterplot
+## 4) Scatterplot
 
 -   The scatterplot show the relationship between English and Maths for all pupils.
 

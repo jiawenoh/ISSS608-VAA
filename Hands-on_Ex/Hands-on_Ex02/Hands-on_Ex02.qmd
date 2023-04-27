@@ -4,7 +4,7 @@ author: "Oh Jia Wen"
 date: 4/22/2022
 ---
 
-## Getting started
+# Getting started
 
 1.  Using p_load() of pacman package to load the required libraries
 
@@ -19,9 +19,9 @@ pacman::p_load(ggrepel, patchwork, ggthemes, hrbrthemes,tidyverse)
 exam_data <- read_csv("data/Exam_data.csv")
 ```
 
-## Plotting the graph with **ggrepel**
+# Plotting the graph with **ggrepel**
 
-### 1) English scores vs Maths scores for Primary 3
+## 1) English scores vs Maths scores for Primary 3
 
 #### Output:
 
@@ -37,7 +37,7 @@ ggplot(data=exam_data,
        theme(plot.title = element_text(hjust = 0.5))
 ```
 
-### 2) Distribution of Maths scores
+## 2) Distribution of Maths scores
 
 #### Output:
 
@@ -51,7 +51,7 @@ ggplot(data=exam_data,
        theme(plot.title = element_text(hjust = 0.5))
 ```
 
-#### 2.1) ggtheme package
+### 2.1) ggtheme package
 
 -   Themes [here](https://yutannihilation.github.io/allYourFigureAreBelongToUs/ggthemes/)
 
@@ -67,7 +67,7 @@ ggplot(data = exam_data,
        theme(plot.title = element_text(hjust = 0.5))
 ```
 
-#### 2.2) hrbthems package
+### 2.2) hrbthems package
 
 -   Themes [here](https://cinc.rud.is/web/packages/hrbrthemes/)
 
@@ -84,7 +84,7 @@ ggplot(data = exam_data,
        theme(plot.title = element_text(hjust = 0.5))
 ```
 
-##### 2.2.1) hrbthems package: theme revision
+### 2.2.1) hrbthems package: theme revision
 
 -   axis_title_size argument is used to increase the font size of the axis title to 18,
 -   base_size argument is used to increase the default axis label to 15, and,
@@ -103,11 +103,11 @@ ggplot(data = exam_data,
        theme(plot.title = element_text(hjust = 0.5))
 ```
 
-### 3) Creating multiple graphs
+## 3) Creating multiple graphs
 
 Create composite plot by combining multiple graphs. Firstly, to create three statistical graphics.
 
-#### 3.1) Distribution of Maths Scores
+### 3.1) Distribution of Maths Scores
 
 #### Output:
 
@@ -121,7 +121,7 @@ p1 <- ggplot(data = exam_data,
        theme(plot.title = element_text(hjust = 0.5))
 ```
 
-#### 3.2) Distribution of English Scores
+### 3.2) Distribution of English Scores
 
 #### Output:
 
@@ -135,7 +135,7 @@ p2 <- ggplot(data = exam_data,
        theme(plot.title = element_text(hjust = 0.5))
 ```
 
-#### 3.3) English scores vs Maths scores for Primary 3
+### 3.3) English scores vs Maths scores for Primary 3
 
 #### Output :
 
@@ -150,7 +150,7 @@ p3 <- ggplot(data=exam_data,
        theme(plot.title = element_text(hjust = 0.5))
 ```
 
-### 4) Plotting multiple graphs
+## 4) Plotting multiple graphs
 
 Point to note:
 
@@ -162,7 +162,7 @@ Two-Row Layout using the Division Sign /
 
 ###### [Source](https://r4va.netlify.app/chap02.html)
 
-#### 4.1) Combine 3.1 and 3.2
+### 4.1) Combine 3.1 and 3.2
 
 In this output, we will combine Distribution of Maths Scores and Distribution of English Scores.
 
@@ -172,7 +172,7 @@ In this output, we will combine Distribution of Maths Scores and Distribution of
 p1 + p2
 ```
 
-#### 4.2) Combine 3.1, 3.2, and 3.3
+### 4.2) Combine 3.1, 3.2, and 3.3
 
 Point to note:
 
@@ -192,7 +192,7 @@ In this output, we will combine Distribution of Maths Scores, Distribution of En
 p1 / p2 | p3
 ```
 
-#### 4.3) Insert 3.2 into 3.3
+### 4.3) Insert 3.2 into 3.3
 
 In this output, we will insert Distribution of English Scores on top of English scores vs Maths scores for Primary 3.
 
@@ -202,7 +202,7 @@ In this output, we will insert Distribution of English Scores on top of English 
 p3 + inset_element(p2, left = 0.02, bottom = 0.6, right = 0.4, top = 1)
 ```
 
-#### 4.4) Add patchwork and ggtheme to 4.2
+### 4.4) Add patchwork and ggtheme to 4.2
 
 In this output, we will add patchwork and ggtheme.
 

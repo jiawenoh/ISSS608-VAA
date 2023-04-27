@@ -4,7 +4,7 @@ author: "Oh Jia Wen"
 date: 4/29/2022
 ---
 
-## Getting started
+# Getting started
 
 1.  Using p_load() of pacman package to load the required libraries
 
@@ -17,9 +17,9 @@ pacman::p_load(ggiraph, plotly, patchwork, DT, tidyverse)
 ```{r}
 exam_data <- read_csv("data/Exam_data.csv")
 ```
-## Plotting the graph with **ggiraph**
+# Plotting the graph with **ggiraph**
 
-### 1) Interactive Data Visualization.
+## 1) Interactive Data Visualization.
 
 Student ID will appear when the mouse hovered to the specific data point. 
 
@@ -42,7 +42,7 @@ p <-ggplot(data=exam_data,
              )
 ```
 
-#### 1.1) Displaying multiple information with tooltip
+### 1.1) Displaying multiple information with tooltip
 
 Student ID and Class will appear when the mouse hovered to the specific data point. 
 
@@ -69,7 +69,7 @@ p <- ggplot(data=exam_data,
            )
 ```
 
-#### 1.2) Customizing Tooltip style
+### 1.2) Customizing Tooltip style
 
 When the mouse hovered to the specific data point, the student ID will appear. We will customize the output to black and bold font with white background.
 
@@ -97,7 +97,7 @@ p <- ggplot(data=exam_data,
           )                                        
 ```
 
-#### 1.3) Displaying statistics with tooltip
+### 1.3) Displaying statistics with tooltip
 
 When the mouse hovered to the specific data point, statistics will appear. In the below output, confidence interval will be displayed at 90% CI. 
 
@@ -130,7 +130,7 @@ gg_point <- ggplot(data=exam_data,
 ```
 
 
-#### 1.4) Hover effect with **data_id** aesthetic
+### 1.4) Hover effect with **data_id** aesthetic
 
 When the mouse hovered to the specific data point, data points that are associated with the data_id(CLASS) will be highlighted. 
 
@@ -153,7 +153,7 @@ p <- ggplot(data=exam_data,
         )                                        
 ```
 
-#### 1.5) Customizing Hover effect
+### 1.5) Customizing Hover effect
 
 Similar to 1.2, we will customize the Hover Effect with the help of CSS. 
 
@@ -178,7 +178,7 @@ p <- ggplot(data=exam_data,
            )                                        
              )                                        
 ```
-#### 1.6) Combining Tooltip and Hover Effect 
+### 1.6) Combining Tooltip and Hover Effect 
 
 In the below output, we will combine both Interactive Data Visualisation. The respective data points and the associated points will be reflected. 
 

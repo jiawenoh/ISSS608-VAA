@@ -238,7 +238,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <ul class="collapse">
   <li><a href="#horizontal-bar-graph" id="toc-horizontal-bar-graph" class="nav-link" data-scroll-target="#horizontal-bar-graph">1) Horizontal Bar Graph</a></li>
   <li><a href="#vertical-bar-graph" id="toc-vertical-bar-graph" class="nav-link" data-scroll-target="#vertical-bar-graph">2) Vertical Bar Graph</a></li>
-  <li><a href="#histogram" id="toc-histogram" class="nav-link" data-scroll-target="#histogram">3) Histogram</a></li>
+  <li><a href="#histogram" id="toc-histogram" class="nav-link" data-scroll-target="#histogram">3) Histogram</a>
+  <ul class="collapse">
+  <li><a href="#by-gender" id="toc-by-gender" class="nav-link" data-scroll-target="#by-gender">3.1) By Gender</a></li>
+  </ul></li>
   <li><a href="#scatterplot" id="toc-scatterplot" class="nav-link" data-scroll-target="#scatterplot">4) Scatterplot</a></li>
   </ul></li>
   </ul>
@@ -276,8 +279,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 </header>
 
-<section id="getting-started" class="level2">
-<h2 class="anchored" data-anchor-id="getting-started">Getting started</h2>
+<section id="getting-started" class="level1">
+<h1>Getting started</h1>
 <ol type="1">
 <li>Using p_load() of pacman package to load tidyverse on</li>
 </ol>
@@ -301,10 +304,10 @@ dbl (3): ENGLISH, MATHS, SCIENCE
 </div>
 </div>
 </section>
-<section id="plotting-the-graph" class="level2">
-<h2 class="anchored" data-anchor-id="plotting-the-graph">Plotting the graph</h2>
-<section id="horizontal-bar-graph" class="level3">
-<h3 class="anchored" data-anchor-id="horizontal-bar-graph">1) Horizontal Bar Graph</h3>
+<section id="plotting-the-graph" class="level1">
+<h1>Plotting the graph</h1>
+<section id="horizontal-bar-graph" class="level2">
+<h2 class="anchored" data-anchor-id="horizontal-bar-graph">1) Horizontal Bar Graph</h2>
 <p>Changing the colors of plot panel background of theme_minimal() to light blue and the color of grid lines to white.</p>
 <section id="output" class="level4">
 <h4 class="anchored" data-anchor-id="output">Output:</h4>
@@ -325,8 +328,8 @@ dbl (3): ENGLISH, MATHS, SCIENCE
 </div>
 </section>
 </section>
-<section id="vertical-bar-graph" class="level3">
-<h3 class="anchored" data-anchor-id="vertical-bar-graph">2) Vertical Bar Graph</h3>
+<section id="vertical-bar-graph" class="level2">
+<h2 class="anchored" data-anchor-id="vertical-bar-graph">2) Vertical Bar Graph</h2>
 <p>With reference to the critics on the earlier slide, create a makeover looks similar to the figure on the right.</p>
 <section id="output-1" class="level4">
 <h4 class="anchored" data-anchor-id="output-1">Output 1:</h4>
@@ -372,8 +375,8 @@ dbl (3): ENGLISH, MATHS, SCIENCE
 </div>
 </section>
 </section>
-<section id="histogram" class="level3">
-<h3 class="anchored" data-anchor-id="histogram">3) Histogram</h3>
+<section id="histogram" class="level2">
+<h2 class="anchored" data-anchor-id="histogram">3) Histogram</h2>
 <ul>
 <li><p>Adding mean and median lines on the histogram plot.</p></li>
 <li><p>Change fill color and line color</p></li>
@@ -399,12 +402,11 @@ dbl (3): ENGLISH, MATHS, SCIENCE
 </div>
 </div>
 </section>
-<section id="by-gender" class="level4">
-<h4 class="anchored" data-anchor-id="by-gender">3.1) By Gender</h4>
+<section id="by-gender" class="level3">
+<h3 class="anchored" data-anchor-id="by-gender">3.1) By Gender</h3>
 <ul>
 <li>The background histograms show the distribution of English scores for all pupils.</li>
 </ul>
-</section>
 <section id="output-3" class="level4">
 <h4 class="anchored" data-anchor-id="output-3">Output:</h4>
 <div class="cell">
@@ -455,8 +457,9 @@ of ggplot2 3.3.4.</code></pre>
 </div>
 </section>
 </section>
-<section id="scatterplot" class="level3">
-<h3 class="anchored" data-anchor-id="scatterplot">4) Scatterplot</h3>
+</section>
+<section id="scatterplot" class="level2">
+<h2 class="anchored" data-anchor-id="scatterplot">4) Scatterplot</h2>
 <ul>
 <li>The scatterplot show the relationship between English and Maths for all pupils.</li>
 </ul>
