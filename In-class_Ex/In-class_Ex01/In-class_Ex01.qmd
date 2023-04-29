@@ -1,5 +1,5 @@
 ---
-title: "In-class_Ex01"
+title: "In-class Exercise 1"
 author: "Oh Jia Wen"
 date: 4/19/2022
 ---

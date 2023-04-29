@@ -35,12 +35,16 @@ website:
         contents:
           - text: "In-class Exercise 1"
             href: "In-class_Ex/In-class_Ex01/In-class_Ex01.html"
+          - text: "In-class Exercise 3"
+            href: "In-class_Ex/In-class_Ex03/In-class_Ex03.html"
             
 format:
   html:
     theme: 
       dark: flatly
     css: styles.css
+    code-fold: show
+    code-summary: "Hide the code"
     toc: true
 
      
