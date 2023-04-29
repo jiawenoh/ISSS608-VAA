@@ -1,0 +1,6 @@
+---
+title: "In-class Exercise 3"
+author: "Oh Jia Wen"
+date: 4/29/2022
+edit: visual
+---
