@@ -1,5 +1,5 @@
 ---
-title: "Hands-on_Ex02"
+title: "Hands-on Exercise 2"
 author: "Oh Jia Wen"
 date: 4/22/2022
 ---
