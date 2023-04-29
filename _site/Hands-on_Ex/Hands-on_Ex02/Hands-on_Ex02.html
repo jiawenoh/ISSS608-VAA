@@ -9,7 +9,7 @@
 <meta name="author" content="Oh Jia Wen">
 <meta name="dcterms.date" content="2022-04-22">
 
-<title>Hands-on_Ex02</title>
+<title>Hands-on Exercise 2</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -136,7 +136,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <header id="quarto-header" class="headroom fixed-top">
   <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
     <div class="container-fluid d-flex justify-content-between">
-      <h1 class="quarto-secondary-nav-title">Hands-on_Ex02</h1>
+      <h1 class="quarto-secondary-nav-title">Hands-on Exercise 2</h1>
       <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
         <i class="bi bi-chevron-right"></i>
       </button>
@@ -222,6 +222,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <a href="../../In-class_Ex/In-class_Ex01/In-class_Ex01.html" class="sidebar-item-text sidebar-link">In-class Exercise 1</a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../In-class_Ex/In-class_Ex03/In-class_Ex03.html" class="sidebar-item-text sidebar-link">In-class Exercise 3</a>
+  </div>
+</li>
       </ul>
   </li>
     </ul>
@@ -265,7 +270,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title d-none d-lg-block">Hands-on_Ex02</h1>
+<h1 class="title d-none d-lg-block">Hands-on Exercise 2</h1>
 </div>
 
 
@@ -299,7 +304,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </ol>
 <div class="cell">
 <details open="">
-<summary>Show the code</summary>
+<summary>Hide the code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(ggrepel, patchwork, ggthemes, hrbrthemes,tidyverse) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
@@ -308,7 +313,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </ol>
 <div class="cell">
 <details open="">
-<summary>Show the code</summary>
+<summary>Hide the code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>exam_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/Exam_data.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stderr">
@@ -331,7 +336,7 @@ dbl (3): ENGLISH, MATHS, SCIENCE
 <h4 class="anchored" data-anchor-id="output">Output:</h4>
 <div class="cell">
 <details open="">
-<summary>Show the code</summary>
+<summary>Hide the code</summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data=</span>exam_data, </span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x=</span> MATHS, <span class="at">y=</span>ENGLISH)) <span class="sc">+</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>       <span class="fu">geom_point</span>() <span class="sc">+</span></span>
@@ -353,7 +358,7 @@ dbl (3): ENGLISH, MATHS, SCIENCE
 <h4 class="anchored" data-anchor-id="output-1">Output:</h4>
 <div class="cell">
 <details open="">
-<summary>Show the code</summary>
+<summary>Hide the code</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data=</span>exam_data, </span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x=</span> MATHS)) <span class="sc">+</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>       <span class="fu">geom_histogram</span>(<span class="at">bins=</span> <span class="dv">30</span>, <span class="at">color=</span> <span class="st">"grey30"</span>, <span class="at">fill =</span> <span class="st">"grey95"</span>) <span class="sc">+</span></span>
@@ -376,7 +381,7 @@ dbl (3): ENGLISH, MATHS, SCIENCE
 <h4 class="anchored" data-anchor-id="output-2">Output:</h4>
 <div class="cell">
 <details open="">
-<summary>Show the code</summary>
+<summary>Hide the code</summary>
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> exam_data, </span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x=</span>MATHS)) <span class="sc">+</span> </span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>       <span class="fu">geom_histogram</span>(<span class="at">bins=</span><span class="dv">30</span>, <span class="at">color=</span> <span class="st">"grey30"</span>, <span class="at">fill =</span> <span class="st">"grey95"</span>) <span class="sc">+</span></span>
@@ -400,7 +405,7 @@ dbl (3): ENGLISH, MATHS, SCIENCE
 <h4 class="anchored" data-anchor-id="output-3">Output:</h4>
 <div class="cell">
 <details open="">
-<summary>Show the code</summary>
+<summary>Hide the code</summary>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> exam_data, </span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x=</span>MATHS)) <span class="sc">+</span> </span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>       <span class="fu">geom_histogram</span>(<span class="at">bins=</span><span class="dv">20</span>, <span class="at">boundary =</span> <span class="dv">100</span>,  </span>
@@ -427,7 +432,7 @@ dbl (3): ENGLISH, MATHS, SCIENCE
 <h4 class="anchored" data-anchor-id="output-4">Output:</h4>
 <div class="cell">
 <details open="">
-<summary>Show the code</summary>
+<summary>Hide the code</summary>
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> exam_data, </span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x=</span>MATHS)) <span class="sc">+</span> </span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>       <span class="fu">geom_histogram</span>(<span class="at">bins=</span><span class="dv">20</span>, <span class="at">boundary =</span> <span class="dv">100</span>,  </span>
@@ -453,7 +458,7 @@ dbl (3): ENGLISH, MATHS, SCIENCE
 <h4 class="anchored" data-anchor-id="output-5">Output:</h4>
 <div class="cell">
 <details open="">
-<summary>Show the code</summary>
+<summary>Hide the code</summary>
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> exam_data, </span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x=</span>MATHS)) <span class="sc">+</span> </span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>       <span class="fu">geom_histogram</span>(<span class="at">bins=</span><span class="dv">20</span>, <span class="at">boundary =</span> <span class="dv">100</span>,  </span>
@@ -471,7 +476,7 @@ dbl (3): ENGLISH, MATHS, SCIENCE
 <h4 class="anchored" data-anchor-id="output-6">Output:</h4>
 <div class="cell">
 <details open="">
-<summary>Show the code</summary>
+<summary>Hide the code</summary>
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> exam_data, </span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x=</span>ENGLISH)) <span class="sc">+</span> </span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>       <span class="fu">geom_histogram</span>(<span class="at">bins=</span><span class="dv">20</span>, <span class="at">boundary =</span> <span class="dv">100</span>,  </span>
@@ -489,7 +494,7 @@ dbl (3): ENGLISH, MATHS, SCIENCE
 <h4 class="anchored" data-anchor-id="output-7">Output :</h4>
 <div class="cell">
 <details open="">
-<summary>Show the code</summary>
+<summary>Hide the code</summary>
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>p3 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data=</span>exam_data, </span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x=</span> MATHS, <span class="at">y=</span>ENGLISH)) <span class="sc">+</span></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>       <span class="fu">geom_point</span>() <span class="sc">+</span></span>
@@ -520,7 +525,7 @@ dbl (3): ENGLISH, MATHS, SCIENCE
 <h4 class="anchored" data-anchor-id="output-8">Output :</h4>
 <div class="cell">
 <details open="">
-<summary>Show the code</summary>
+<summary>Hide the code</summary>
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>p1 <span class="sc">+</span> p2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
@@ -545,7 +550,7 @@ dbl (3): ENGLISH, MATHS, SCIENCE
 <h4 class="anchored" data-anchor-id="output-9">Output :</h4>
 <div class="cell">
 <details open="">
-<summary>Show the code</summary>
+<summary>Hide the code</summary>
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>p1 <span class="sc">/</span> p2 <span class="sc">|</span> p3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stderr">
@@ -564,7 +569,7 @@ dbl (3): ENGLISH, MATHS, SCIENCE
 <h4 class="anchored" data-anchor-id="output-10">Output :</h4>
 <div class="cell">
 <details open="">
-<summary>Show the code</summary>
+<summary>Hide the code</summary>
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>p3 <span class="sc">+</span> <span class="fu">inset_element</span>(p2, <span class="at">left =</span> <span class="fl">0.02</span>, <span class="at">bottom =</span> <span class="fl">0.6</span>, <span class="at">right =</span> <span class="fl">0.4</span>, <span class="at">top =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stderr">
@@ -583,7 +588,7 @@ dbl (3): ENGLISH, MATHS, SCIENCE
 <h4 class="anchored" data-anchor-id="output-11">Output :</h4>
 <div class="cell">
 <details open="">
-<summary>Show the code</summary>
+<summary>Hide the code</summary>
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>patchwork <span class="ot">&lt;-</span> p1 <span class="sc">/</span> p2 <span class="sc">|</span> p3</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>patchwork <span class="sc">&amp;</span> <span class="fu">theme_economist</span>(<span class="at">base_size =</span> <span class="dv">15</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
