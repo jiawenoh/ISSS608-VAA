@@ -2,6 +2,8 @@
 title: "Hands-on Exercise 3"
 author: "Oh Jia Wen"
 date: 4/29/2022
+execute: 
+  warning: false
 ---
 
 # Getting started
@@ -70,7 +72,7 @@ p <- ggplot(data=exam_data,
            )
 ```
 
-### 1.2) Customizing Tooltip style
+### 1.2) Customizing tooltip style
 
 When the mouse hovered to the specific data point, the student ID will appear. We will customize the output to black and bold font with white background.
 
@@ -169,6 +171,7 @@ p <- ggplot(data=exam_data,
        binwidth = 1,                        
        method = "histodot") +               
      scale_y_continuous(NULL, breaks = NULL)
+
      girafe(                                  
        ggobj = p,                             
        width_svg = 6,                         
@@ -180,9 +183,9 @@ p <- ggplot(data=exam_data,
              )                                        
 ```
 
-### 1.6) Combining Tooltip and Hover Effect
+### 1.6) Combining tooltip and Hover Effect
 
-In the below output, we will combine both Interactive Data Visualisation. The respective data points and the associated points will be reflected.
+In the below output, we will combine both Interactive Data Visualization. The respective data points and the associated points will be reflected.
 
 #### Output:
 
@@ -281,12 +284,81 @@ p2 <- ggplot(data=exam_data,
 
 ## 2) Interactive Data Visualization with **plotly**
 
-Plotly's R graphing library create interactive web graphics from ggplot2 graphs and/or a custom interface to the (MIT-licensed) JavaScript library plotly.js inspired by the grammar of graphics. Different from other plotly platform, plot.R is free and open source.
-
-Through plotly, there are two ways to create interactive graph:
+There are two ways to create interactive graph through plotly:
 
 1.  plot_ly()
 
 2.  ggploty()
 
+### 2.1) Create interactive scatter plot with **plot_ly() method**
+
+In the below output, the interactive graph is created through [plot\_ ly()]{.underline}.
+
 #### Output:
+
+```{r}
+plot_ly(data = exam_data, 
+             x = ~MATHS, y = ~ENGLISH)
+```
+
+### 2.2) Create interactive scatter plot with **plot_ly() method**
+
+In the below output, the interactive graph is enhanced with the addition of RACE as a visual variable.
+
+#### Output:
+
+```{r}
+plot_ly(data = exam_data, 
+             x = ~MATHS, y = ~ENGLISH, color = ~RACE)
+```
+
+### 2.3) Create interactive scatter plot with **ggplotly() method**
+
+In the below output, the interactive graph is created through gg[plotly()]{.underline}.
+
+#### Output:
+
+*`Note: only 1 additional line required (Line 7)`*
+
+```{r}
+p <- ggplot(data=exam_data, 
+            aes(x = MATHS,
+                y = ENGLISH)) +
+     geom_point(size=1) +
+    coord_cartesian(xlim=c(0,100), ylim=c(0,100))
+
+ggplotly(p)
+```
+
+### 2.4) Coordinated multiple views with **plotly**
+
+The coordinated linked graphs will be achieved in three steps:
+
+1.  Use highlight_key() of plotly as a shared data
+
+2.  Create two scatter plots through ggplot2 functions
+
+3.  Subplot() of plotly package used to place them side by side
+
+#### Output:
+
+```{r}
+d <- highlight_key(exam_data)
+
+p1 <- ggplot(data=d, 
+         aes(x = MATHS, y = ENGLISH)) +
+      geom_point(size=1) +
+      coord_cartesian(xlim=c(0,100), ylim=c(0,100))
+
+p2 <- ggplot(data=d, 
+         aes(x = MATHS, y = SCIENCE)) +
+      geom_point(size=1) +
+      coord_cartesian(xlim=c(0,100), ylim=c(0,100))
+
+subplot(ggplotly(p1),
+        ggplotly(p2))
+```
+*`Note to self: patchwork is not interactive in comparion but includes labelling`*
+
+## 3) Interactive Data Visualization with **crosstalk** methods
+

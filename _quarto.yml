@@ -2,6 +2,7 @@ project:
   type: website
 
 website:
+  page-navigation: true
   sidebar:
     style: "docked"
     search: true
@@ -47,5 +48,9 @@ format:
     code-summary: "Hide the code"
     toc: true
 
-     
-editor: visual
+execute: 
+  echo: true
+  eval: true
+  warning: false
+  
+editor: source
