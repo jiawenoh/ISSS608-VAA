@@ -1,7 +1,10 @@
 ---
 title: "Hands-on Exercise 2"
 author: "Oh Jia Wen"
-date: 4/22/2022
+date: 4/22/2023
+date-modified: 4/29/2023
+execute: 
+  warning: false
 ---
 
 # Getting started
@@ -9,7 +12,6 @@ date: 4/22/2022
 1.  Using p_load() of pacman package to load the required libraries
 
 ```{r}
-#| warning:  false
 pacman::p_load(ggrepel, patchwork, ggthemes, hrbrthemes,tidyverse) 
 ```
 
@@ -36,7 +38,6 @@ ggplot(data=exam_data,
        ggtitle("English scores versus Maths scores for Primary 3") +
        theme(plot.title = element_text(hjust = 0.5))
 ```
-
 ## 2) Distribution of Maths scores
 
 #### Output:
