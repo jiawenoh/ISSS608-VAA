@@ -16,7 +16,7 @@ website:
     reader-mode: true
     collapse-level: 1
     contents:
-      - section: "Home"
+      - section: "About"
         contents: 
           - text: "Home"
             href: "index.qmd"
