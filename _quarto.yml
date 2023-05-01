@@ -54,10 +54,5 @@ format:
     code-fold: show
     code-summary: "Hide the code"
     toc: true
-
-execute: 
-  echo: true
-  eval: true
-  warning: false
   
-editor: source
+editor: visual
