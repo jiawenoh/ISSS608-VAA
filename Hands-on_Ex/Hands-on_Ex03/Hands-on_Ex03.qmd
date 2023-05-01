@@ -359,7 +359,43 @@ p2 <- ggplot(data=d,
 subplot(ggplotly(p1),
         ggplotly(p2))
 ```
+
 *`Note to self: patchwork is not interactive in comparion but includes labelling`*
 
 ## 3) Interactive Data Visualization with **crosstalk** methods
+
+It is an add-on to htmlwidgets package with cross-widget interactions.
+
+### 3.1) Interactive Data Table: **DT package**
+
+In the below output, the interactive data table is created through [DT package.]{.underline}
+
+#### Output:
+
+```{r}
+DT::datatable(exam_data, class= "compact")
+```
+
+### 3.2) Linked brushing **crosstalk** method
+
+In the below output, the interactive data table is created through [DT package.]{.underline}
+
+#### Output:
+
+```{r}
+d <- highlight_key(exam_data) 
+
+p <- ggplot(d, 
+       aes(ENGLISH, MATHS)) + 
+     geom_point(size=1) +
+     coord_cartesian(xlim=c(0,100), ylim=c(0,100))
+
+gg <- highlight(ggplotly(p),        
+                "plotly_selected")  
+
+crosstalk::bscols(gg,               
+                  DT::datatable(d), 
+                  widths = 5)        
+```
+
 

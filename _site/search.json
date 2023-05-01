@@ -25,7 +25,7 @@
     "href": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html#interactive-data-visualization-with-crosstalk-methods",
     "title": "Hands-on Exercise 3",
     "section": "3) Interactive Data Visualization with crosstalk methods",
-    "text": "3) Interactive Data Visualization with crosstalk methods"
+    "text": "3) Interactive Data Visualization with crosstalk methods\nIt is an add-on to htmlwidgets package with cross-widget interactions.\n\n3.1) Interactive Data Table: DT package\nIn the below output, the interactive data table is created through DT package.\n\nOutput:\n\n\nHide the code\nDT::datatable(exam_data, class= \"compact\")\n\n\n\n\n\n\n\n\n\n\n3.2) Linked brushing crosstalk method\nIn the below output, the interactive data table is created through DT package.\n\nOutput:\n\n\nHide the code\nd <- highlight_key(exam_data) \n\np <- ggplot(d, \n       aes(ENGLISH, MATHS)) + \n     geom_point(size=1) +\n     coord_cartesian(xlim=c(0,100), ylim=c(0,100))\n\ngg <- highlight(ggplotly(p),        \n                \"plotly_selected\")  \n\ncrosstalk::bscols(gg,               \n                  DT::datatable(d), \n                  widths = 5)"
   },
   {
     "objectID": "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02.html",
