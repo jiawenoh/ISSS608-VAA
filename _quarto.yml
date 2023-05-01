@@ -16,7 +16,7 @@ website:
     reader-mode: true
     collapse-level: 1
     contents:
-      - section: "About"
+      - section: "Home"
         contents: 
           - text: "Home"
             href: "index.qmd"
@@ -31,6 +31,8 @@ website:
             href: "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02.html"
           - text: "Hands-on Exercise 3"
             href: "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html"
+          - text: "Hands-on Exercise 4"
+            href: "Hands-on_Ex/Hands-on_Ex04/Hands-on_Ex04.html"
 
       - section: "In-class Exercise"
         contents:
@@ -38,6 +40,11 @@ website:
             href: "In-class_Ex/In-class_Ex01/In-class_Ex01.html"
           - text: "In-class Exercise 3"
             href: "In-class_Ex/In-class_Ex03/In-class_Ex03.html"
+            
+      - section: "Take Home Exercise"
+        contents:
+          - text: "Take Home Exercise 1"
+            href: "Take-Home_Ex/Take_Home_Ex01/Take-Home_Ex01.html"
             
 format:
   html:

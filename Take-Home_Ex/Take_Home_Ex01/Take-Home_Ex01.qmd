@@ -1,0 +1,8 @@
+---
+title: "Take Home Exercise 1"
+author: "Oh Jia Wen"
+date: "TBC"
+date-modified: "TBC"
+execute: 
+  warning: false
+---
