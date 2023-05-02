@@ -1,5 +1,12 @@
 [
   {
+    "objectID": "Hands-on_Ex/Hands-on_Ex04/Hands-on_Ex04.html",
+    "href": "Hands-on_Ex/Hands-on_Ex04/Hands-on_Ex04.html",
+    "title": "Hands-on Exercise 4",
+    "section": "",
+    "text": "Getting started\n\nUsing p_load() of pacman package to load the required libraries\n\n\n\nHide the code\npacman::p_load(ggiraph, plotly, patchwork, DT, tidyverse) \n\n\n\nImporting data\n\n\n\nHide the code\nexam_data <- read_csv(\"data/Exam_data.csv\")"
+  },
+  {
     "objectID": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html",
     "href": "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03.html",
     "title": "Hands-on Exercise 3",
@@ -89,6 +96,41 @@
     "title": "ISSS608-VAA",
     "section": "",
     "text": "Welcome to ISSS608 Visual Analytics and Applications. In this website, you will find my coursework prepared for this course."
+  },
+  {
+    "objectID": "Take-Home_Ex/Take_Home_Ex01/Take-Home_Ex01.html",
+    "href": "Take-Home_Ex/Take_Home_Ex01/Take-Home_Ex01.html",
+    "title": "Take Home Exercise 1",
+    "section": "",
+    "text": "City of Engagement, with a total population of 50,000, is a small city located at Country of Nowhere. The city serves as a service centre of an agriculture region surrounding the city. The main agriculture of the region is fruit farms and vineyards. The local council of the city is in the process of preparing the Local Plan 2023. A sample survey of 1000 representative residents had been conducted to collect data related to their household demographic and spending patterns, among other things. The city aims to use the data to assist with their major community revitalization efforts, including how to allocate a very large city renewal grant they have recently received. \n\n\nIn this take-home exercise, you are required to apply the concepts and methods you had learned in Lesson 1-4 to reveal the demographic and financial characteristics of the city of Engagement, using appropriate static and interactive statistical graphics methods."
+  },
+  {
+    "objectID": "Take-Home_Ex/Take_Home_Ex01/Take-Home_Ex01.html#install-r-packages",
+    "href": "Take-Home_Ex/Take_Home_Ex01/Take-Home_Ex01.html#install-r-packages",
+    "title": "Take Home Exercise 1",
+    "section": "3.1 Install R-packages",
+    "text": "3.1 Install R-packages\nUsing p_load() of pacman package to load the required libraries\n\n\nHide the code\npacman::p_load(ggiraph, plotly, patchwork, DT, tidyverse)"
+  },
+  {
+    "objectID": "Take-Home_Ex/Take_Home_Ex01/Take-Home_Ex01.html#import-data",
+    "href": "Take-Home_Ex/Take_Home_Ex01/Take-Home_Ex01.html#import-data",
+    "title": "Take Home Exercise 1",
+    "section": "3.2 Import Data",
+    "text": "3.2 Import Data\n\n\nHide the code\nparticipants <- read_csv(\"data/Participants.csv\")\nfinancial_journal <- read_csv(\"data/FinancialJournal.csv\")"
+  },
+  {
+    "objectID": "Take-Home_Ex/Take_Home_Ex01/Take-Home_Ex01.html#data-table",
+    "href": "Take-Home_Ex/Take_Home_Ex01/Take-Home_Ex01.html#data-table",
+    "title": "Take Home Exercise 1",
+    "section": "3.2.1 Data Table",
+    "text": "3.2.1 Data Table\nParticipants\n\n\nHide the code\nhead(participants)\n\n\n# A tibble: 6 × 7\n  participantId householdSize haveKids   age educationLevel      interestGroup\n          <dbl>         <dbl> <lgl>    <dbl> <chr>               <chr>        \n1             0             3 TRUE        36 HighSchoolOrCollege H            \n2             1             3 TRUE        25 HighSchoolOrCollege B            \n3             2             3 TRUE        35 HighSchoolOrCollege A            \n4             3             3 TRUE        21 HighSchoolOrCollege I            \n5             4             3 TRUE        43 Bachelors           H            \n6             5             3 TRUE        32 HighSchoolOrCollege D            \n# ℹ 1 more variable: joviality <dbl>\n\n\nFinancial Journal\n\n\nHide the code\nhead(financial_journal)\n\n\n# A tibble: 6 × 4\n  participantId timestamp           category  amount\n          <dbl> <dttm>              <chr>      <dbl>\n1             0 2022-03-01 00:00:00 Wage      2473. \n2             0 2022-03-01 00:00:00 Shelter   -555. \n3             0 2022-03-01 00:00:00 Education  -38.0\n4             1 2022-03-01 00:00:00 Wage      2047. \n5             1 2022-03-01 00:00:00 Shelter   -555. \n6             1 2022-03-01 00:00:00 Education  -38.0"
+  },
+  {
+    "objectID": "Take-Home_Ex/Take_Home_Ex01/Take-Home_Ex01.html#data-wrangling",
+    "href": "Take-Home_Ex/Take_Home_Ex01/Take-Home_Ex01.html#data-wrangling",
+    "title": "Take Home Exercise 1",
+    "section": "3.3 Data Wrangling",
+    "text": "3.3 Data Wrangling\nAs seen from the two data tables, there are inaccurate data types. Code with mutate from dplyr to reformat participantID from dbl to chr.\n\n\nHide the code\n#change data type of participantID from dbl to char \nparticipants %>%\n  mutate(participantId = as.character(participantId))\n\n\n# A tibble: 1,011 × 7\n   participantId householdSize haveKids   age educationLevel      interestGroup\n   <chr>                 <dbl> <lgl>    <dbl> <chr>               <chr>        \n 1 0                         3 TRUE        36 HighSchoolOrCollege H            \n 2 1                         3 TRUE        25 HighSchoolOrCollege B            \n 3 2                         3 TRUE        35 HighSchoolOrCollege A            \n 4 3                         3 TRUE        21 HighSchoolOrCollege I            \n 5 4                         3 TRUE        43 Bachelors           H            \n 6 5                         3 TRUE        32 HighSchoolOrCollege D            \n 7 6                         3 TRUE        26 HighSchoolOrCollege I            \n 8 7                         3 TRUE        27 Bachelors           A            \n 9 8                         3 TRUE        20 Bachelors           G            \n10 9                         3 TRUE        35 Bachelors           D            \n# ℹ 1,001 more rows\n# ℹ 1 more variable: joviality <dbl>\n\n\nHide the code\nfinancial_journal %>%\n  mutate(participantId = as.character(participantId))\n\n\n# A tibble: 1,513,636 × 4\n   participantId timestamp           category  amount\n   <chr>         <dttm>              <chr>      <dbl>\n 1 0             2022-03-01 00:00:00 Wage      2473. \n 2 0             2022-03-01 00:00:00 Shelter   -555. \n 3 0             2022-03-01 00:00:00 Education  -38.0\n 4 1             2022-03-01 00:00:00 Wage      2047. \n 5 1             2022-03-01 00:00:00 Shelter   -555. \n 6 1             2022-03-01 00:00:00 Education  -38.0\n 7 2             2022-03-01 00:00:00 Wage      2437. \n 8 2             2022-03-01 00:00:00 Shelter   -557. \n 9 2             2022-03-01 00:00:00 Education  -12.8\n10 3             2022-03-01 00:00:00 Wage      2367. \n# ℹ 1,513,626 more rows\n\n\nHide the code\n#change data type of EducationID from nominal to ordinal \nparticipants$educationLevel_factor <- factor(participants$educationLevel, order = TRUE, \n                                    levels = c(\"Low\", \"Graduate\", \"Bachelors\",\"HighSchool0orCollege\"))\n\n\nCheck for missing values\n\n\nHide the code\n#Check for missing values\nany(is.na(participants))\n\n\n[1] TRUE"
   },
   {
     "objectID": "In-class_Ex/In-class_Ex01/In-class_Ex01.html",

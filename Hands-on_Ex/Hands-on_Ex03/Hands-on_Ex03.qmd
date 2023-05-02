@@ -414,7 +414,7 @@ gganimate is an extension of ggplot2 which includes animation and includes the f
 
 ###### [Source](https://r4va.netlify.app/chap04.html)
 
-Prior to building the graph, we would need to: 
+Prior to building the graph, we would need to:
 
 1.  Using p_load() of pacman package to load the required libraries
 
@@ -455,7 +455,7 @@ ggplot(globalPop,
 
 ### 4.2) Building the animation **bubble plot**
 
-Similar to 4.1, the below output will be animated. 
+Similar to 4.1, the below output will be animated.
 
 #### Output:
 
@@ -477,7 +477,7 @@ ggplot(globalPop,
 
 ## 5) Animated Data Visualization with **plotly** methods
 
-Similar to section 4, both ggplotly and plotly support animated data visualization. 
+Similar to section 4, both ggplotly and plotly support animated data visualization.
 
 ### 5.1) Building an animated bubble plot **plotly**
 
@@ -500,7 +500,3 @@ bp <- globalPop %>%
           )
 bp
 ```
-
-
-
-

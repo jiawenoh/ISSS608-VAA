@@ -6,3 +6,20 @@ date-modified: "TBC"
 execute: 
   warning: false
 ---
+
+# Getting started
+
+1.  Using p_load() of pacman package to load the required libraries
+
+```{r}
+pacman::p_load(ggiraph, plotly, patchwork, DT, tidyverse) 
+```
+
+2.  Importing data
+
+
+
+```{r}
+exam_data <- read_csv("data/Exam_data.csv")
+
+```
