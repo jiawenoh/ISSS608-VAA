@@ -389,7 +389,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </section>
 <section id="data-wrangling" class="level2">
 <h2 class="anchored" data-anchor-id="data-wrangling">3.3 Data Wrangling</h2>
-<p>As seen from the two data tables, there are inaccurate data types. Code with mutate from dplyr to reformat participantID from dbl to chr.</p>
+<p>As seen from the two data tables, there are inaccurate data types. Code with mutate from dplyr to reformat participantID from dbl to chr. groupby participantID remove duplicates reformat timestamp to year and month create new variables for income, expenses, cashflow</p>
+<p>The function distinct() [dplyr package] can be used to keep only unique/distinct rows from a data frame.</p>
 <div class="cell">
 <details open="">
 <summary>Hide the code</summary>
@@ -442,12 +443,81 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Low"</span>, <span class="st">"Graduate"</span>, <span class="st">"Bachelors"</span>,<span class="st">"HighSchool0orCollege"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
+<div class="cell">
+<details open="">
+<summary>Hide the code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(financial_journal<span class="sc">$</span>category)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Wage"           "Shelter"        "Education"      "RentAdjustment"
+[5] "Food"           "Recreation"    </code></pre>
+</div>
+</div>
+<p>You can use group_by() function along with the summarise() from dplyr package to find the group by sum in R DataFrame, group_by() returns the grouped_df ( A grouped Data Frame) and use summarise() on grouped df results to get the group by sum.</p>
+<div class="cell">
+<details open="">
+<summary>Hide the code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">#store new dataset in variable -&gt;  financial_journal_clean</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>financial_journal_clean <span class="ot">&lt;-</span> financial_journal <span class="sc">|&gt;</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co">#reformat timestamp to Year and Month</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">year =</span> <span class="fu">as.character</span>(<span class="fu">format</span>(<span class="fu">as.Date</span>(<span class="fu">paste</span>(financial_journal<span class="sc">$</span>timestamp, <span class="st">"-01"</span>, <span class="at">sep=</span><span class="st">""</span>)), <span class="st">"%Y"</span>)),</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">month =</span> <span class="fu">as.character</span>(<span class="fu">format</span>(<span class="fu">as.Date</span>(<span class="fu">paste</span>(financial_journal<span class="sc">$</span>timestamp, <span class="st">"-01"</span>, <span class="at">sep=</span><span class="st">""</span>)), <span class="st">"%m"</span>)),</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">.before =</span> <span class="dv">3</span>) </span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="co">#create new variables called </span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>financial_journal_clean</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1,513,636 × 6
+   participantId timestamp           year  month category  amount
+           &lt;dbl&gt; &lt;dttm&gt;              &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;      &lt;dbl&gt;
+ 1             0 2022-03-01 00:00:00 2022  03    Wage      2473. 
+ 2             0 2022-03-01 00:00:00 2022  03    Shelter   -555. 
+ 3             0 2022-03-01 00:00:00 2022  03    Education  -38.0
+ 4             1 2022-03-01 00:00:00 2022  03    Wage      2047. 
+ 5             1 2022-03-01 00:00:00 2022  03    Shelter   -555. 
+ 6             1 2022-03-01 00:00:00 2022  03    Education  -38.0
+ 7             2 2022-03-01 00:00:00 2022  03    Wage      2437. 
+ 8             2 2022-03-01 00:00:00 2022  03    Shelter   -557. 
+ 9             2 2022-03-01 00:00:00 2022  03    Education  -12.8
+10             3 2022-03-01 00:00:00 2022  03    Wage      2367. 
+# ℹ 1,513,626 more rows</code></pre>
+</div>
+</div>
+<div class="cell">
+
+</div>
+<p>The function distinct() [dplyr package] can be used to keep only unique/distinct rows from a data frame. If there are duplicate rows, only the first row is preserved.</p>
+<div class="cell">
+<details open="">
+<summary>Hide the code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>financial_journal_clean <span class="sc">%&gt;%</span> <span class="fu">distinct</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1,512,523 × 6
+   participantId timestamp           year  month category  amount
+           &lt;dbl&gt; &lt;dttm&gt;              &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;      &lt;dbl&gt;
+ 1             0 2022-03-01 00:00:00 2022  03    Wage      2473. 
+ 2             0 2022-03-01 00:00:00 2022  03    Shelter   -555. 
+ 3             0 2022-03-01 00:00:00 2022  03    Education  -38.0
+ 4             1 2022-03-01 00:00:00 2022  03    Wage      2047. 
+ 5             1 2022-03-01 00:00:00 2022  03    Shelter   -555. 
+ 6             1 2022-03-01 00:00:00 2022  03    Education  -38.0
+ 7             2 2022-03-01 00:00:00 2022  03    Wage      2437. 
+ 8             2 2022-03-01 00:00:00 2022  03    Shelter   -557. 
+ 9             2 2022-03-01 00:00:00 2022  03    Education  -12.8
+10             3 2022-03-01 00:00:00 2022  03    Wage      2367. 
+# ℹ 1,512,513 more rows</code></pre>
+</div>
+</div>
 <p>Check for missing values</p>
 <div class="cell">
 <details open="">
 <summary>Hide the code</summary>
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Check for missing values</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">any</span>(<span class="fu">is.na</span>(participants))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Check for missing values</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">any</span>(<span class="fu">is.na</span>(participants))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] TRUE</code></pre>
@@ -460,17 +530,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="cell">
 <details open="">
 <summary>Hide the code</summary>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>participants<span class="sc">$</span>tooltip <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">paste0</span>(     </span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"ID = "</span>, participants<span class="sc">$</span>participantId,         </span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"</span><span class="sc">\n</span><span class="st"> Household Size = "</span>, participants<span class="sc">$</span>householdSize)) </span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data=</span>participants, </span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> householdSize)) <span class="sc">+</span></span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>     <span class="fu">geom_bar</span>()</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>p</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data=</span>participants, </span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> householdSize)) <span class="sc">+</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>     <span class="fu">geom_bar</span>()</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>p1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="Take-Home_Ex01_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="672"></p>
+<p><img src="Take-Home_Ex01_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </section>

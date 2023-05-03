@@ -50,6 +50,12 @@ head(financial_journal)
 
 As seen from the two data tables, there are inaccurate data types. 
 Code with mutate from dplyr to reformat participantID from dbl to chr.
+groupby participantID 
+remove duplicates
+reformat timestamp to year and month 
+create new variables for income, expenses, cashflow 
+
+The function distinct() [dplyr package] can be used to keep only unique/distinct rows from a data frame. 
 
 ```{r}
 #change data type of participantID from dbl to char 
@@ -61,8 +67,37 @@ financial_journal %>%
 #change data type of EducationID from nominal to ordinal 
 participants$educationLevel_factor <- factor(participants$educationLevel, order = TRUE, 
                                     levels = c("Low", "Graduate", "Bachelors","HighSchool0orCollege"))
+
+```
+```{r}
+unique(financial_journal$category)
 ```
 
+You can use group_by() function along with the summarise() from dplyr package to find the group by sum in R DataFrame, group_by() returns the grouped_df ( A grouped Data Frame) and use summarise() on grouped df results to get the group by sum.
+
+```{r}
+#store new dataset in variable ->  financial_journal_clean
+financial_journal_clean <- financial_journal |>
+  
+#reformat timestamp to Year and Month
+  mutate(year = as.character(format(as.Date(paste(financial_journal$timestamp, "-01", sep="")), "%Y")),
+         month = as.character(format(as.Date(paste(financial_journal$timestamp, "-01", sep="")), "%m")),
+         .before = 3) 
+  
+#create new variables called 
+ 
+financial_journal_clean
+```
+
+```{r}
+
+```
+
+The function distinct() [dplyr package] can be used to keep only unique/distinct rows from a data frame. If there are duplicate rows, only the first row is preserved. 
+
+```{r}
+financial_journal_clean %>% distinct()
+```
 
 
 Check for missing values 
@@ -74,14 +109,10 @@ any(is.na(participants))
 # 4. Demographics Insights
 
 ```{r}
-participants$tooltip <- c(paste0(     
-  "ID = ", participants$participantId,         
-  "\n Household Size = ", participants$householdSize)) 
-
-p <- ggplot(data=participants, 
+p1 <- ggplot(data=participants, 
        aes(x = householdSize)) +
      geom_bar()
-p
+p1
 ```
 
 # 5. Financial Health Insights
