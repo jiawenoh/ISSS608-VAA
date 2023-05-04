@@ -51,8 +51,8 @@ format:
     theme: 
       dark: flatly
     css: styles.css
-    code-fold: show
-    code-summary: "Hide the code"
+    code-fold: true
+    code-summary: "Show the code"
     toc: true
-  
+    
 editor: visual

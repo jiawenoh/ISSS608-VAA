@@ -37,6 +37,7 @@ participants <- read_csv("data/Participants.csv")
 ```
 ### 3.2.2 Load participants data table  
 
+#### Participants Data Table
 ```{r}
 head(participants)
 ```
@@ -49,6 +50,7 @@ financial_journal <- read_csv("data/FinancialJournal.csv")
 
 ### 3.2.4 Load Financial Journal data table  
 
+#### Financial Journal Data Table
 ```{r}
 head(financial_journal)
 ```
@@ -64,6 +66,7 @@ create new variables for income, expenses, cashflow
 
 The function distinct() [dplyr package] can be used to keep only unique/distinct rows from a data frame. 
 
+#### participants Data Table
 ```{r}
 #change data type of participantID from dbl to char 
 participants %>%
@@ -178,3 +181,6 @@ p3 <- ggplot(data=participants,
 ```
 
 # 5. Financial Health Insights
+
+
+
