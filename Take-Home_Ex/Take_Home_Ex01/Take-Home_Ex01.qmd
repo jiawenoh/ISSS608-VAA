@@ -30,18 +30,25 @@ pacman::p_load(ggiraph, plotly, patchwork, DT, tidyverse)
 
 ## 3.2 Import Data
 
+### 3.2.1 Import participants dataset 
+
 ```{r}
 participants <- read_csv("data/Participants.csv")
-financial_journal <- read_csv("data/FinancialJournal.csv")
 ```
-## 3.2.1 Data Table 
+### 3.2.2 Load participants data table  
 
-Participants
 ```{r}
 head(participants)
 ```
 
-Financial Journal
+### 3.2.3 Import Financial Journal dataset  
+
+```{r}
+financial_journal <- read_csv("data/FinancialJournal.csv")
+```
+
+### 3.2.4 Load Financial Journal data table  
+
 ```{r}
 head(financial_journal)
 ```
@@ -63,25 +70,42 @@ participants %>%
   mutate(participantId = as.character(participantId))
 financial_journal %>%
   mutate(participantId = as.character(participantId))
-
-#change data type of EducationID from nominal to ordinal 
-participants$educationLevel_factor <- factor(participants$educationLevel, order = TRUE, 
-                                    levels = c("Low", "Graduate", "Bachelors","HighSchool0orCollege"))
-
 ```
 ```{r}
 unique(financial_journal$category)
 ```
 
+```{r}
+min(participants$age)
+max(participants$age)
+
+#reformat age group 
+age_group <- factor(ifelse(participants$age < 20, "Under 20",
+                ifelse(participants$age < 30, "20-29",
+                    ifelse(participants$age < 40, "30-39",
+                      ifelse(participants$age < 50, "40-49", "Above 50")))),
+                levels = c("Under 20", "20-29", "30-39", "40-49", "Above 50"),
+                ordered= TRUE)
+
+#reformat education level
+participants$educationLevel <- factor(participants$educationLevel, 
+                                      levels = c("Low", "Graduate", "Bachelors",
+                                                 "HighSchoolOrCollege"), 
+                                      ordered = TRUE)
+
+participants %>%
+    mutate(age_group,.after=age)
+
+```
 You can use group_by() function along with the summarise() from dplyr package to find the group by sum in R DataFrame, group_by() returns the grouped_df ( A grouped Data Frame) and use summarise() on grouped df results to get the group by sum.
 
 ```{r}
 #store new dataset in variable ->  financial_journal_clean
-financial_journal_clean <- financial_journal |>
+financial_journal_clean <- financial_journal %>%
   
 #reformat timestamp to Year and Month
-  mutate(year = as.character(format(as.Date(paste(financial_journal$timestamp, "-01", sep="")), "%Y")),
-         month = as.character(format(as.Date(paste(financial_journal$timestamp, "-01", sep="")), "%m")),
+  mutate(year = as.integer(format(as.Date(paste(financial_journal$timestamp, "-01", sep="")), "%Y")),
+         month = as.integer(format(as.Date(paste(financial_journal$timestamp, "-01", sep="")), "%m")),
          .before = 3) 
   
 #create new variables called 
@@ -90,30 +114,67 @@ financial_journal_clean
 ```
 
 ```{r}
+grouped_data <- financial_journal_clean %>%
+  group_by(participantId,year,month, category) %>%
+  summarize(total_amount = sum(amount))
 
+grouped_data
 ```
 
 The function distinct() [dplyr package] can be used to keep only unique/distinct rows from a data frame. If there are duplicate rows, only the first row is preserved. 
 
 ```{r}
 financial_journal_clean %>% distinct()
+participants_clean <- participants 
+participants_clean %>% distinct()
+grouped_data %>% distinct()
 ```
 
 
 Check for missing values 
 ```{r}
 #Check for missing values
-any(is.na(participants))
+any(is.na(participants_clean))
+any(is.na(financial_journal_clean))
 ```
 
 # 4. Demographics Insights
 
 ```{r}
 p1 <- ggplot(data=participants, 
-       aes(x = householdSize)) +
-     geom_bar()
-p1
+       aes(x = age_group)) +
+      geom_bar_interactive() +
+      ggtitle("Age group of residents ") +
+      theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+p2 <- ggplot(data=participants, 
+       aes(x = educationLevel)) +
+      geom_bar_interactive() +
+      ggtitle("Education level of residents ") +
+      theme(plot.title = element_text(hjust = 0.5))
+
+```
+
+```{r}
+p3 <- ggplot(data=participants, 
+       aes(x = interestGroup)) +
+      geom_bar_interactive() +
+      ggtitle("Interest group of residents ") +
+      theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+     girafe(code = print((p1 + p2) / p3), 
+       width_svg = 6,
+       height_svg = 3,
+       options = list(
+         opts_hover(css = "fill: #202020;"),
+         opts_hover_inv(css = "opacity:0.2;")
+            )
+          ) 
+
 ```
 
 # 5. Financial Health Insights
-

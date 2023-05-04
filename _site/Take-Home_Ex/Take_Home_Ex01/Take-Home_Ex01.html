@@ -125,6 +125,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     "search-submit-button-title": "Submit"
   }
 }</script>
+<script src="../../site_libs/htmlwidgets-1.5.4/htmlwidgets.js"></script>
+<script src="../../site_libs/d3-bundle-5.16.0/d3-bundle.min.js"></script>
+<script src="../../site_libs/d3-lasso-0.0.5/d3-lasso.min.js"></script>
+<script src="../../site_libs/save-svg-as-png-1.4.17/save-svg-as-png.min.js"></script>
+<script src="../../site_libs/flatbush-4.0.0/flatbush.min.js"></script>
+<link href="../../site_libs/ggiraphjs-0.4.6/ggiraphjs.min.css" rel="stylesheet">
+<script src="../../site_libs/ggiraphjs-0.4.6/ggiraphjs.min.js"></script>
+<script src="../../site_libs/girafe-binding-0.8.7/girafe.js"></script>
 
 
 <link rel="stylesheet" href="../../styles.css">
@@ -266,8 +274,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <li><a href="#data-preparation" id="toc-data-preparation" class="nav-link" data-scroll-target="#data-preparation">3. Data Preparation</a>
   <ul class="collapse">
   <li><a href="#install-r-packages" id="toc-install-r-packages" class="nav-link" data-scroll-target="#install-r-packages">3.1 Install R-packages</a></li>
-  <li><a href="#import-data" id="toc-import-data" class="nav-link" data-scroll-target="#import-data">3.2 Import Data</a></li>
-  <li><a href="#data-table" id="toc-data-table" class="nav-link" data-scroll-target="#data-table">3.2.1 Data Table</a></li>
+  <li><a href="#import-data" id="toc-import-data" class="nav-link" data-scroll-target="#import-data">3.2 Import Data</a>
+  <ul class="collapse">
+  <li><a href="#import-participants-dataset" id="toc-import-participants-dataset" class="nav-link" data-scroll-target="#import-participants-dataset">3.2.1 Import participants dataset</a></li>
+  <li><a href="#load-participants-data-table" id="toc-load-participants-data-table" class="nav-link" data-scroll-target="#load-participants-data-table">3.2.2 Load participants data table</a></li>
+  <li><a href="#import-financial-journal-dataset" id="toc-import-financial-journal-dataset" class="nav-link" data-scroll-target="#import-financial-journal-dataset">3.2.3 Import Financial Journal dataset</a></li>
+  <li><a href="#load-financial-journal-data-table" id="toc-load-financial-journal-data-table" class="nav-link" data-scroll-target="#load-financial-journal-data-table">3.2.4 Load Financial Journal data table</a></li>
+  </ul></li>
   <li><a href="#data-wrangling" id="toc-data-wrangling" class="nav-link" data-scroll-target="#data-wrangling">3.3 Data Wrangling</a></li>
   </ul></li>
   <li><a href="#demographics-insights" id="toc-demographics-insights" class="nav-link" data-scroll-target="#demographics-insights">4. Demographics Insights</a></li>
@@ -339,17 +352,17 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </section>
 <section id="import-data" class="level2">
 <h2 class="anchored" data-anchor-id="import-data">3.2 Import Data</h2>
+<section id="import-participants-dataset" class="level3">
+<h3 class="anchored" data-anchor-id="import-participants-dataset">3.2.1 Import participants dataset</h3>
 <div class="cell">
 <details open="">
 <summary>Hide the code</summary>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>participants <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/Participants.csv"</span>)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>financial_journal <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/FinancialJournal.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>participants <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/Participants.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
-<section id="data-table" class="level2">
-<h2 class="anchored" data-anchor-id="data-table">3.2.1 Data Table</h2>
-<p>Participants</p>
+<section id="load-participants-data-table" class="level3">
+<h3 class="anchored" data-anchor-id="load-participants-data-table">3.2.2 Load participants data table</h3>
 <div class="cell">
 <details open="">
 <summary>Hide the code</summary>
@@ -368,11 +381,22 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 # ℹ 1 more variable: joviality &lt;dbl&gt;</code></pre>
 </div>
 </div>
-<p>Financial Journal</p>
+</section>
+<section id="import-financial-journal-dataset" class="level3">
+<h3 class="anchored" data-anchor-id="import-financial-journal-dataset">3.2.3 Import Financial Journal dataset</h3>
 <div class="cell">
 <details open="">
 <summary>Hide the code</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(financial_journal)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>financial_journal <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/FinancialJournal.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="load-financial-journal-data-table" class="level3">
+<h3 class="anchored" data-anchor-id="load-financial-journal-data-table">3.2.4 Load Financial Journal data table</h3>
+<div class="cell">
+<details open="">
+<summary>Hide the code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(financial_journal)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 4
@@ -387,6 +411,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 </section>
+</section>
 <section id="data-wrangling" class="level2">
 <h2 class="anchored" data-anchor-id="data-wrangling">3.3 Data Wrangling</h2>
 <p>As seen from the two data tables, there are inaccurate data types. Code with mutate from dplyr to reformat participantID from dbl to chr. groupby participantID remove duplicates reformat timestamp to year and month create new variables for income, expenses, cashflow</p>
@@ -394,9 +419,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="cell">
 <details open="">
 <summary>Hide the code</summary>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">#change data type of participantID from dbl to char </span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>participants <span class="sc">%&gt;%</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">participantId =</span> <span class="fu">as.character</span>(participantId))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">#change data type of participantID from dbl to char </span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>participants <span class="sc">%&gt;%</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">participantId =</span> <span class="fu">as.character</span>(participantId))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1,011 × 7
@@ -417,8 +442,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <details open="">
 <summary>Hide the code</summary>
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>financial_journal <span class="sc">%&gt;%</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">participantId =</span> <span class="fu">as.character</span>(participantId))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>financial_journal <span class="sc">%&gt;%</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">participantId =</span> <span class="fu">as.character</span>(participantId))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1,513,636 × 4
@@ -436,12 +461,6 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 10 3             2022-03-01 00:00:00 Wage      2367. 
 # ℹ 1,513,626 more rows</code></pre>
 </div>
-<details open="">
-<summary>Hide the code</summary>
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">#change data type of EducationID from nominal to ordinal </span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>participants<span class="sc">$</span>educationLevel_factor <span class="ot">&lt;-</span> <span class="fu">factor</span>(participants<span class="sc">$</span>educationLevel, <span class="at">order =</span> <span class="cn">TRUE</span>, </span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Low"</span>, <span class="st">"Graduate"</span>, <span class="st">"Bachelors"</span>,<span class="st">"HighSchool0orCollege"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
 </div>
 <div class="cell">
 <details open="">
@@ -453,74 +472,200 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 [5] "Food"           "Recreation"    </code></pre>
 </div>
 </div>
+<div class="cell">
+<details open="">
+<summary>Hide the code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">min</span>(participants<span class="sc">$</span>age)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 18</code></pre>
+</div>
+<details open="">
+<summary>Hide the code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">max</span>(participants<span class="sc">$</span>age)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 60</code></pre>
+</div>
+<details open="">
+<summary>Hide the code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">#reformat age group </span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>age_group <span class="ot">&lt;-</span> <span class="fu">factor</span>(<span class="fu">ifelse</span>(participants<span class="sc">$</span>age <span class="sc">&lt;</span> <span class="dv">20</span>, <span class="st">"Under 20"</span>,</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>                <span class="fu">ifelse</span>(participants<span class="sc">$</span>age <span class="sc">&lt;</span> <span class="dv">30</span>, <span class="st">"20-29"</span>,</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">ifelse</span>(participants<span class="sc">$</span>age <span class="sc">&lt;</span> <span class="dv">40</span>, <span class="st">"30-39"</span>,</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">ifelse</span>(participants<span class="sc">$</span>age <span class="sc">&lt;</span> <span class="dv">50</span>, <span class="st">"40-49"</span>, <span class="st">"Above 50"</span>)))),</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>                <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Under 20"</span>, <span class="st">"20-29"</span>, <span class="st">"30-39"</span>, <span class="st">"40-49"</span>, <span class="st">"Above 50"</span>),</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>                <span class="at">ordered=</span> <span class="cn">TRUE</span>)</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="co">#reformat education level</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>participants<span class="sc">$</span>educationLevel <span class="ot">&lt;-</span> <span class="fu">factor</span>(participants<span class="sc">$</span>educationLevel, </span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Low"</span>, <span class="st">"Graduate"</span>, <span class="st">"Bachelors"</span>,</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>                                                 <span class="st">"HighSchoolOrCollege"</span>), </span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">ordered =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>participants <span class="sc">%&gt;%</span></span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(age_group,<span class="at">.after=</span>age)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1,011 × 8
+   participantId householdSize haveKids   age age_group educationLevel     
+           &lt;dbl&gt;         &lt;dbl&gt; &lt;lgl&gt;    &lt;dbl&gt; &lt;ord&gt;     &lt;ord&gt;              
+ 1             0             3 TRUE        36 30-39     HighSchoolOrCollege
+ 2             1             3 TRUE        25 20-29     HighSchoolOrCollege
+ 3             2             3 TRUE        35 30-39     HighSchoolOrCollege
+ 4             3             3 TRUE        21 20-29     HighSchoolOrCollege
+ 5             4             3 TRUE        43 40-49     Bachelors          
+ 6             5             3 TRUE        32 30-39     HighSchoolOrCollege
+ 7             6             3 TRUE        26 20-29     HighSchoolOrCollege
+ 8             7             3 TRUE        27 20-29     Bachelors          
+ 9             8             3 TRUE        20 20-29     Bachelors          
+10             9             3 TRUE        35 30-39     Bachelors          
+# ℹ 1,001 more rows
+# ℹ 2 more variables: interestGroup &lt;chr&gt;, joviality &lt;dbl&gt;</code></pre>
+</div>
+</div>
 <p>You can use group_by() function along with the summarise() from dplyr package to find the group by sum in R DataFrame, group_by() returns the grouped_df ( A grouped Data Frame) and use summarise() on grouped df results to get the group by sum.</p>
 <div class="cell">
 <details open="">
 <summary>Hide the code</summary>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">#store new dataset in variable -&gt;  financial_journal_clean</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>financial_journal_clean <span class="ot">&lt;-</span> financial_journal <span class="sc">|&gt;</span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co">#reformat timestamp to Year and Month</span></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">year =</span> <span class="fu">as.character</span>(<span class="fu">format</span>(<span class="fu">as.Date</span>(<span class="fu">paste</span>(financial_journal<span class="sc">$</span>timestamp, <span class="st">"-01"</span>, <span class="at">sep=</span><span class="st">""</span>)), <span class="st">"%Y"</span>)),</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">month =</span> <span class="fu">as.character</span>(<span class="fu">format</span>(<span class="fu">as.Date</span>(<span class="fu">paste</span>(financial_journal<span class="sc">$</span>timestamp, <span class="st">"-01"</span>, <span class="at">sep=</span><span class="st">""</span>)), <span class="st">"%m"</span>)),</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">.before =</span> <span class="dv">3</span>) </span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="co">#create new variables called </span></span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a> </span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>financial_journal_clean</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">#store new dataset in variable -&gt;  financial_journal_clean</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>financial_journal_clean <span class="ot">&lt;-</span> financial_journal <span class="sc">%&gt;%</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="co">#reformat timestamp to Year and Month</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">year =</span> <span class="fu">as.integer</span>(<span class="fu">format</span>(<span class="fu">as.Date</span>(<span class="fu">paste</span>(financial_journal<span class="sc">$</span>timestamp, <span class="st">"-01"</span>, <span class="at">sep=</span><span class="st">""</span>)), <span class="st">"%Y"</span>)),</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">month =</span> <span class="fu">as.integer</span>(<span class="fu">format</span>(<span class="fu">as.Date</span>(<span class="fu">paste</span>(financial_journal<span class="sc">$</span>timestamp, <span class="st">"-01"</span>, <span class="at">sep=</span><span class="st">""</span>)), <span class="st">"%m"</span>)),</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">.before =</span> <span class="dv">3</span>) </span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a><span class="co">#create new variables called </span></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>financial_journal_clean</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1,513,636 × 6
-   participantId timestamp           year  month category  amount
-           &lt;dbl&gt; &lt;dttm&gt;              &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;      &lt;dbl&gt;
- 1             0 2022-03-01 00:00:00 2022  03    Wage      2473. 
- 2             0 2022-03-01 00:00:00 2022  03    Shelter   -555. 
- 3             0 2022-03-01 00:00:00 2022  03    Education  -38.0
- 4             1 2022-03-01 00:00:00 2022  03    Wage      2047. 
- 5             1 2022-03-01 00:00:00 2022  03    Shelter   -555. 
- 6             1 2022-03-01 00:00:00 2022  03    Education  -38.0
- 7             2 2022-03-01 00:00:00 2022  03    Wage      2437. 
- 8             2 2022-03-01 00:00:00 2022  03    Shelter   -557. 
- 9             2 2022-03-01 00:00:00 2022  03    Education  -12.8
-10             3 2022-03-01 00:00:00 2022  03    Wage      2367. 
+   participantId timestamp            year month category  amount
+           &lt;dbl&gt; &lt;dttm&gt;              &lt;int&gt; &lt;int&gt; &lt;chr&gt;      &lt;dbl&gt;
+ 1             0 2022-03-01 00:00:00  2022     3 Wage      2473. 
+ 2             0 2022-03-01 00:00:00  2022     3 Shelter   -555. 
+ 3             0 2022-03-01 00:00:00  2022     3 Education  -38.0
+ 4             1 2022-03-01 00:00:00  2022     3 Wage      2047. 
+ 5             1 2022-03-01 00:00:00  2022     3 Shelter   -555. 
+ 6             1 2022-03-01 00:00:00  2022     3 Education  -38.0
+ 7             2 2022-03-01 00:00:00  2022     3 Wage      2437. 
+ 8             2 2022-03-01 00:00:00  2022     3 Shelter   -557. 
+ 9             2 2022-03-01 00:00:00  2022     3 Education  -12.8
+10             3 2022-03-01 00:00:00  2022     3 Wage      2367. 
 # ℹ 1,513,626 more rows</code></pre>
 </div>
 </div>
 <div class="cell">
-
+<details open="">
+<summary>Hide the code</summary>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>grouped_data <span class="ot">&lt;-</span> financial_journal_clean <span class="sc">%&gt;%</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(participantId,year,month, category) <span class="sc">%&gt;%</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">total_amount =</span> <span class="fu">sum</span>(amount))</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>grouped_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 44,524 × 5
+# Groups:   participantId, year, month [10,691]
+   participantId  year month category   total_amount
+           &lt;dbl&gt; &lt;int&gt; &lt;int&gt; &lt;chr&gt;             &lt;dbl&gt;
+ 1             0  2022     3 Education         -76.0
+ 2             0  2022     3 Food             -268. 
+ 3             0  2022     3 Recreation       -349. 
+ 4             0  2022     3 Shelter         -1110. 
+ 5             0  2022     3 Wage            11932. 
+ 6             0  2022     4 Education         -38.0
+ 7             0  2022     4 Food             -266. 
+ 8             0  2022     4 Recreation       -219. 
+ 9             0  2022     4 Shelter          -555. 
+10             0  2022     4 Wage             8637. 
+# ℹ 44,514 more rows</code></pre>
+</div>
 </div>
 <p>The function distinct() [dplyr package] can be used to keep only unique/distinct rows from a data frame. If there are duplicate rows, only the first row is preserved.</p>
 <div class="cell">
 <details open="">
 <summary>Hide the code</summary>
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>financial_journal_clean <span class="sc">%&gt;%</span> <span class="fu">distinct</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>financial_journal_clean <span class="sc">%&gt;%</span> <span class="fu">distinct</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1,512,523 × 6
-   participantId timestamp           year  month category  amount
-           &lt;dbl&gt; &lt;dttm&gt;              &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;      &lt;dbl&gt;
- 1             0 2022-03-01 00:00:00 2022  03    Wage      2473. 
- 2             0 2022-03-01 00:00:00 2022  03    Shelter   -555. 
- 3             0 2022-03-01 00:00:00 2022  03    Education  -38.0
- 4             1 2022-03-01 00:00:00 2022  03    Wage      2047. 
- 5             1 2022-03-01 00:00:00 2022  03    Shelter   -555. 
- 6             1 2022-03-01 00:00:00 2022  03    Education  -38.0
- 7             2 2022-03-01 00:00:00 2022  03    Wage      2437. 
- 8             2 2022-03-01 00:00:00 2022  03    Shelter   -557. 
- 9             2 2022-03-01 00:00:00 2022  03    Education  -12.8
-10             3 2022-03-01 00:00:00 2022  03    Wage      2367. 
+   participantId timestamp            year month category  amount
+           &lt;dbl&gt; &lt;dttm&gt;              &lt;int&gt; &lt;int&gt; &lt;chr&gt;      &lt;dbl&gt;
+ 1             0 2022-03-01 00:00:00  2022     3 Wage      2473. 
+ 2             0 2022-03-01 00:00:00  2022     3 Shelter   -555. 
+ 3             0 2022-03-01 00:00:00  2022     3 Education  -38.0
+ 4             1 2022-03-01 00:00:00  2022     3 Wage      2047. 
+ 5             1 2022-03-01 00:00:00  2022     3 Shelter   -555. 
+ 6             1 2022-03-01 00:00:00  2022     3 Education  -38.0
+ 7             2 2022-03-01 00:00:00  2022     3 Wage      2437. 
+ 8             2 2022-03-01 00:00:00  2022     3 Shelter   -557. 
+ 9             2 2022-03-01 00:00:00  2022     3 Education  -12.8
+10             3 2022-03-01 00:00:00  2022     3 Wage      2367. 
 # ℹ 1,512,513 more rows</code></pre>
+</div>
+<details open="">
+<summary>Hide the code</summary>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>participants_clean <span class="ot">&lt;-</span> participants </span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>participants_clean <span class="sc">%&gt;%</span> <span class="fu">distinct</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1,011 × 7
+   participantId householdSize haveKids   age educationLevel      interestGroup
+           &lt;dbl&gt;         &lt;dbl&gt; &lt;lgl&gt;    &lt;dbl&gt; &lt;ord&gt;               &lt;chr&gt;        
+ 1             0             3 TRUE        36 HighSchoolOrCollege H            
+ 2             1             3 TRUE        25 HighSchoolOrCollege B            
+ 3             2             3 TRUE        35 HighSchoolOrCollege A            
+ 4             3             3 TRUE        21 HighSchoolOrCollege I            
+ 5             4             3 TRUE        43 Bachelors           H            
+ 6             5             3 TRUE        32 HighSchoolOrCollege D            
+ 7             6             3 TRUE        26 HighSchoolOrCollege I            
+ 8             7             3 TRUE        27 Bachelors           A            
+ 9             8             3 TRUE        20 Bachelors           G            
+10             9             3 TRUE        35 Bachelors           D            
+# ℹ 1,001 more rows
+# ℹ 1 more variable: joviality &lt;dbl&gt;</code></pre>
+</div>
+<details open="">
+<summary>Hide the code</summary>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>grouped_data <span class="sc">%&gt;%</span> <span class="fu">distinct</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 44,524 × 5
+# Groups:   participantId, year, month [10,691]
+   participantId  year month category   total_amount
+           &lt;dbl&gt; &lt;int&gt; &lt;int&gt; &lt;chr&gt;             &lt;dbl&gt;
+ 1             0  2022     3 Education         -76.0
+ 2             0  2022     3 Food             -268. 
+ 3             0  2022     3 Recreation       -349. 
+ 4             0  2022     3 Shelter         -1110. 
+ 5             0  2022     3 Wage            11932. 
+ 6             0  2022     4 Education         -38.0
+ 7             0  2022     4 Food             -266. 
+ 8             0  2022     4 Recreation       -219. 
+ 9             0  2022     4 Shelter          -555. 
+10             0  2022     4 Wage             8637. 
+# ℹ 44,514 more rows</code></pre>
 </div>
 </div>
 <p>Check for missing values</p>
 <div class="cell">
 <details open="">
 <summary>Hide the code</summary>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Check for missing values</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">any</span>(<span class="fu">is.na</span>(participants))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Check for missing values</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="fu">any</span>(<span class="fu">is.na</span>(participants_clean))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] TRUE</code></pre>
+<pre><code>[1] FALSE</code></pre>
+</div>
+<details open="">
+<summary>Hide the code</summary>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">any</span>(<span class="fu">is.na</span>(financial_journal_clean))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] FALSE</code></pre>
 </div>
 </div>
 </section>
@@ -530,13 +675,48 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="cell">
 <details open="">
 <summary>Hide the code</summary>
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data=</span>participants, </span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> householdSize)) <span class="sc">+</span></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>     <span class="fu">geom_bar</span>()</span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>p1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data=</span>participants, </span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> age_group)) <span class="sc">+</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_bar_interactive</span>() <span class="sc">+</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ggtitle</span>(<span class="st">"Age group of residents "</span>) <span class="sc">+</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details open="">
+<summary>Hide the code</summary>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data=</span>participants, </span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> educationLevel)) <span class="sc">+</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_bar_interactive</span>() <span class="sc">+</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ggtitle</span>(<span class="st">"Education level of residents "</span>) <span class="sc">+</span></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details open="">
+<summary>Hide the code</summary>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>p3 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data=</span>participants, </span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> interestGroup)) <span class="sc">+</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_bar_interactive</span>() <span class="sc">+</span></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ggtitle</span>(<span class="st">"Interest group of residents "</span>) <span class="sc">+</span></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">theme</span>(<span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<details open="">
+<summary>Hide the code</summary>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>     <span class="fu">girafe</span>(<span class="at">code =</span> <span class="fu">print</span>((p1 <span class="sc">+</span> p2) <span class="sc">/</span> p3), </span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>       <span class="at">width_svg =</span> <span class="dv">6</span>,</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">height_svg =</span> <span class="dv">3</span>,</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">options =</span> <span class="fu">list</span>(</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>         <span class="fu">opts_hover</span>(<span class="at">css =</span> <span class="st">"fill: #202020;"</span>),</span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>         <span class="fu">opts_hover_inv</span>(<span class="at">css =</span> <span class="st">"opacity:0.2;"</span>)</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>          ) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="Take-Home_Ex01_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
+<div id="htmlwidget-3c19de0e943e646c2da1" style="width:100%;height:464px;" class="girafe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-3c19de0e943e646c2da1">{"x":{"html":"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' class='ggiraph-svg' role='img' id='svg_be5dec29_1c21_4575_8151_8d2603abfb6b' viewBox='0 0 432 216'>\n <defs id='svg_be5dec29_1c21_4575_8151_8d2603abfb6b_defs'>\n  <clipPath id='svg_be5dec29_1c21_4575_8151_8d2603abfb6b_c1'>\n   <rect x='0' y='0' width='432' height='216'/>\n  <\/clipPath>\n  <clipPath id='svg_be5dec29_1c21_4575_8151_8d2603abfb6b_c2'>\n   <rect x='43.64' y='28.82' width='377.4' height='47.45'/>\n  <\/clipPath>\n  <clipPath id='svg_be5dec29_1c21_4575_8151_8d2603abfb6b_c3'>\n   <rect x='5.48' y='5.48' width='210.52' height='102.52'/>\n  <\/clipPath>\n  <clipPath id='svg_be5dec29_1c21_4575_8151_8d2603abfb6b_c4'>\n   <rect x='43.64' y='28.82' width='166.88' height='47.45'/>\n  <\/clipPath>\n  <clipPath id='svg_be5dec29_1c21_4575_8151_8d2603abfb6b_c5'>\n   <rect x='216' y='5.48' width='210.52' height='102.52'/>\n  <\/clipPath>\n  <clipPath id='svg_be5dec29_1c21_4575_8151_8d2603abfb6b_c6'>\n   <rect x='254.16' y='28.82' width='166.88' height='47.45'/>\n  <\/clipPath>\n  <clipPath id='svg_be5dec29_1c21_4575_8151_8d2603abfb6b_c7'>\n   <rect x='5.48' y='108' width='421.04' height='102.52'/>\n  <\/clipPath>\n  <clipPath id='svg_be5dec29_1c21_4575_8151_8d2603abfb6b_c8'>\n   <rect x='43.64' y='131.34' width='377.4' height='47.45'/>\n  <\/clipPath>\n <\/defs>\n <g id='svg_be5dec29_1c21_4575_8151_8d2603abfb6b_rootg' class='ggiraph-svg-rootg'>\n  <g clip-path='url(#svg_be5dec29_1c21_4575_8151_8d2603abfb6b_c1)'>\n   <rect x='0' y='0' width='432' height='216' fill='#FFFFFF' fill-opacity='1' stroke='#FFFFFF' stroke-opacity='1' stroke-width='0.75' stroke-linejoin='round' stroke-linecap='round' class='ggiraph-svg-bg'/>\n   <rect x='0' y='0' width='432' height='216' fill='#FFFFFF' fill-opacity='1' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='round'/>\n  <\/g>\n  <g clip-path='url(#svg_be5dec29_1c21_4575_8151_8d2603abfb6b_c3)'>\n   <rect x='5.48' y='5.48' width='210.52' height='102.52' fill='#FFFFFF' fill-opacity='1' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='round'/>\n  <\/g>\n  <g clip-path='url(#svg_be5dec29_1c21_4575_8151_8d2603abfb6b_c4)'>\n   <rect x='43.64' y='28.82' width='166.88' height='47.45' fill='#EBEBEB' fill-opacity='1' stroke='none'/>\n   <polyline points='43.64,65.78 210.52,65.78' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='43.64,49.13 210.52,49.13' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='43.64,32.47 210.52,32.47' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='43.64,74.11 210.52,74.11' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='43.64,57.45 210.52,57.45' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='43.64,40.80 210.52,40.80' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='62.90,76.27 62.90,28.82' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='94.99,76.27 94.99,28.82' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='127.08,76.27 127.08,28.82' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='159.17,76.27 159.17,28.82' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='191.27,76.27 191.27,28.82' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <rect x='48.46' y='66.11' width='28.88' height='7.99' fill='#595959' fill-opacity='1' stroke='none'/>\n   <rect x='80.55' y='36.63' width='28.88' height='37.47' fill='#595959' fill-opacity='1' stroke='none'/>\n   <rect x='112.64' y='33.47' width='28.88' height='40.64' fill='#595959' fill-opacity='1' stroke='none'/>\n   <rect x='144.73' y='34.97' width='28.88' height='39.14' fill='#595959' fill-opacity='1' stroke='none'/>\n   <rect x='176.82' y='30.97' width='28.88' height='43.14' fill='#595959' fill-opacity='1' stroke='none'/>\n  <\/g>\n  <g clip-path='url(#svg_be5dec29_1c21_4575_8151_8d2603abfb6b_c1)'>\n   <text x='33.82' y='77.26' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>0<\/text>\n   <text x='24.02' y='60.61' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>100<\/text>\n   <text x='24.02' y='43.95' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>200<\/text>\n   <polyline points='40.90,74.11 43.64,74.11' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='40.90,57.45 43.64,57.45' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='40.90,40.80 43.64,40.80' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='62.90,79.01 62.90,76.27' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='94.99,79.01 94.99,76.27' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='127.08,79.01 127.08,76.27' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='159.17,79.01 159.17,76.27' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='191.27,79.01 191.27,76.27' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <text x='44.8' y='87.5' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>Under 20<\/text>\n   <text x='83.73' y='87.5' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>20-29<\/text>\n   <text x='115.82' y='87.5' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>30-39<\/text>\n   <text x='147.92' y='87.5' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>40-49<\/text>\n   <text x='172.67' y='87.5' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>Above 50<\/text>\n   <text x='100.77' y='100.09' font-size='8.25pt' font-family='Helvetica'>age_group<\/text>\n   <text transform='translate(18.85,66.00) rotate(-90.00)' font-size='8.25pt' font-family='Helvetica'>count<\/text>\n   <text x='58.88' y='20.42' font-size='9.9pt' font-family='Helvetica'>Age group of residents <\/text>\n  <\/g>\n  <g clip-path='url(#svg_be5dec29_1c21_4575_8151_8d2603abfb6b_c5)'>\n   <rect x='216' y='5.48' width='210.52' height='102.52' fill='#FFFFFF' fill-opacity='1' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='round'/>\n  <\/g>\n  <g clip-path='url(#svg_be5dec29_1c21_4575_8151_8d2603abfb6b_c6)'>\n   <rect x='254.16' y='28.82' width='166.88' height='47.45' fill='#EBEBEB' fill-opacity='1' stroke='none'/>\n   <polyline points='254.16,70.00 421.04,70.00' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='254.16,61.78 421.04,61.78' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='254.16,53.57 421.04,53.57' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='254.16,45.35 421.04,45.35' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='254.16,37.13 421.04,37.13' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='254.16,28.92 421.04,28.92' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='254.16,74.11 421.04,74.11' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='254.16,65.89 421.04,65.89' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='254.16,57.68 421.04,57.68' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='254.16,49.46 421.04,49.46' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='254.16,41.24 421.04,41.24' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='254.16,33.03 421.04,33.03' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='278.00,76.27 278.00,28.82' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='317.74,76.27 317.74,28.82' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='357.47,76.27 357.47,28.82' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='397.20,76.27 397.20,28.82' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <rect x='260.12' y='67.21' width='35.76' height='6.9' fill='#595959' fill-opacity='1' stroke='none'/>\n   <rect x='299.86' y='60.14' width='35.76' height='13.97' fill='#595959' fill-opacity='1' stroke='none'/>\n   <rect x='339.59' y='55.05' width='35.76' height='19.06' fill='#595959' fill-opacity='1' stroke='none'/>\n   <rect x='379.32' y='30.97' width='35.76' height='43.14' fill='#595959' fill-opacity='1' stroke='none'/>\n  <\/g>\n  <g clip-path='url(#svg_be5dec29_1c21_4575_8151_8d2603abfb6b_c1)'>\n   <text x='244.34' y='77.26' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>0<\/text>\n   <text x='234.54' y='69.05' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>100<\/text>\n   <text x='234.54' y='60.83' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>200<\/text>\n   <text x='234.54' y='52.61' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>300<\/text>\n   <text x='234.54' y='44.4' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>400<\/text>\n   <text x='234.54' y='36.18' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>500<\/text>\n   <polyline points='251.42,74.11 254.16,74.11' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='251.42,65.89 254.16,65.89' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='251.42,57.68 254.16,57.68' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='251.42,49.46 254.16,49.46' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='251.42,41.24 254.16,41.24' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='251.42,33.03 254.16,33.03' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='278.00,79.01 278.00,76.27' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='317.74,79.01 317.74,76.27' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='357.47,79.01 357.47,76.27' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='397.20,79.01 397.20,76.27' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <text x='269.93' y='87.5' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>Low<\/text>\n   <text x='299.39' y='87.5' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>Graduate<\/text>\n   <text x='337.9' y='87.5' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>Bachelors<\/text>\n   <text x='354.9' y='87.5' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>HighSchoolOrCollege<\/text>\n   <text x='300.59' y='100.09' font-size='8.25pt' font-family='Helvetica'>educationLevel<\/text>\n   <text transform='translate(229.37,66.00) rotate(-90.00)' font-size='8.25pt' font-family='Helvetica'>count<\/text>\n   <text x='255.11' y='20.42' font-size='9.9pt' font-family='Helvetica'>Education level of residents <\/text>\n  <\/g>\n  <g clip-path='url(#svg_be5dec29_1c21_4575_8151_8d2603abfb6b_c7)'>\n   <rect x='5.48' y='108' width='421.04' height='102.52' fill='#FFFFFF' fill-opacity='1' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='round'/>\n  <\/g>\n  <g clip-path='url(#svg_be5dec29_1c21_4575_8151_8d2603abfb6b_c8)'>\n   <rect x='43.64' y='131.34' width='377.4' height='47.45' fill='#EBEBEB' fill-opacity='1' stroke='none'/>\n   <polyline points='43.64,171.05 421.04,171.05' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='43.64,159.90 421.04,159.90' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='43.64,148.74 421.04,148.74' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='43.64,137.58 421.04,137.58' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='0.53' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='43.64,176.63 421.04,176.63' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='43.64,165.47 421.04,165.47' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='43.64,154.32 421.04,154.32' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='43.64,143.16 421.04,143.16' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='43.64,132.01 421.04,132.01' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='65.84,178.79 65.84,131.34' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='102.84,178.79 102.84,131.34' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='139.84,178.79 139.84,131.34' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='176.84,178.79 176.84,131.34' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='213.84,178.79 213.84,131.34' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='250.84,178.79 250.84,131.34' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='287.84,178.79 287.84,131.34' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='324.84,178.79 324.84,131.34' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='361.84,178.79 361.84,131.34' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='398.84,178.79 398.84,131.34' fill='none' stroke='#FFFFFF' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <rect x='49.19' y='138.7' width='33.3' height='37.93' fill='#595959' fill-opacity='1' stroke='none'/>\n   <rect x='86.19' y='142.79' width='33.3' height='33.84' fill='#595959' fill-opacity='1' stroke='none'/>\n   <rect x='123.19' y='138.7' width='33.3' height='37.93' fill='#595959' fill-opacity='1' stroke='none'/>\n   <rect x='160.19' y='140.93' width='33.3' height='35.7' fill='#595959' fill-opacity='1' stroke='none'/>\n   <rect x='197.19' y='145.76' width='33.3' height='30.87' fill='#595959' fill-opacity='1' stroke='none'/>\n   <rect x='234.19' y='137.21' width='33.3' height='39.42' fill='#595959' fill-opacity='1' stroke='none'/>\n   <rect x='271.19' y='136.47' width='33.3' height='40.16' fill='#595959' fill-opacity='1' stroke='none'/>\n   <rect x='308.19' y='135.35' width='33.3' height='41.28' fill='#595959' fill-opacity='1' stroke='none'/>\n   <rect x='345.19' y='140.93' width='33.3' height='35.7' fill='#595959' fill-opacity='1' stroke='none'/>\n   <rect x='382.19' y='133.49' width='33.3' height='43.14' fill='#595959' fill-opacity='1' stroke='none'/>\n  <\/g>\n  <g clip-path='url(#svg_be5dec29_1c21_4575_8151_8d2603abfb6b_c1)'>\n   <text x='33.82' y='179.78' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>0<\/text>\n   <text x='28.92' y='168.63' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>30<\/text>\n   <text x='28.92' y='157.47' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>60<\/text>\n   <text x='28.92' y='146.31' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>90<\/text>\n   <text x='24.02' y='135.16' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>120<\/text>\n   <polyline points='40.90,176.63 43.64,176.63' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='40.90,165.47 43.64,165.47' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='40.90,154.32 43.64,154.32' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='40.90,143.16 43.64,143.16' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='40.90,132.01 43.64,132.01' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='65.84,181.53 65.84,178.79' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='102.84,181.53 102.84,178.79' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='139.84,181.53 139.84,178.79' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='176.84,181.53 176.84,178.79' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='213.84,181.53 213.84,178.79' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='250.84,181.53 250.84,178.79' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='287.84,181.53 287.84,178.79' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='324.84,181.53 324.84,178.79' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='361.84,181.53 361.84,178.79' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='398.84,181.53 398.84,178.79' fill='none' stroke='#333333' stroke-opacity='1' stroke-width='1.07' stroke-linejoin='round' stroke-linecap='butt'/>\n   <text x='62.91' y='190.03' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>A<\/text>\n   <text x='99.91' y='190.03' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>B<\/text>\n   <text x='136.67' y='190.03' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>C<\/text>\n   <text x='173.67' y='190.03' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>D<\/text>\n   <text x='210.91' y='190.03' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>E<\/text>\n   <text x='248.16' y='190.03' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>F<\/text>\n   <text x='284.42' y='190.03' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>G<\/text>\n   <text x='321.67' y='190.03' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>H<\/text>\n   <text x='360.62' y='190.03' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>I<\/text>\n   <text x='396.64' y='190.03' font-size='6.6pt' font-family='Helvetica' fill='#4D4D4D' fill-opacity='1'>J<\/text>\n   <text x='199.02' y='202.61' font-size='8.25pt' font-family='Helvetica'>interestGroup<\/text>\n   <text transform='translate(18.85,168.52) rotate(-90.00)' font-size='8.25pt' font-family='Helvetica'>count<\/text>\n   <text x='153.88' y='122.94' font-size='9.9pt' font-family='Helvetica'>Interest group of residents <\/text>\n  <\/g>\n <\/g>\n<\/svg>","js":null,"uid":"svg_be5dec29_1c21_4575_8151_8d2603abfb6b","ratio":2,"settings":{"tooltip":{"css":".tooltip_SVGID_ { padding:5px;background:black;color:white;border-radius:2px;text-align:left; ; position:absolute;pointer-events:none;z-index:999;}","placement":"doc","opacity":0.9,"offx":10,"offy":10,"use_cursor_pos":true,"use_fill":false,"use_stroke":false,"delay_over":200,"delay_out":500},"hover":{"css":".hover_data_SVGID_ { fill: #202020; }","reactive":false,"nearest_distance":null},"hover_inv":{"css":".hover_inv_SVGID_ { opacity:0.2; }"},"hover_key":{"css":".hover_key_SVGID_ { fill:orange;stroke:black;cursor:pointer; }\ntext.hover_key_SVGID_ { stroke:none;fill:orange; }\ncircle.hover_key_SVGID_ { fill:orange;stroke:black; }\nline.hover_key_SVGID_, polyline.hover_key_SVGID_ { fill:none;stroke:orange; }\nrect.hover_key_SVGID_, polygon.hover_key_SVGID_, path.hover_key_SVGID_ { fill:orange;stroke:none; }\nimage.hover_key_SVGID_ { stroke:orange; }","reactive":true},"hover_theme":{"css":".hover_theme_SVGID_ { fill:orange;stroke:black;cursor:pointer; }\ntext.hover_theme_SVGID_ { stroke:none;fill:orange; }\ncircle.hover_theme_SVGID_ { fill:orange;stroke:black; }\nline.hover_theme_SVGID_, polyline.hover_theme_SVGID_ { fill:none;stroke:orange; }\nrect.hover_theme_SVGID_, polygon.hover_theme_SVGID_, path.hover_theme_SVGID_ { fill:orange;stroke:none; }\nimage.hover_theme_SVGID_ { stroke:orange; }","reactive":true},"select":{"css":".select_data_SVGID_ { fill:red;stroke:black;cursor:pointer; }\ntext.select_data_SVGID_ { stroke:none;fill:red; }\ncircle.select_data_SVGID_ { fill:red;stroke:black; }\nline.select_data_SVGID_, polyline.select_data_SVGID_ { fill:none;stroke:red; }\nrect.select_data_SVGID_, polygon.select_data_SVGID_, path.select_data_SVGID_ { fill:red;stroke:none; }\nimage.select_data_SVGID_ { stroke:red; }","type":"multiple","only_shiny":true,"selected":[]},"select_inv":{"css":""},"select_key":{"css":".select_key_SVGID_ { fill:red;stroke:black;cursor:pointer; }\ntext.select_key_SVGID_ { stroke:none;fill:red; }\ncircle.select_key_SVGID_ { fill:red;stroke:black; }\nline.select_key_SVGID_, polyline.select_key_SVGID_ { fill:none;stroke:red; }\nrect.select_key_SVGID_, polygon.select_key_SVGID_, path.select_key_SVGID_ { fill:red;stroke:none; }\nimage.select_key_SVGID_ { stroke:red; }","type":"single","only_shiny":true,"selected":[]},"select_theme":{"css":".select_theme_SVGID_ { fill:red;stroke:black;cursor:pointer; }\ntext.select_theme_SVGID_ { stroke:none;fill:red; }\ncircle.select_theme_SVGID_ { fill:red;stroke:black; }\nline.select_theme_SVGID_, polyline.select_theme_SVGID_ { fill:none;stroke:red; }\nrect.select_theme_SVGID_, polygon.select_theme_SVGID_, path.select_theme_SVGID_ { fill:red;stroke:none; }\nimage.select_theme_SVGID_ { stroke:red; }","type":"single","only_shiny":true,"selected":[]},"zoom":{"min":1,"max":1,"duration":300},"toolbar":{"position":"topright","pngname":"diagram","tooltips":null,"hidden":[],"delay_over":200,"delay_out":500},"sizing":{"rescale":true,"width":1}}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 </section>
