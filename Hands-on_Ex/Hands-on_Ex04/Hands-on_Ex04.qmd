@@ -12,14 +12,238 @@ execute:
 1.  Using p_load() of pacman package to load the required libraries
 
 ```{r}
-pacman::p_load(ggiraph, plotly, patchwork, DT, tidyverse) 
+pacman::p_load(ggstatsplot, tidyverse,rstantools)
 ```
 
 2.  Importing data
 
+```{r}
+exam_data <- read_csv("data/Exam_data.csv")
+```
+
+# Plotting the graph
+
+## 1) Visual Statistical Analysis with ggstatsplo
+
+### 1.1) One-sample test: **gghistostats()** method
+
+In the below output, `gghistostats()` is used to to build an visual of one-sample test on English scores.
+
+#### Output:
+
+```{r}
+set.seed(1234)
+
+gghistostats(
+  data = exam_data,
+  x = ENGLISH,
+  type = "bayes",
+  test.value = 60,
+  xlab = "English scores"
+)
+```
+
+Default information: - statistical details - Bayes Factor - sample sizes - distribution summary
+
+A Bayes factor is the ratio of the likelihood of one particular hypothesis to the likelihood of another. It can be interpreted as a measure of the strength of evidence in favor of one theory among two competing theories.
+
+### 1.2) Two-sample mean test: **ggbetweenstats()**
+
+In the below output, `ggbetweenstats()` is used to to build an visual of two-sample mean test.
+
+#### Output:
+
+```{r}
+ggbetweenstats(
+  data = exam_data,
+  x = GENDER, 
+  y = MATHS,
+  type = "np",
+  messages = FALSE
+)
+```
+
+Default information: - statistical details - Bayes Factor - sample sizes - distribution summary
+
+### 1.3) One-way ANOVA Test: **ggbetweenstats()** method
+
+In the below output, `ggbetweenstats()` is used to to build an visual of one-way ANOVA test.
+
+#### Output:
+
+```{r}
+ggbetweenstats(
+  data = exam_data, 
+  x = RACE, 
+  y = ENGLISH, 
+  type = "p", 
+  mean.ci = TRUE, 
+  pairwise.comparisons = TRUE,
+  #"ns" for only non-significant, "s" for only significant, "all" for everything
+  pairwise.display = "s",      
+  p.adjust.method = "fdr", 
+  messages = FALSE 
+  )
+```
+
+-   "ns" → only non-significant
+
+-   "s" → only significant
+
+-   "all" → everything
+
+### 1.4) Significant Test of Correlation: **ggscatterstats()**
+
+In the below output, `ggscatterstats()` is used to to build a visual for Significant Test of Correlation between Maths scores and English scores.
+
+#### Output:
+
+```{r}
+ggscatterstats(
+  data = exam_data,
+  x = MATHS,
+  y = ENGLISH,
+  marginal = FALSE,
+  )
+```
+
+### 1.5) Significant Test of Association (Depedence) : **ggbarstats()** methods
+
+In the below output, `ggbarstats()` is used to to build a visual for Significant Test of Association (Dependence).
+
+In the code chunk below, the Maths scores is binned into a 4-class variable by using [cut().]{.underline}
+
+#### Output:
+
+```{r}
+exam1 <- exam_data |> 
+  mutate(MATHS_bins =
+           cut(MATHS, 
+               breaks = c(0, 60, 75, 85, 100)))
+```
+
+In this code chunk below, `ggbarstats()` is used to build a visual for Significant Test of Association.
+
+```{r}
+ggbarstats(
+  data = exam1,
+  x = MATHS_bins,
+  y = GENDER
+)
+```
+
+## 2) Visualising Models
+
+### 2.1) Getting Started
+
+1.  Using p_load() of pacman package to load the required libraries
+
+```{r}
+pacman::p_load(readxl, performance, parameters, see)
+```
+
+2.  Importing data
+
+```{r}
+car_resale <- read_xls("data/ToyotaCorolla.xls", 
+                       "data")
+car_resale
+```
+Note: `car_resale` is a tibble data frame.
+
+### 2.2) Multiple Regression Model using **lm()**
+
+In the below output, `lm()` is used to calibrate a multiple linear regression model of Base Stats of R.
+
+#### Output:
+
+```{r}
+model <- lm(Price ~ Age_08_04 + Mfg_Year + KM + 
+              Weight + Guarantee_Period, data = car_resale)
+model
+```
+### 2.3) Model Diagnostic: Checking for multicolinearity using **check_collinearity()**
+
+In the below output, `check_collinearity()` is used to check for multicolinearity. 
+
+#### Output:
+
+```{r}
+check_collinearity(model)
+```
+
+```{r}
+check_c <- check_collinearity(model)
+plot(check_c)
+```
+As per figure above, Age_08_04 and Mfg_Year are highly correlated. 
+
+Remove/Drop Mfg_Year. 
+
+### 2.3) Model Diagnostic: Checking for normality assumption using **check_normality()**
+
+In the below output, `check_normality()` is used to check for normality assumption. 
+#### Output:
+
+```{r}
+model1 <- lm(Price ~ Age_08_04 + KM + 
+              Weight + Guarantee_Period, data = car_resale)
+```
+
+```{r}
+check_n <- check_normality(model1)
+```
+
+```{r}
+plot(check_n)
+```
+Based on the figure above, we will reject the Null hypothesis and infer that the model failed to conform to normaility assumption. 
+
+### 2.4) Model Diagnostic: Checking model for homogeneity of variances using **check_heteroscedasticity()**
+
+In the below output, `check_heteroscedasticity()` is used to check model for homogeneity of variances. 
+
+#### Output:
+
+```{r}
+check_h <- check_heteroscedasticity(model1)
+```
+
+```{r}
+plot(check_h)
+```
+### 2.5) Model Diagnostic: Complete check using **check_model()**
+
+In the below output, `check_model()` is used. 
+
+#### Output:
+
+```{r}
+check_model(model1)
+```
+
+### 2.6) Visualising Regression Parameters
+
+In the below output, `plot()` of see package and `parameters()` of parameters package are used to visualize the parameters of a regression model. 
+
+#### Output:
+
+```{r}
+plot(parameters(model1))
+```
+
+In the below output, ` ggcoefstats()` of ggstatsplot package is used to visualize the parameters of a regression model. 
+
+#### Output:
+
+```{r}
+ggcoefstats(model1, 
+            output = "plot")
+```
+
+### 3) Visualising Uncertainty
 
 
 ```{r}
-exam_data <- read_csv("data/Exam_data.csv")
 
 ```
