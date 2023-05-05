@@ -1,10 +1,11 @@
 ---
 title: "Hands-on Exercise 4"
 author: "Oh Jia Wen"
-date: "TBC"
-date-modified: "TBC"
+date: 5/4/2023
+date-modified: 5/4/2023
 execute: 
   warning: false
+code-fold: false
 ---
 
 # Getting started
@@ -23,7 +24,7 @@ exam_data <- read_csv("data/Exam_data.csv")
 
 # Plotting the graph
 
-## 1) Visual Statistical Analysis with ggstatsplo
+## 1) Visual Statistical Analysis
 
 ### 1.1) One-sample test: **gghistostats()** method
 
@@ -149,6 +150,7 @@ car_resale <- read_xls("data/ToyotaCorolla.xls",
                        "data")
 car_resale
 ```
+
 Note: `car_resale` is a tibble data frame.
 
 ### 2.2) Multiple Regression Model using **lm()**
@@ -162,9 +164,10 @@ model <- lm(Price ~ Age_08_04 + Mfg_Year + KM +
               Weight + Guarantee_Period, data = car_resale)
 model
 ```
+
 ### 2.3) Model Diagnostic: Checking for multicolinearity using **check_collinearity()**
 
-In the below output, `check_collinearity()` is used to check for multicolinearity. 
+In the below output, `check_collinearity()` is used to check for multicolinearity.
 
 #### Output:
 
@@ -176,14 +179,14 @@ check_collinearity(model)
 check_c <- check_collinearity(model)
 plot(check_c)
 ```
-As per figure above, Age_08_04 and Mfg_Year are highly correlated. 
 
-Remove/Drop Mfg_Year. 
+As per figure above, Age_08_04 and Mfg_Year are highly correlated.
+
+Remove/Drop Mfg_Year.
 
 ### 2.3) Model Diagnostic: Checking for normality assumption using **check_normality()**
 
-In the below output, `check_normality()` is used to check for normality assumption. 
-#### Output:
+In the below output, `check_normality()` is used to check for normality assumption. \#### Output:
 
 ```{r}
 model1 <- lm(Price ~ Age_08_04 + KM + 
@@ -197,11 +200,12 @@ check_n <- check_normality(model1)
 ```{r}
 plot(check_n)
 ```
-Based on the figure above, we will reject the Null hypothesis and infer that the model failed to conform to normaility assumption. 
+
+Based on the figure above, we will reject the Null hypothesis and infer that the model failed to conform to normaility assumption.
 
 ### 2.4) Model Diagnostic: Checking model for homogeneity of variances using **check_heteroscedasticity()**
 
-In the below output, `check_heteroscedasticity()` is used to check model for homogeneity of variances. 
+In the below output, `check_heteroscedasticity()` is used to check model for homogeneity of variances.
 
 #### Output:
 
@@ -212,9 +216,10 @@ check_h <- check_heteroscedasticity(model1)
 ```{r}
 plot(check_h)
 ```
+
 ### 2.5) Model Diagnostic: Complete check using **check_model()**
 
-In the below output, `check_model()` is used. 
+In the below output, `check_model()` is used.
 
 #### Output:
 
@@ -224,7 +229,7 @@ check_model(model1)
 
 ### 2.6) Visualising Regression Parameters
 
-In the below output, `plot()` of see package and `parameters()` of parameters package are used to visualize the parameters of a regression model. 
+In the below output, `plot()` of see package and `parameters()` of parameters package are used to visualize the parameters of a regression model.
 
 #### Output:
 
@@ -232,7 +237,7 @@ In the below output, `plot()` of see package and `parameters()` of parameters pa
 plot(parameters(model1))
 ```
 
-In the below output, ` ggcoefstats()` of ggstatsplot package is used to visualize the parameters of a regression model. 
+In the below output, `ggcoefstats()` of ggstatsplot package is used to visualize the parameters of a regression model.
 
 #### Output:
 
@@ -241,9 +246,229 @@ ggcoefstats(model1,
             output = "plot")
 ```
 
-### 3) Visualising Uncertainty
+## 3) Visualising Uncertainty
+
+### 3.1) Getting Started
+
+1.  Using p_load() of pacman package to load the required libraries
+
+```{r}
+pacman::p_load(tidyverse, plotly, crosstalk, DT, ggdist, gganimate)
+```
+
+2.  Importing data
+
+```{r}
+exam <- read_csv("data/Exam_data.csv")
+```
+
+### 3.2) Visualizing the uncertainty of point estimates of using **ggplot2**
+
+In the below output, `ggplot2` is used.
+
+It performs group by RACE and compute by calculating the observation, mean, standard deviation, and standard error of MATHS score by RACE. Then, it saves the output as a tibble data table called my_sum.
+
+#### Output:
+
+```{r}
+my_sum <- exam_data |> 
+  group_by(RACE) |> 
+  summarize(
+    n = n(),
+    mean = mean(MATHS),
+    sd = sd(MATHS)) |>
+  mutate(se = sd/sqrt(n-1))
+my_sum$RACE  <- fct_reorder(my_sum$RACE, my_sum$mean, .desc = TRUE)
+```
+
+Next, the code chunk below will be shown in html format.
+
+```{r}
+knitr::kable(head(my_sum), format = 'html')
+```
+
+#### 3.2.1 ) Reveal the standard error of mean Maths score by race
+
+```{r}
+ggplot(my_sum) +
+  geom_errorbar(
+    aes(x=RACE, 
+        ymin=mean-se, 
+        ymax=mean+se), 
+    width=0.2, 
+    colour="black", 
+    alpha=0.9, 
+    size=0.5) +
+  geom_point(aes
+           (x=RACE, 
+            y=mean), 
+           stat="identity", 
+           color="red",
+           size = 1.5,
+           alpha=1) +
+  ggtitle("Standard error of mean 
+          maths score by rac")
+```
+
+#### 3.2.2 ) Reveal the 95% confidence interval of mean Maths score by race
+
+Error bars sorted by the average maths scores.
+
+```{r}
+ggplot(my_sum) +
+  geom_errorbar(
+    aes(x=RACE, 
+        ymin=mean - 1.96*se, 
+        ymax=mean + 1.96*se), 
+    width=0.2, 
+    colour="black", 
+    alpha=0.9, 
+    size=0.5) +
+  geom_point(aes
+           (x=RACE, 
+            y=mean), 
+           stat="identity", 
+           color="red",
+           size = 1.5,
+           alpha=1) +
+  ggtitle(" 95% confidence interval of mean maths score by race ")
+```
+
+#### 3.2.3) Visualizing the uncertainty of point estimates with interactive error bars
+
+```{r}
+d <- highlight_key(my_sum) 
+
+p <- ggplot(my_sum) +
+  geom_errorbar(
+    aes(x=RACE, 
+        ymin=mean - 2.58*se, 
+        ymax=mean + 2.58*se), 
+    width=0.2, 
+    colour="black", 
+    alpha=0.9, 
+    size=0.5) +
+  
+    geom_point(aes
+           (x=RACE, 
+            y=mean,
+            text = paste("Race:", RACE,
+                     "<br>N:", n,
+                     "<br>Avg. Scores:", round(mean, digits = 2),
+                     "<br>99% CI:[", round(mean - 2.58*se, digits = 2), ", ", round(mean + 2.58*se, digits = 2), "]")), 
+           stat="identity", 
+           color="red",
+           size = 1.5,
+           alpha=1) +
+  
+  ggtitle(" 99% confidence interval of mean maths score by race ")
+
+gg <- highlight(ggplotly(p,tooltip = "text"),        
+                "plotly_selected")  
+
+dt <- DT::datatable(d,
+                    colnames = c(" ", "No. of pupils", "Avg Scores", "Std Dev", "Std Error")) |> 
+  formatRound(columns = c("mean", "sd", "se"), digits = 2)
+
+crosstalk::bscols(gg,               
+                  dt, 
+                  widths = 5)        
+```
+
+### 3.3) Visualizing Uncertainty using **ggdist**
+
+ggdist is an R package that provides a flexible set of ggplot2 geoms and stats designed especially for visualizing distributions and uncertainty.
+
+It is designed for both frequentist and Bayesian uncertainty visualization, taking the view that uncertainty visualization can be unified through the perspective of distribution visualization:
+
+-    for frequentist models, one visualizes confidence distributions or bootstrap distributions (see vignette("freq-uncertainty-vis"));
+
+-   for Bayesian models, one visualizes probability distributions (see the tidybayes package, which builds on top of ggdist).
+
+#### 3.3.1 ) Using **stat_pointinterval()** of ggdist
+
+In the code chunk below, stat_pointinterval() of ggdist is used to build a visual for displaying distribution of maths scores by race.
+
+```{r}
+exam %>%
+  ggplot(aes(x = RACE, 
+             y = MATHS)) +
+  stat_pointinterval() +   #<<
+  labs(
+    title = "Visualising confidence intervals of mean math score",
+    subtitle = "Mean Point + Multiple-interval plot")
+```
 
 
 ```{r}
-
+exam %>%
+  ggplot(aes(x = RACE, y = MATHS)) +
+  stat_pointinterval(.width = 0.95,
+  .point = median,
+  .interval = qi) +
+  labs(
+    title = "Visualising confidence intervals of mean math score",
+    subtitle = "Mean Point + Multiple-interval plot")
 ```
+
+#### 3.3.2 ) Visualization of 95% and 99% confidence interval with mean
+
+```{r}
+exam %>%
+  ggplot(aes(x = RACE, 
+             y = MATHS)) +
+  stat_pointinterval(
+  .point = mean,
+  .interval = c(qi(0.95),qi(0.99))) +   
+  labs(
+    title = "Visualising confidence intervals of mean math score",
+    subtitle = "Mean Point + Multiple-interval plot")
+```
+
+#### 3.3.3 ) Visualizing the uncertainty of point estimates: **ggdist** methods
+
+Using `stat_gradientinterval()` of ggdist is used to build a visual for displaying distribution of maths scores by race.
+
+```{r}
+exam %>%
+  ggplot(aes(x = RACE, 
+             y = MATHS)) +
+  stat_gradientinterval(   
+    fill = "skyblue",      
+    show.legend = TRUE     
+  ) +                        
+  labs(
+    title = "Visualising confidence intervals of mean math score",
+    subtitle = "Gradient + interval plot")
+```
+
+### 3.4) Visualising Uncertainty with **Hypothetical Outcome Plots (HOPs)**
+
+#### 3.4.1) Getting Started
+
+1.  Installing ungeviz package
+
+```{r}
+devtools::install_github("wilkelab/ungeviz")
+```
+
+2.  Launch the application in R
+
+```{r}
+library(ungeviz)
+```
+
+```{r}
+ggplot(data = exam, 
+       (aes(x = factor(RACE), y = MATHS))) +
+  geom_point(position = position_jitter(
+    height = 0.3, width = 0.05), 
+    size = 0.4, color = "#0072B2", alpha = 1/2) +
+  geom_hpline(data = sampler(25, group = RACE), height = 0.6, color = "#D55E00") +
+  theme_bw() + 
+  # `.draw` is a generated column indicating the sample draw
+  transition_states(.draw, 1, 3)
+```
+
+
+
