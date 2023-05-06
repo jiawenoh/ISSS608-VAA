@@ -2,8 +2,9 @@
 title: "Take Home Exercise 1"
 subtitle: " Visual Analytics of the demographic and financial characteristics of residents in City of Engagement"
 author: "Oh Jia Wen"
-date: "TBC"
-date-modified: "TBC"
+date: "5/6/2023"
+date-modified: "5/6/2023"
+code-fold: true
 execute: 
   warning: false
 ---

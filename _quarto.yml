@@ -8,6 +8,8 @@ website:
     search: true
     title: Welcome
     tools:
+      - icon: Home
+        href: https://isss608-ohjiawen.netlify.app/
       - icon: github
         href: https://github.com/jiawenoh/ISSS608-VAA
       - icon: linkedin
@@ -50,10 +52,9 @@ website:
             
 format:
   html:
-    theme: 
-      dark: flatly
+    theme: flaty
     css: styles.css
-    code-fold: true
+    code-fold: false
     code-summary: "Show the code"
     toc: true
     

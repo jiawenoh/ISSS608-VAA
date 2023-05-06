@@ -1,7 +1,107 @@
 ---
-title: "In-class Exercise 3"
+title: "In-class Exercise 4"
 author: "Oh Jia Wen"
-date: 4/29/2023
-date-modified: 4/29/2023
-code-fold: false
+date: 5/6/2023
+date-modified: "`r.Sys.Date()`"
+execute: 
+  echo: true
+  eval: true
+  warning: false
 ---
+# Getting started
+
+1.  Using p_load() of pacman package to load the required libraries
+
+```{r}
+pacman::p_load(rstatix,gt,patchwork,tidyverse,webshot2,png)
+```
+
+2.  Importing data
+
+```{r}
+exam_data <- read_csv("data/Exam_data.csv")
+```
+# Plotting the graph
+
+## 1) Visualizing statistical graph **QQ Plot**
+
+::: {.panel-tabset}
+
+## Plot
+
+```{r}
+#| echo: false
+#| fig-width: 6
+#| fig-height: 6
+ggplot(exam_data,
+       aes(sample=ENGLISH)) +
+  stat_qq() +
+  stat_qq_line()
+```
+
+## Code
+
+```{r}
+#| eval: false
+#| fig-width: 6
+#| fig-height: 6
+ggplot(exam_data,
+       aes(sample=ENGLISH)) +
+  stat_qq() +
+  stat_qq_line()
+```
+
+:::
+
+## 2) Combining statistical graph and analysis table
+
+::: {.panel-tabset}
+
+## Plot
+
+```{r}
+#| echo: false
+#| fig-width: 12
+#| fig-height: 6
+qq <- ggplot(exam_data,
+       aes(sample=ENGLISH)) +
+  stat_qq() +
+  stat_qq_line()
+
+sw_t <- exam_data %>%
+  shapiro_test(ENGLISH) %>%
+  gt()
+
+tmp <-tempfile(fileext = ".png")
+gtsave(sw_t,tmp)
+table_png <- png::readPNG(tmp,
+native= TRUE)
+
+qq + table_png
+```
+
+## Code
+
+```{r}
+#| eval: false
+#| fig-width: 4
+#| fig-height: 4
+qq <- ggplot(exam_data,
+       aes(sample=ENGLISH)) +
+  stat_qq() +
+  stat_qq_line()
+
+sw_t <- exam_data %>%
+  shapiro_test(ENGLISH) %>%
+  gt()
+
+tmp <-tempfile(fileext = ".png")
+gtsave(sw_t,tmp)
+table_png <- png::readPNG(tmp,
+native= TRUE)
+
+qq + table_png
+```
+
+:::
+

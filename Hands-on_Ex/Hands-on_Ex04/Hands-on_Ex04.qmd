@@ -5,7 +5,6 @@ date: 5/4/2023
 date-modified: 5/4/2023
 execute: 
   warning: false
-code-fold: false
 ---
 
 # Getting started
