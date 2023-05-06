@@ -8,13 +8,14 @@ website:
     search: true
     title: Welcome
     tools:
-      - icon: Home
+      - icon: house-fill
         href: https://isss608-ohjiawen.netlify.app/
       - icon: github
         href: https://github.com/jiawenoh/ISSS608-VAA
       - icon: linkedin
         href: https://www.linkedin.com/in/jia-wen-oh/
-    background: dark
+        
+    background: light
     reader-mode: true
     collapse-level: 1
     contents:
