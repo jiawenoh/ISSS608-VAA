@@ -30,43 +30,42 @@ pacman::p_load(ggiraph, plotly, patchwork, DT, tidyverse)
 
 ## 3.2 Import Data
 
-### 3.2.1 Import participants dataset 
+### 3.2.1 Import participants dataset
 
 ```{r}
 participants <- read_csv("data/Participants.csv")
 ```
-### 3.2.2 Load participants data table  
+
+### 3.2.2 Load participants data table
 
 #### Participants Data Table
+
 ```{r}
 head(participants)
 ```
 
-### 3.2.3 Import Financial Journal dataset  
+### 3.2.3 Import Financial Journal dataset
 
 ```{r}
 financial_journal <- read_csv("data/FinancialJournal.csv")
 ```
 
-### 3.2.4 Load Financial Journal data table  
+### 3.2.4 Load Financial Journal data table
 
 #### Financial Journal Data Table
+
 ```{r}
 head(financial_journal)
 ```
 
-## 3.3 Data Wrangling 
+## 3.3 Data Wrangling
 
-As seen from the two data tables, there are inaccurate data types. 
-Code with mutate from dplyr to reformat participantID from dbl to chr.
-groupby participantID 
-remove duplicates
-reformat timestamp to year and month 
-create new variables for income, expenses, cashflow 
+As seen from the two data tables, there are inaccurate data types. Code with mutate from dplyr to reformat participantID from dbl to chr. groupby participantID remove duplicates reformat timestamp to year and month create new variables for income, expenses, cashflow
 
-The function distinct() [dplyr package] can be used to keep only unique/distinct rows from a data frame. 
+The function distinct() \[dplyr package\] can be used to keep only unique/distinct rows from a data frame.
 
 #### participants Data Table
+
 ```{r}
 #change data type of participantID from dbl to char 
 participants %>%
@@ -74,6 +73,7 @@ participants %>%
 financial_journal %>%
   mutate(participantId = as.character(participantId))
 ```
+
 ```{r}
 unique(financial_journal$category)
 ```
@@ -100,6 +100,7 @@ participants %>%
     mutate(age_group,.after=age)
 
 ```
+
 You can use group_by() function along with the summarise() from dplyr package to find the group by sum in R DataFrame, group_by() returns the grouped_df ( A grouped Data Frame) and use summarise() on grouped df results to get the group by sum.
 
 ```{r}
@@ -124,7 +125,7 @@ grouped_data <- financial_journal_clean %>%
 grouped_data
 ```
 
-The function distinct() [dplyr package] can be used to keep only unique/distinct rows from a data frame. If there are duplicate rows, only the first row is preserved. 
+The function distinct() \[dplyr package\] can be used to keep only unique/distinct rows from a data frame. If there are duplicate rows, only the first row is preserved.
 
 ```{r}
 financial_journal_clean %>% distinct()
@@ -133,8 +134,8 @@ participants_clean %>% distinct()
 grouped_data %>% distinct()
 ```
 
+Check for missing values
 
-Check for missing values 
 ```{r}
 #Check for missing values
 any(is.na(participants_clean))
@@ -181,6 +182,3 @@ p3 <- ggplot(data=participants,
 ```
 
 # 5. Financial Health Insights
-
-
-
