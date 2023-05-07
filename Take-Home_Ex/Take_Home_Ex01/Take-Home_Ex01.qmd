@@ -4,18 +4,20 @@ subtitle: " Visual Analytics of the demographic and financial characteristics of
 author: "Oh Jia Wen"
 date: "5/6/2023"
 date-modified: "5/6/2023"
-code-fold: true
+code-fold: false
 execute: 
+  echo: true
+  eval: true
   warning: false
 ---
 
 # 1. OVERVIEW
 
-City of Engagement, with a total population of 50,000, is a small city located at Country of Nowhere. The city serves as a service centre of an agriculture region surrounding the city. The main agriculture of the region is fruit farms and vineyards. The local council of the city is in the process of preparing the Local Plan 2023. A sample survey of 1000 representative residents had been conducted to collect data related to their household demographic and spending patterns, among other things. The city aims to use the data to assist with their major community revitalization efforts, including how to allocate a very large city renewal grant they have recently received. 
+City of Engagement, with a total population of 50,000, is a small city located at Country of Nowhere. The city serves as a service centre of an agriculture region surrounding the city. The main agriculture of the region is fruit farms and vineyards. The local council of the city is in the process of preparing the Local Plan 2023. A sample survey of 1000 representative residents had been conducted to collect data related to their household demographic and spending patterns, among other things. The city aims to use the data to assist with their major community revitalization efforts, including how to allocate a very large city renewal grant they have recently received.
 
 ## 1.1 The Task
 
-In this take-home exercise, you are required to apply the concepts and methods you had learned in Lesson 1-4 to reveal the demographic and financial characteristics of the city of Engagement, using appropriate **static and interactive statistical graphics** methods. 
+In this take-home exercise, you are required to apply the concepts and methods you had learned in Lesson 1-4 to reveal the demographic and financial characteristics of the city of Engagement, using appropriate **static and interactive statistical graphics** methods.
 
 # 2. Data Source
 
@@ -26,7 +28,7 @@ In this take-home exercise, you are required to apply the concepts and methods y
 Using p_load() of pacman package to load the required libraries
 
 ```{r}
-pacman::p_load(ggiraph, plotly, patchwork, DT, tidyverse) 
+pacman::p_load(ggiraph, plotly, patchwork, DT, tidyverse,knitr) 
 ```
 
 ## 3.2 Import Data
@@ -37,13 +39,22 @@ pacman::p_load(ggiraph, plotly, patchwork, DT, tidyverse)
 participants <- read_csv("data/Participants.csv")
 ```
 
-### 3.2.2 Load participants data table
+### 3.2.2 Load participants
 
-#### Participants Data Table
+::: {.panel-tabset}
 
+## Data Table 
 ```{r}
+#| echo: false
 head(participants)
 ```
+## Code
+```{r}
+#| eval: false
+head(participants)
+```
+
+:::
 
 ### 3.2.3 Import Financial Journal dataset
 
@@ -51,13 +62,25 @@ head(participants)
 financial_journal <- read_csv("data/FinancialJournal.csv")
 ```
 
-### 3.2.4 Load Financial Journal data table
+### 3.2.4 Load Financial Journal
 
-#### Financial Journal Data Table
+::: {.panel-tabset}
+
+#### Data Table
 
 ```{r}
+#| echo: false
 head(financial_journal)
 ```
+
+#### Code
+
+```{r}
+#| eval: false
+head(financial_journal)
+```
+
+:::
 
 ## 3.3 Data Wrangling
 
@@ -65,21 +88,13 @@ As seen from the two data tables, there are inaccurate data types. Code with mut
 
 The function distinct() \[dplyr package\] can be used to keep only unique/distinct rows from a data frame.
 
-#### participants Data Table
-
-```{r}
-#change data type of participantID from dbl to char 
-participants %>%
-  mutate(participantId = as.character(participantId))
-financial_journal %>%
-  mutate(participantId = as.character(participantId))
-```
 
 ```{r}
 unique(financial_journal$category)
 ```
 
 ```{r}
+#check min and max age of residents in COE. 
 min(participants$age)
 max(participants$age)
 
@@ -89,58 +104,66 @@ age_group <- factor(ifelse(participants$age < 20, "Under 20",
                     ifelse(participants$age < 40, "30-39",
                       ifelse(participants$age < 50, "40-49", "Above 50")))),
                 levels = c("Under 20", "20-29", "30-39", "40-49", "Above 50"),
-                ordered= TRUE)
+                ordered= TRUE) 
 
 #reformat education level
 participants$educationLevel <- factor(participants$educationLevel, 
                                       levels = c("Low", "Graduate", "Bachelors",
                                                  "HighSchoolOrCollege"), 
-                                      ordered = TRUE)
+                                      ordered = TRUE) 
+
+#round up joviality to 2 decimal places 
+participants$joviality <- round(participants$joviality, 2)
 
 participants %>%
-    mutate(age_group,.after=age)
+    mutate(age_group,.after=age,
+          participantId = as.character(participantId) )
 
 ```
 
 You can use group_by() function along with the summarise() from dplyr package to find the group by sum in R DataFrame, group_by() returns the grouped_df ( A grouped Data Frame) and use summarise() on grouped df results to get the group by sum.
 
 ```{r}
-#store new dataset in variable ->  financial_journal_clean
-financial_journal_clean <- financial_journal %>%
+#create new dataset 
+grouped_data <- financial_journal %>%
   
-#reformat timestamp to Year and Month
-  mutate(year = as.integer(format(as.Date(paste(financial_journal$timestamp, "-01", sep="")), "%Y")),
-         month = as.integer(format(as.Date(paste(financial_journal$timestamp, "-01", sep="")), "%m")),
-         .before = 3) 
+#recode ID from dbl to chr, year_mth
+    mutate(participantId = as.character(participantId),
+      year = as.numeric(format(as.Date(paste(financial_journal$timestamp, "-01", sep="")), "%Y")),
+         month = as.numeric(format(as.Date(financial_journal$timestamp), "%m")),
+         year_mth = format(as.Date(financial_journal$timestamp), "%Y-%m"),
+         amount = abs(round(amount,2)),
+         .before = 3) %>%
   
-#create new variables called 
- 
-financial_journal_clean
+#group the columns in the following order 
+  group_by(participantId,year_mth, category) %>%
+  summarize(total_amount = sum(amount)) 
+
+# Pivot the data frame to have categories as columns
+pivoted_fj <- grouped_data %>%
+  pivot_wider(names_from = "category", values_from = "total_amount", values_fill = 0)
+
+# Add a new column with mixed categories
+pivoted_fj$Expenses <- pivoted_fj$Education + pivoted_fj$Food + pivoted_fj$Recreation + pivoted_fj$Shelter +pivoted_fj$RentAdjustment
+pivoted_fj$Income <- pivoted_fj$Wage
+pivoted_fj$Cashflow <- pivoted_fj$Income - pivoted_fj$Expenses
+
+# Output the pivoted data frame
+pivoted_fj 
 ```
 
 ```{r}
-grouped_data <- financial_journal_clean %>%
-  group_by(participantId,year,month, category) %>%
-  summarize(total_amount = sum(amount))
-
-grouped_data
+kable(head(pivoted_fj), "simple")
 ```
 
 The function distinct() \[dplyr package\] can be used to keep only unique/distinct rows from a data frame. If there are duplicate rows, only the first row is preserved.
-
-```{r}
-financial_journal_clean %>% distinct()
-participants_clean <- participants 
-participants_clean %>% distinct()
-grouped_data %>% distinct()
-```
 
 Check for missing values
 
 ```{r}
 #Check for missing values
-any(is.na(participants_clean))
-any(is.na(financial_journal_clean))
+any(is.na(participants))
+any(is.na(grouped_data))
 ```
 
 # 4. Demographics Insights

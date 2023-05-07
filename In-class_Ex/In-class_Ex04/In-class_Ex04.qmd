@@ -2,7 +2,7 @@
 title: "In-class Exercise 4"
 author: "Oh Jia Wen"
 date: 5/6/2023
-date-modified: "`r.Sys.Date()`"
+date-modified: "5/6/2023"
 execute: 
   echo: true
   eval: true
@@ -24,6 +24,8 @@ exam_data <- read_csv("data/Exam_data.csv")
 # Plotting the graph
 
 ## 1) Visualizing statistical graph **QQ Plot**
+
+The quantile-quantile (q-q) plot is a graphical technique for determining if two data sets come from populations with a common distribution. 
 
 ::: {.panel-tabset}
 
@@ -104,4 +106,5 @@ qq + table_png
 ```
 
 :::
+
 
