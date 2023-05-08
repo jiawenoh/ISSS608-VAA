@@ -208,41 +208,104 @@ DT::datatable(resident_profile, class= "compact")
 # 4. Demographics Insights
 
 ```{r}
-p1 <- ggplot(data=resident_profile, 
-       aes(x = age_group)) +
-      geom_bar_interactive() +
-      ggtitle("Age group of residents ") +
+#Bar chart for resident's age distribution
+p1 <- ggplot(data= participants_new,
+      aes(x = age_group)) +
+      geom_bar() +
+      xlab("Age Group") +
+      ylab("No.of\nResidents") +
+      ylim(0,300) +
+      geom_text(aes(label = paste(..count..,",", scales::percent(..count../sum(..count..),accuracy = 0.01))), 
+      stat= "count", vjust = -0.5) +
+      ggtitle("Age Distribution of Residents ") +
       theme(plot.title = element_text(hjust = 0.5))
+
+#Bar chart for resident's household size distribution
+p2 <- ggplot(data= participants_new,
+      aes(x = householdSize)) +
+      geom_bar() +
+      xlab("Size of Household") +
+      ylab("No.of\nResidents") +
+      ylim(0,400) +
+      geom_text(aes(label = paste(..count..,",", scales::percent(..count../sum(..count..),accuracy = 0.01))), 
+      stat= "count", vjust = -0.5) +
+      ggtitle("Household Size Distribution of Residents ") +
+      theme(plot.title = element_text(hjust = 0.5))
+
+#Bar chart for resident's education level
+p3 <- ggplot(data= participants_new,
+      aes(x = educationLevel)) +
+      geom_bar() +
+      xlab("Education Level") +
+      ylab("No.of\nResidents") +
+      ylim(0,600) +
+      geom_text(aes(label = paste(..count..,",", scales::percent(..count../sum(..count..),accuracy = 0.01))), 
+      stat= "count", vjust = -0.5) +
+      ggtitle("Distribution of Residents' Education Level  ") +
+      theme(plot.title = element_text(hjust = 0.5))
+
+#Bar chart to visualize if residents have kids 
+p4 <- ggplot(data= participants_new,
+      aes(x = haveKids)) +
+      geom_bar() +
+      xlab("Education Level") +
+      ylab("No.of\nResidents") +
+      ylim(0,850) +
+      geom_text(aes(label = paste(..count..,",", scales::percent(..count../sum(..count..),accuracy = 0.01))), 
+      stat= "count", vjust = -0.5) +
+      ggtitle("Residents' Kids Distribution") +
+      theme(plot.title = element_text(hjust = 0.5))
+
+#Bar chart for resident's joviality 
+#MISSING THE TEXT ABOVE 
+
+p5 <- ggplot(data= participants_new,
+      aes(x = joviality)) +
+      geom_histogram(bins=10, color="black",      
+                 fill= "darkgrey") +
+      xlab("Joviality Level") +
+      ylab("No.of\nResidents") +
+      ggtitle("Distribution of Residents' Joviality  ") +
+      theme(plot.title = element_text(hjust = 0.5))
+
+#Bar chart for residents' interest group 
+p6 <- ggplot(data= participants_new,
+      aes(x = interestGroup)) +
+      geom_bar() +
+      xlab("Education Level") +
+      ylab("No.of\nResidents") +
+      ylim(0,150) +
+      geom_text(aes(label = paste(scales::percent(..count../sum(..count..),
+            accuracy = 0.01))), 
+            stat= "count", vjust = -0.5) +
+      ggtitle("Distribution of Residents' Education Level  ") +
+      theme(plot.title = element_text(hjust = 0.5))
+
+p1 +p2 + p3 + p4 + p5 + p6  +  plot_layout(ncol = 3, widths = c(1))
+```
+
+
 ```
 
 ```{r}
-p2 <- ggplot(data=resident_profile, 
-       aes(x = educationLevel)) +
-      geom_bar_interactive() +
-      ggtitle("Education level of residents ") +
+##KIV TO COME BACK AND EDIT. 
+p3 <- ggplot(data= resident_profile,
+      aes(x = Income)) +
+      geom_histogram(bins=30,            
+                 color="black",      
+                 fill= "darkgrey") +
+      xlab("Income") +
+      ylab("No.of\nResidents") +
+      ylim(0,2100) +
+      xlim(-1000,20000) +
+      ggtitle("Income Distribution of Residents ") +
       theme(plot.title = element_text(hjust = 0.5))
+p3
 
 ```
 
-```{r}
-p3 <- ggplot(data=resident_profile, 
-       aes(x = interestGroup)) +
-      geom_bar_interactive() +
-      ggtitle("Interest group of residents ") +
-      theme(plot.title = element_text(hjust = 0.5))
-```
 
-```{r}
-     girafe(code = print((p1 + p2) / p3), 
-       width_svg = 6,
-       height_svg = 3,
-       options = list(
-         opts_hover(css = "fill: #202020;"),
-         opts_hover_inv(css = "opacity:0.2;")
-            )
-          ) 
 
-```
 
 # 5. Financial Health Insights
 
