@@ -28,7 +28,7 @@ In this take-home exercise, you are required to apply the concepts and methods y
 Using p_load() of pacman package to load the required libraries
 
 ```{r}
-pacman::p_load(ggiraph, plotly, patchwork, DT, tidyverse,knitr) 
+pacman::p_load(ggiraph, plotly, patchwork, DT, tidyverse,knitr,FunnelPlotR,scales) 
 ```
 
 ## 3.2 Import Data
@@ -94,44 +94,61 @@ unique(financial_journal$category)
 ```
 
 ```{r}
-#check min and max age of residents in COE. 
-min(participants$age)
-max(participants$age)
+#create new dataset 
+participants_new <- participants %>%
+    mutate(
+          participantId = as.character(participantId))
 
+#reformat householdSize to Ordinal 
+    participants_new$householdSize <- factor(participants$householdSize,
+                                      levels = c("1", "2", "3"), 
+                                      ordered = TRUE) 
 #reformat age group 
-age_group <- factor(ifelse(participants$age < 20, "Under 20",
+participants_new$age_group <- factor(ifelse(participants$age < 20, "Under 20",
                 ifelse(participants$age < 30, "20-29",
                     ifelse(participants$age < 40, "30-39",
                       ifelse(participants$age < 50, "40-49", "Above 50")))),
                 levels = c("Under 20", "20-29", "30-39", "40-49", "Above 50"),
-                ordered= TRUE) 
+                ordered= TRUE)
 
-#reformat education level
-participants$educationLevel <- factor(participants$educationLevel, 
+#reformat education level to Ordinal 
+participants_new$educationLevel <- factor(participants$educationLevel, 
                                       levels = c("Low", "Graduate", "Bachelors",
                                                  "HighSchoolOrCollege"), 
-                                      ordered = TRUE) 
+                                      ordered = TRUE)  
 
 #round up joviality to 2 decimal places 
-participants$joviality <- round(participants$joviality, 2)
+participants_new$joviality <- round(participants$joviality, 2) 
+  
+participants_new
+```
 
-participants %>%
-    mutate(age_group,.after=age,
-          participantId = as.character(participantId) )
+```{r}
+#check min and max age of residents in COE. 
+min(participants$age)
+max(participants$age)
+
+```
+
+```{r}
+#remove duplicate rows for all columns
+financial_journal_lessdup <- financial_journal %>% 
+  distinct()
 
 ```
 
 You can use group_by() function along with the summarise() from dplyr package to find the group by sum in R DataFrame, group_by() returns the grouped_df ( A grouped Data Frame) and use summarise() on grouped df results to get the group by sum.
 
+scales package (part of the Tidyverse) does exactly this:
+
 ```{r}
+#| code-fold: true
 #create new dataset 
-grouped_data <- financial_journal %>%
+grouped_data <- financial_journal_lessdup %>%
   
 #recode ID from dbl to chr, year_mth
     mutate(participantId = as.character(participantId),
-      year = as.numeric(format(as.Date(paste(financial_journal$timestamp, "-01", sep="")), "%Y")),
-         month = as.numeric(format(as.Date(financial_journal$timestamp), "%m")),
-         year_mth = format(as.Date(financial_journal$timestamp), "%Y-%m"),
+         year_mth = format(as.Date(financial_journal_lessdup$timestamp), "%Y-%m"),
          amount = abs(round(amount,2)),
          .before = 3) %>%
   
@@ -147,29 +164,51 @@ pivoted_fj <- grouped_data %>%
 pivoted_fj$Expenses <- pivoted_fj$Education + pivoted_fj$Food + pivoted_fj$Recreation + pivoted_fj$Shelter +pivoted_fj$RentAdjustment
 pivoted_fj$Income <- pivoted_fj$Wage
 pivoted_fj$Cashflow <- pivoted_fj$Income - pivoted_fj$Expenses
+pivoted_fj$Shelter <- pivoted_fj$Shelter + pivoted_fj$RentAdjustment
 
 # Output the pivoted data frame
-pivoted_fj 
-```
-
-```{r}
-kable(head(pivoted_fj), "simple")
+pivoted_fj
 ```
 
 The function distinct() \[dplyr package\] can be used to keep only unique/distinct rows from a data frame. If there are duplicate rows, only the first row is preserved.
+
+
+```{r}
+colSums(pivoted_fj[-1] !=0)
+```
 
 Check for missing values
 
 ```{r}
 #Check for missing values
-any(is.na(participants))
-any(is.na(grouped_data))
+any(is.na(participants_new))
+any(is.na(pivoted_fj))
 ```
 
+### Merge Data Table 
+
+```{r}
+#join both data sets 
+resident_profile <- full_join(participants_new, pivoted_fj, 
+                       by = c("participantId" = "participantId")) %>%
+#relocate columns to the front (by importance)
+                    relocate(year_mth, .after =participantId) %>%
+                    relocate(Cashflow, .after = year_mth) %>%
+                    relocate(age_group, .after = Cashflow) %>%
+                    relocate(educationLevel, .after = age_group) %>%
+                    relocate(Income, .after = haveKids) %>%
+                    relocate(Expenses , .after = Income) 
+resident_profile %>%
+    select(c(1:17))
+```
+
+```{r}
+DT::datatable(resident_profile, class= "compact")
+```
 # 4. Demographics Insights
 
 ```{r}
-p1 <- ggplot(data=participants, 
+p1 <- ggplot(data=resident_profile, 
        aes(x = age_group)) +
       geom_bar_interactive() +
       ggtitle("Age group of residents ") +
@@ -177,7 +216,7 @@ p1 <- ggplot(data=participants,
 ```
 
 ```{r}
-p2 <- ggplot(data=participants, 
+p2 <- ggplot(data=resident_profile, 
        aes(x = educationLevel)) +
       geom_bar_interactive() +
       ggtitle("Education level of residents ") +
@@ -186,7 +225,7 @@ p2 <- ggplot(data=participants,
 ```
 
 ```{r}
-p3 <- ggplot(data=participants, 
+p3 <- ggplot(data=resident_profile, 
        aes(x = interestGroup)) +
       geom_bar_interactive() +
       ggtitle("Interest group of residents ") +
@@ -206,3 +245,105 @@ p3 <- ggplot(data=participants,
 ```
 
 # 5. Financial Health Insights
+
+```{r}
+plot_ly(data = resident_profile, 
+             x = ~joviality, y = ~Income)
+```
+
+```{r}
+p <- ggplot(data=resident_profile, 
+       aes(x = Shelter)) +
+  geom_dotplot_interactive(              
+    aes(tooltip = Expenses, 
+        data_id = Expenses),              
+    stackgroups = TRUE,                  
+    binwidth = 1,                        
+    method = "histodot") +               
+  scale_y_continuous(NULL,               
+                     breaks = NULL)
+girafe(                                  
+  ggobj = p,                             
+  width_svg = 6,                         
+  height_svg = 6*0.618,
+  options = list(                        
+    opts_hover(css = "fill: #202020;"),  
+    opts_hover_inv(css = "opacity:0.2;") 
+  )                                        
+)                                        
+```
+```{r}
+average_income <- round(mean(resident_profile$Income),2)
+median_income <-round(median(resident_profile$Income),2)
+ymax <- as.numeric(round((IQR(resident_profile$Income)*1.5) +
+                quantile(resident_profile$Income,0.75)))
+ymin <- as.integer(min(resident_profile$Income))
+
+average_income
+median_income
+ymax
+ymin
+
+b <- ggplot(data = pivoted_fj, aes(y = Income)) + 
+  geom_boxplot(outlier.colour="red", outlier.shape=16,
+               outlier.size=1, notch=FALSE) + 
+  coord_flip() + labs(y = "", x = "") + 
+  scale_y_continuous(limits = c(0,20000), labels = scales::comma) +
+  theme(axis.text = element_blank(), axis.ticks = element_blank()) + 
+  stat_boxplot(geom="errorbar", width=0.5) + 
+  annotate("text", x=0.35, y=ymax, label=format(ymax, big.mark = ","), 
+           size=3, color="lightpink4") +
+  annotate("text", x=0.35, y=ymin, label=format(ymin, big.mark = ","), 
+           size=3, color="lightpink4")
+
+b
+```
+
+```{r}
+#plotting histogram
+h <- ggplot(data = resident_profile, 
+            aes(x = Income)) + 
+  geom_histogram(color="black", fill="azure4", binwidth = 50000) + 
+  scale_x_continuous(limits = c(0,1500000), labels = scales::comma) +
+  labs(x = "Resale Price (SGD)", y = "Number of transactions") +
+  geom_vline(aes(xintercept = resale_mean), col="darkblue", linewidth=1) +
+  annotate("text", x=640000, y=4000, label="Mean resale price:", 
+           size=4, color="darkblue") +
+  annotate("text", x=640000, y=3750, label=format(average_income, big.mark = ","),
+           size=4, color="darkblue") +
+  geom_vline(aes(xintercept = resale_median), col="lightpink4", linewidth=1) +
+  annotate("text", x=400000, y=4000, label="Median resale price", 
+           size=4, color="lightpink4") +
+  annotate("text", x=400000, y=3750, label=format(median_income, big.mark = ","),
+           size=4, color="lightpink4") +
+  theme(axis.text.x = element_text(size=8))
+
+```
+
+```{r}
+funnel_plot(
+  numerator = resident_profile$Income,
+  denominator = resident_profile$Expenses,
+  group = resident_profile$age
+  
+)
+```
+
+```{r}
+#Initiating the base plot
+plot_ly(data = resident_profile,
+        x = ~joviality,
+        y = ~age,
+        color = ~haveKids,
+        hovertemplate = ~paste("<br>ID", participantId,
+                               "<br>Education Level:", educationLevel,
+                               "<br>Household Size ", householdSize),
+        type = 'scatter',
+        mode = 'markers',
+        marker = list(opacity = 0.6,
+                      sizemode = 'diameter',
+                      line = list(width = 0.2, color = 'white'))) 
+  
+```
+
+
