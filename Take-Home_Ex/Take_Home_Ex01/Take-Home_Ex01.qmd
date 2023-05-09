@@ -13,7 +13,7 @@ execute:
 
 # 1. OVERVIEW
 
-City of Engagement is a small city located at Country of Nowhere, with a total population of 50,000, serving as an agriculture region. The local council of the city is in the midst of preparing the Local Plan 2023. 
+City of Engagement is a small city located at Country of Nowhere, with a total population of 50,000, serving as an agriculture region. The local council of the city is in the midst of preparing the Local Plan 2023.
 
 ## 1.1 The Task
 
@@ -21,32 +21,47 @@ In this take-home exercise, you are required to apply the concepts and methods y
 
 # 2. Data Source
 
-Data has been collected by the local council of the city. The survey sampled 1,000 respondents to collect data related to their household demographic, spending patterns and among, other things. The data is stored in two separate files:
+Data has been collected by the local council of the city. The survey sampled 1,000 respondents to collect data related to their household demographic, spending patterns and among, other things. The data is stored in two separate files ranging from **Mar 2022 to Feb 2023** :
 
-1.  Participants.csv *(Participants' Profile)*
+|           | 1\) Participants.csv | 2\) FinancialJourval.csv |
+|:---------:|:--------------------:|:------------------------:|
+|   rows    |        1,011         |        1,513,636         |
+| variables |          7           |            4             |
 
-    -   1,011 rows
-
-    -   7 variables
-
-2.  FinancialJournal.csv *(Financial Health of Participants)*
-
-    -   1,513,636 rows
-
-    -   4 variables
-
-    -   From Mar 2022 to Feb 2023.
-
-#3. Data Preparation
+# 3. Data Preparation
 
 ## 3.1 Install R-packages
 
-Using p_load() of pacman package to load the required libraries
+Using p_load() of pacman package to load and install the following libraries:
+
+-   `ggiraph` : For creating interactive 'ggplot' graphics
+
+-   `plotly` : For creating interactive statistical graphs
+
+-   `patchwork` : For combining multiple ggplot2 graphs into one figure
+
+-   `tidyverse` : A collection of R packages use in everyday data analyses. It is able to support data science, data wrangling, and analysis.
+
+-   `knitr`: For dynamic report generation
+
+-   `ggstatsplot`: For creating graphics with details from statistical tests included and its plot
+
+-   `paletteer`: Collection of color palettes
+
+-   `wesanderson`: *Wes Anderson*'s theme Palette Generator
 
 ```{r}
-pacman::p_load(ggiraph, plotly, patchwork, DT, tidyverse,knitr,scales,ggstatsplot,paletteer,wesanderson,ggpubr)
+#to double check if got use DT, scales, ggpubr
+pacman::p_load(ggiraph, plotly, patchwork, DT, tidyverse,
+               knitr,scales,ggstatsplot,paletteer,wesanderson,ggpubr)
 options(scipen = 999)
 ```
+
+::: callout-tip
+## Tip
+
+`options(scipen = 999)` : The above code removes scientific notation in our exercise.
+:::
 
 ## 3.2 Import Data
 
@@ -55,6 +70,7 @@ options(scipen = 999)
 ```{r}
 participants <- read_csv("data/Participants.csv")
 ```
+
 ### 3.2.2 Load participants
 
 ::: panel-tabset
@@ -99,18 +115,11 @@ head(financial_journal)
 
 ## 3.3 Data Wrangling
 
-As seen from the two data tables above, there are several quality issues. 
-1) for Participants.csv 
+As seen from the two data tables above, there are several quality issues. 1) for Participants.csv
 
-Inaccurate data types. 
- - participantID is in `dbl` instead of `chr`
- -timestamp format is in `POSIX` instead of `chr` 
- - householdSize is in `dbl`. We will convert it to `ord`. 
- -reformat age group after looking at the min and max
- - round up jovality to 2 d.p. 
- 
-Code with mutate from dplyr to reformat participantID from dbl to chr. 
-Check for duplicates(remove 1,113 rows)
+Inaccurate data types. - participantID is in `dbl` instead of `chr` -timestamp format is in `POSIX` instead of `chr` - householdSize is in `dbl`. We will convert it to `ord`. -reformat age group after looking at the min and max - round up jovality to 2 d.p.
+
+Code with mutate from dplyr to reformat participantID from dbl to chr. Check for duplicates(remove 1,113 rows)
 
 groupby participantID remove duplicates reformat timestamp to year and month create new variables for income, expenses, cashflow
 
@@ -121,6 +130,7 @@ unique(financial_journal$category)
 ```
 
 ```{r}
+#| code-fold: true
 #create new dataset 
 participants_new <- participants %>%
     mutate(
@@ -220,7 +230,6 @@ any(is.na(pivoted_fj))
 
 ```{r}
 #| code-fold: true
-#| 
 #join both data sets 
 resident_profile <- full_join(participants_new, pivoted_fj, 
                        by = c("participantId" = "participantId")) %>%
@@ -244,7 +253,6 @@ kable(head(resident_profile), "simple")
 ```{r Overview of Demographics , fig.width=12,fig.height=6}
 
 #| code-fold: true
-
 #Bar chart for resident's age distribution
 p1 <- ggplot(data= participants_new,
       aes(x = age_group)) +
@@ -314,7 +322,10 @@ design <- "
 
 p1 + p2 + p3 + p4 + p5 + p6 + plot_layout(design = design)
 ```
-##4.1 Chi-square test for Age group and Education Level 
+
+**`-to fill in observations later -`**
+
+##4.1 Chi-square test for Age group and Education Level
 
 ```{r}
 ggbarstats(data = resident_profile, 
@@ -323,14 +334,17 @@ ggbarstats(data = resident_profile,
            )
 ```
 
-
 ## 4.2 Differences in Joviality based on Education Level
-As defined, Joviality indicates the participant's overall happiness at the start of the study. We will like to found out if there is a difference in Joviality based on Education Level. 
 
-### 4.2.1 Normality Assumption Test 
-We will test the null hypothesis at 95% confidence level:
-Ho: the mean Joviality across different Education Level is the same 
-H1: the mean Joviality across different Education Level is not the same 
+As defined, Joviality indicates the participant's overall happiness at the start of the study. We will like to found out if there is a difference in Joviality based on Education Level. Before testing our hypothesis, we will perform a normality assumption test at 95% confidence level.
+
+### 4.2.1 Normality Assumption Test
+
+At 95% confidence level:
+
+Ho: the mean Joviality across different Education Level is the same
+
+H1: the mean Joviality across different Education Level is not the same
 
 ```{r}
 #compute statistics 
@@ -346,6 +360,7 @@ maximum_joviality
 min_joviality
 IQR_joviality
 ```
+
 ```{r}
 ggplot(data = resident_profile ,
   aes(x=joviality, after_stat(count), color = educationLevel)) +
@@ -354,8 +369,6 @@ ggplot(data = resident_profile ,
   geom_vline(aes(xintercept = average_joviality), col ="grey", linewidth=1 ) +
   geom_vline(aes(xintercept = median_joviality), col ="orange", linewidth=1 ) 
 ```
-
-
 
 ```{r}
 ggplot(data=resident_profile,
@@ -376,10 +389,15 @@ ggplot(data=resident_profile,
 
 ```
 
-### 4.2.2 Kruskal-Wallis Test for Joviality across Education Level 
+Based on the result above, we concluded that there is enough statistical evidence to reject the null hypothesis. Since the p-values fall below (p \< 0.05), we will use the Wilcoxon test.
+
+### 4.2.2 Kruskal-Wallis Test for Joviality across Education Level
+
 We will test the following hypothesis at 95% Confidence Level:
 
 Ho : the median Joviality across different education level is the same
+
+H1: the median Joviality across different education level is not the same
 
 ```{r}
 #| code-fold: true
@@ -393,9 +411,20 @@ ggbetweenstats(data = resident_profile,
        package = "wesanderson", palette = "Chevalier1"
        )
 ```
-##4.3 Chi-square test for Age group and Joviality
 
-Joviality level are binned into 4-class variables. 
+As seen above, the P-value is lower than the 0.05. As such, there is enough statistical evidence to reject the null hypothesis that the median joviality across education level is the same.
+
+Additionally, we want to find out if there any distinct similarities between the district. Through the graph above, we discovered that not all pair comparison are statistically significant. The pair (Low and HighSchoolOrCollege) is not statistically significant with a P-value of 0.14, which is greater than 0.05. Thus, we cannot reject the null hypothesis that there is not differences between the joviality level between the pair.
+
+## 4.3 Association between Age group and Joviality
+
+We discovered that there is a statistical difference in joviality across Education Level, we would like to examine if the same applies and if there is an association between the age group. As Joviality is a continuous variable, we used `mutate` from `dplyr` to split it into 5-class variables, with each range at 20%.
+
+At 95% confidence level,
+
+Ho : No association exists between the age group and joviality level
+
+H1: Association exists between the age group and joviality level
 
 ```{r}
 ggbarstats(data = resident_profile, 
@@ -405,7 +434,6 @@ ggbarstats(data = resident_profile,
           package = "wesanderson", palette = "Chevalier1"
            )
 ```
-
 
 ```{r}
 ##KIV TO COME BACK AND EDIT. 
@@ -424,16 +452,13 @@ p3
 
 ```
 
-
 # 5. Financial Health Insights
 
-to include graphs of ID financial health over the 2 years 
-
+to include graphs of ID financial health over the 2 years
 
 ```{r}
 
 ```
-
 
 ```{r}
 plot_ly(data = resident_profile, 
@@ -461,8 +486,6 @@ girafe(
   )                                        
 )                                        
 ```
-
-
 
 ```{r}
 #Initiating the base plot
