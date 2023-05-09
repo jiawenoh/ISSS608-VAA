@@ -6,14 +6,14 @@ date: "5/6/2023"
 date-modified: "5/6/2023"
 code-fold: false
 execute: 
-  echo: true
-  eval: true
+#  echo: true
+#  eval: true
   warning: false
 ---
 
 # 1. OVERVIEW
 
-City of Engagement, with a total population of 50,000, is a small city located at Country of Nowhere. The city serves as a service centre of an agriculture region surrounding the city. The main agriculture of the region is fruit farms and vineyards. The local council of the city is in the process of preparing the Local Plan 2023. A sample survey of 1000 representative residents had been conducted to collect data related to their household demographic and spending patterns, among other things. The city aims to use the data to assist with their major community revitalization efforts, including how to allocate a very large city renewal grant they have recently received.
+City of Engagement is a small city located at Country of Nowhere, with a total population of 50,000, serving as an agriculture region. The local council of the city is in the midst of preparing the Local Plan 2023. 
 
 ## 1.1 The Task
 
@@ -21,14 +21,31 @@ In this take-home exercise, you are required to apply the concepts and methods y
 
 # 2. Data Source
 
-# 3. Data Preparation
+Data has been collected by the local council of the city. The survey sampled 1,000 respondents to collect data related to their household demographic, spending patterns and among, other things. The data is stored in two separate files:
+
+1.  Participants.csv *(Participants' Profile)*
+
+    -   1,011 rows
+
+    -   7 variables
+
+2.  FinancialJournal.csv *(Financial Health of Participants)*
+
+    -   1,513,636 rows
+
+    -   4 variables
+
+    -   From Mar 2022 to Feb 2023.
+
+#3. Data Preparation
 
 ## 3.1 Install R-packages
 
 Using p_load() of pacman package to load the required libraries
 
 ```{r}
-pacman::p_load(ggiraph, plotly, patchwork, DT, tidyverse,knitr,FunnelPlotR,scales) 
+pacman::p_load(ggiraph, plotly, patchwork, DT, tidyverse,knitr,scales,ggstatsplot,paletteer,wesanderson,ggpubr)
+options(scipen = 999)
 ```
 
 ## 3.2 Import Data
@@ -38,22 +55,22 @@ pacman::p_load(ggiraph, plotly, patchwork, DT, tidyverse,knitr,FunnelPlotR,scale
 ```{r}
 participants <- read_csv("data/Participants.csv")
 ```
-
 ### 3.2.2 Load participants
 
-::: {.panel-tabset}
+::: panel-tabset
+## Data Table
 
-## Data Table 
 ```{r}
 #| echo: false
 head(participants)
 ```
+
 ## Code
+
 ```{r}
 #| eval: false
 head(participants)
 ```
-
 :::
 
 ### 3.2.3 Import Financial Journal dataset
@@ -64,8 +81,7 @@ financial_journal <- read_csv("data/FinancialJournal.csv")
 
 ### 3.2.4 Load Financial Journal
 
-::: {.panel-tabset}
-
+::: panel-tabset
 #### Data Table
 
 ```{r}
@@ -79,15 +95,26 @@ head(financial_journal)
 #| eval: false
 head(financial_journal)
 ```
-
 :::
 
 ## 3.3 Data Wrangling
 
-As seen from the two data tables, there are inaccurate data types. Code with mutate from dplyr to reformat participantID from dbl to chr. groupby participantID remove duplicates reformat timestamp to year and month create new variables for income, expenses, cashflow
+As seen from the two data tables above, there are several quality issues. 
+1) for Participants.csv 
+
+Inaccurate data types. 
+ - participantID is in `dbl` instead of `chr`
+ -timestamp format is in `POSIX` instead of `chr` 
+ - householdSize is in `dbl`. We will convert it to `ord`. 
+ -reformat age group after looking at the min and max
+ - round up jovality to 2 d.p. 
+ 
+Code with mutate from dplyr to reformat participantID from dbl to chr. 
+Check for duplicates(remove 1,113 rows)
+
+groupby participantID remove duplicates reformat timestamp to year and month create new variables for income, expenses, cashflow
 
 The function distinct() \[dplyr package\] can be used to keep only unique/distinct rows from a data frame.
-
 
 ```{r}
 unique(financial_journal$category)
@@ -97,7 +124,10 @@ unique(financial_journal$category)
 #create new dataset 
 participants_new <- participants %>%
     mutate(
-          participantId = as.character(participantId))
+          participantId = as.character(participantId),
+          #binned joviality to 5-class variables 
+          joviality_bins = cut(joviality, breaks = c(0.0,0.2,0.4,0.6,0.8,1.0))
+          )
 
 #reformat householdSize to Ordinal 
     participants_new$householdSize <- factor(participants$householdSize,
@@ -113,14 +143,16 @@ participants_new$age_group <- factor(ifelse(participants$age < 20, "Under 20",
 
 #reformat education level to Ordinal 
 participants_new$educationLevel <- factor(participants$educationLevel, 
-                                      levels = c("Low", "Graduate", "Bachelors",
-                                                 "HighSchoolOrCollege"), 
+                                      levels = c("Low", "HighSchoolOrCollege", 
+                                                 "Bachelors", "Graduate"
+                                                 ), 
                                       ordered = TRUE)  
 
 #round up joviality to 2 decimal places 
 participants_new$joviality <- round(participants$joviality, 2) 
   
 participants_new
+
 ```
 
 ```{r}
@@ -172,7 +204,6 @@ pivoted_fj
 
 The function distinct() \[dplyr package\] can be used to keep only unique/distinct rows from a data frame. If there are duplicate rows, only the first row is preserved.
 
-
 ```{r}
 colSums(pivoted_fj[-1] !=0)
 ```
@@ -185,9 +216,11 @@ any(is.na(participants_new))
 any(is.na(pivoted_fj))
 ```
 
-### Merge Data Table 
+### Merge Data Table
 
 ```{r}
+#| code-fold: true
+#| 
 #join both data sets 
 resident_profile <- full_join(participants_new, pivoted_fj, 
                        by = c("participantId" = "participantId")) %>%
@@ -199,15 +232,19 @@ resident_profile <- full_join(participants_new, pivoted_fj,
                     relocate(Income, .after = haveKids) %>%
                     relocate(Expenses , .after = Income) 
 resident_profile %>%
-    select(c(1:17))
+    select(c(1:18))
 ```
 
 ```{r}
-DT::datatable(resident_profile, class= "compact")
+kable(head(resident_profile), "simple")
 ```
+
 # 4. Demographics Insights
 
-```{r}
+```{r Overview of Demographics , fig.width=12,fig.height=6}
+
+#| code-fold: true
+
 #Bar chart for resident's age distribution
 p1 <- ggplot(data= participants_new,
       aes(x = age_group)) +
@@ -216,9 +253,7 @@ p1 <- ggplot(data= participants_new,
       ylab("No.of\nResidents") +
       ylim(0,300) +
       geom_text(aes(label = paste(..count..,",", scales::percent(..count../sum(..count..),accuracy = 0.01))), 
-      stat= "count", vjust = -0.5) +
-      ggtitle("Age Distribution of Residents ") +
-      theme(plot.title = element_text(hjust = 0.5))
+      stat= "count", vjust = -0.5) 
 
 #Bar chart for resident's household size distribution
 p2 <- ggplot(data= participants_new,
@@ -228,9 +263,8 @@ p2 <- ggplot(data= participants_new,
       ylab("No.of\nResidents") +
       ylim(0,400) +
       geom_text(aes(label = paste(..count..,",", scales::percent(..count../sum(..count..),accuracy = 0.01))), 
-      stat= "count", vjust = -0.5) +
-      ggtitle("Household Size Distribution of Residents ") +
-      theme(plot.title = element_text(hjust = 0.5))
+      stat= "count", vjust = -0.5) 
+
 
 #Bar chart for resident's education level
 p3 <- ggplot(data= participants_new,
@@ -240,21 +274,16 @@ p3 <- ggplot(data= participants_new,
       ylab("No.of\nResidents") +
       ylim(0,600) +
       geom_text(aes(label = paste(..count..,",", scales::percent(..count../sum(..count..),accuracy = 0.01))), 
-      stat= "count", vjust = -0.5) +
-      ggtitle("Distribution of Residents' Education Level  ") +
-      theme(plot.title = element_text(hjust = 0.5))
+      stat= "count", vjust = -0.5) 
 
 #Bar chart to visualize if residents have kids 
 p4 <- ggplot(data= participants_new,
       aes(x = haveKids)) +
       geom_bar() +
-      xlab("Education Level") +
       ylab("No.of\nResidents") +
       ylim(0,850) +
       geom_text(aes(label = paste(..count..,",", scales::percent(..count../sum(..count..),accuracy = 0.01))), 
-      stat= "count", vjust = -0.5) +
-      ggtitle("Residents' Kids Distribution") +
-      theme(plot.title = element_text(hjust = 0.5))
+      stat= "count", vjust = -0.5) 
 
 #Bar chart for resident's joviality 
 #MISSING THE TEXT ABOVE 
@@ -262,30 +291,121 @@ p4 <- ggplot(data= participants_new,
 p5 <- ggplot(data= participants_new,
       aes(x = joviality)) +
       geom_histogram(bins=10, color="black",      
-                 fill= "darkgrey") +
+                 fill= "grey25") +
       xlab("Joviality Level") +
-      ylab("No.of\nResidents") +
-      ggtitle("Distribution of Residents' Joviality  ") +
-      theme(plot.title = element_text(hjust = 0.5))
+      ylab("No.of\nResidents") 
 
 #Bar chart for residents' interest group 
 p6 <- ggplot(data= participants_new,
       aes(x = interestGroup)) +
       geom_bar() +
-      xlab("Education Level") +
+      xlab("Interest Group") +
       ylab("No.of\nResidents") +
       ylim(0,150) +
       geom_text(aes(label = paste(scales::percent(..count../sum(..count..),
             accuracy = 0.01))), 
-            stat= "count", vjust = -0.5) +
-      ggtitle("Distribution of Residents' Education Level  ") +
-      theme(plot.title = element_text(hjust = 0.5))
+            stat= "count", vjust = -0.5) 
 
-p1 +p2 + p3 + p4 + p5 + p6  +  plot_layout(ncol = 3, widths = c(1))
+design <- "
+  321
+  551
+  664
+"
+
+p1 + p2 + p3 + p4 + p5 + p6 + plot_layout(design = design)
+```
+##4.1 Chi-square test for Age group and Education Level 
+
+```{r}
+ggbarstats(data = resident_profile, 
+           x = educationLevel, y = age_group,
+           package = "wesanderson", palette = "Chevalier1"
+           )
 ```
 
 
+## 4.2 Differences in Joviality based on Education Level
+As defined, Joviality indicates the participant's overall happiness at the start of the study. We will like to found out if there is a difference in Joviality based on Education Level. 
+
+### 4.2.1 Normality Assumption Test 
+We will test the null hypothesis at 95% confidence level:
+Ho: the mean Joviality across different Education Level is the same 
+H1: the mean Joviality across different Education Level is not the same 
+
+```{r}
+#compute statistics 
+average_joviality <- round(mean(resident_profile$joviality),2)
+median_joviality <- round(median(resident_profile$joviality),2)
+maximum_joviality <- as.numeric(round((IQR(resident_profile$joviality)*1.5) +
+                quantile(resident_profile$joviality,0.75)),2)
+min_joviality <- as.integer(min(resident_profile$joviality))
+IQR_joviality <- round(IQR(resident_profile$joviality)*1.5)
+average_joviality
+median_joviality
+maximum_joviality
+min_joviality
+IQR_joviality
 ```
+```{r}
+ggplot(data = resident_profile ,
+  aes(x=joviality, after_stat(count), color = educationLevel)) +
+  geom_density(adjust=1, position ="stack") +
+  xlim(0,1) +
+  geom_vline(aes(xintercept = average_joviality), col ="grey", linewidth=1 ) +
+  geom_vline(aes(xintercept = median_joviality), col ="orange", linewidth=1 ) 
+```
+
+
+
+```{r}
+ggplot(data=resident_profile,
+       aes(sample = joviality)) + 
+  stat_qq() +
+  stat_qq_line()
+```
+
+```{r}
+  ggplot(data = resident_profile,
+         aes(x= joviality)) + 
+  geom_histogram(bins=10) +
+  xlab("Joviality") +
+  ylab("No.of Residents") +
+  geom_vline(aes(xintercept = average_joviality), col ="red", linewidth=1 ) +
+  annotate("text", x=0.37, y= 1400, label="Average Joviality:", size=4, color = "red") +    annotate("text", x=0.37, y= 1300, label=format(average_joviality, big.mark=","), size=4, color = "red") 
+  geom_vline(aes(xintercept = median_joviality), col ="green", linewidth=1 ) 
+
+```
+
+### 4.2.2 Kruskal-Wallis Test for Joviality across Education Level 
+We will test the following hypothesis at 95% Confidence Level:
+
+Ho : the median Joviality across different education level is the same
+
+```{r}
+#| code-fold: true
+#| fig-width: 12
+#| fig-height: 6
+ggbetweenstats(data = resident_profile,
+       x= educationLevel, y= joviality, type ="np",
+       xlab= "Education Level", ylab = "Joviality",
+       title = "Comparison of Joviality across Education Level",
+       pairwise.comparisons = TRUE, pairwise.display ="ns", conf.level = 0.95,
+       package = "wesanderson", palette = "Chevalier1"
+       )
+```
+##4.3 Chi-square test for Age group and Joviality
+
+Joviality level are binned into 4-class variables. 
+
+```{r}
+ggbarstats(data = resident_profile, 
+           x = joviality_bins, y = age_group,
+          title = "Comparison of Joviality across age-group",
+          pairwise.comparisons = TRUE, pairwise.display ="s", conf.level = 0.95,
+          package = "wesanderson", palette = "Chevalier1"
+           )
+```
+
 
 ```{r}
 ##KIV TO COME BACK AND EDIT. 
@@ -305,9 +425,15 @@ p3
 ```
 
 
-
-
 # 5. Financial Health Insights
+
+to include graphs of ID financial health over the 2 years 
+
+
+```{r}
+
+```
+
 
 ```{r}
 plot_ly(data = resident_profile, 
@@ -335,62 +461,8 @@ girafe(
   )                                        
 )                                        
 ```
-```{r}
-average_income <- round(mean(resident_profile$Income),2)
-median_income <-round(median(resident_profile$Income),2)
-ymax <- as.numeric(round((IQR(resident_profile$Income)*1.5) +
-                quantile(resident_profile$Income,0.75)))
-ymin <- as.integer(min(resident_profile$Income))
 
-average_income
-median_income
-ymax
-ymin
 
-b <- ggplot(data = pivoted_fj, aes(y = Income)) + 
-  geom_boxplot(outlier.colour="red", outlier.shape=16,
-               outlier.size=1, notch=FALSE) + 
-  coord_flip() + labs(y = "", x = "") + 
-  scale_y_continuous(limits = c(0,20000), labels = scales::comma) +
-  theme(axis.text = element_blank(), axis.ticks = element_blank()) + 
-  stat_boxplot(geom="errorbar", width=0.5) + 
-  annotate("text", x=0.35, y=ymax, label=format(ymax, big.mark = ","), 
-           size=3, color="lightpink4") +
-  annotate("text", x=0.35, y=ymin, label=format(ymin, big.mark = ","), 
-           size=3, color="lightpink4")
-
-b
-```
-
-```{r}
-#plotting histogram
-h <- ggplot(data = resident_profile, 
-            aes(x = Income)) + 
-  geom_histogram(color="black", fill="azure4", binwidth = 50000) + 
-  scale_x_continuous(limits = c(0,1500000), labels = scales::comma) +
-  labs(x = "Resale Price (SGD)", y = "Number of transactions") +
-  geom_vline(aes(xintercept = resale_mean), col="darkblue", linewidth=1) +
-  annotate("text", x=640000, y=4000, label="Mean resale price:", 
-           size=4, color="darkblue") +
-  annotate("text", x=640000, y=3750, label=format(average_income, big.mark = ","),
-           size=4, color="darkblue") +
-  geom_vline(aes(xintercept = resale_median), col="lightpink4", linewidth=1) +
-  annotate("text", x=400000, y=4000, label="Median resale price", 
-           size=4, color="lightpink4") +
-  annotate("text", x=400000, y=3750, label=format(median_income, big.mark = ","),
-           size=4, color="lightpink4") +
-  theme(axis.text.x = element_text(size=8))
-
-```
-
-```{r}
-funnel_plot(
-  numerator = resident_profile$Income,
-  denominator = resident_profile$Expenses,
-  group = resident_profile$age
-  
-)
-```
 
 ```{r}
 #Initiating the base plot
@@ -408,5 +480,3 @@ plot_ly(data = resident_profile,
                       line = list(width = 0.2, color = 'white'))) 
   
 ```
-
-
