@@ -19,7 +19,7 @@ City of Engagement is a small city located at Country of Nowhere, with a total p
 
 In this take-home exercise, you are required to apply the concepts and methods you had learned in Lesson 1-4 to reveal the demographic and financial characteristics of the city of Engagement, using appropriate **static and interactive statistical graphics** methods.
 
-# 2. Data Source
+# 2. Datasets
 
 Data has been collected by the local council of the city. The survey sampled 1,000 respondents to collect data related to their household demographic, spending patterns and among, other things. The data is stored in two separate files ranging from **Mar 2022 to Feb 2023** :
 
@@ -27,6 +27,16 @@ Data has been collected by the local council of the city. The survey sampled 1,0
 |:---------:|:--------------------:|:------------------------:|
 |   rows    |        1,011         |        1,513,636         |
 | variables |          7           |            4             |
+
+## 2.1 Metadata
+
+| File             | Columns | Description |
+|------------------|---------|-------------|
+| participants.csv |         |             |
+|                  |         |             |
+|                  |         |             |
+|                  |         |             |
+|                  |         |             |
 
 # 3. Data Preparation
 
@@ -53,7 +63,8 @@ Using p_load() of pacman package to load and install the following libraries:
 ```{r}
 #to double check if got use DT, scales, ggpubr
 pacman::p_load(ggiraph, plotly, patchwork, DT, tidyverse,
-               knitr,scales,ggstatsplot,paletteer,wesanderson,ggpubr)
+               knitr,scales,ggstatsplot,paletteer,wesanderson,
+               ggpubr,crosstalk,gganimate)
 options(scipen = 999)
 ```
 
@@ -248,84 +259,109 @@ resident_profile %>%
 kable(head(resident_profile), "simple")
 ```
 
-# 4. Demographics Insights
+# 4. Exploratory Data Analysis (EDA)
 
-```{r Overview of Demographics , fig.width=12,fig.height=6}
+Overview of City of Engagement's resident.
 
+```{r}
 #| code-fold: true
+#| fig-width: 12
+#| fig-height: 6
+#| warning : false
+
+#create tooltip to display age group 
+participants_new$tooltip <-c(paste0(
+  "Age Group:", participants_new$age_group))
+
 #Bar chart for resident's age distribution
 p1 <- ggplot(data= participants_new,
       aes(x = age_group)) +
-      geom_bar() +
+      geom_bar_interactive(aes(tooltip = participants_new$tooltip, stackgroups = TRUE,
+                               data_id= age_group)) + 
+      scale_fill_manual(values = wes_palette("Chevalier1")) +
       xlab("Age Group") +
       ylab("No.of\nResidents") +
-      ylim(0,300) +
-      geom_text(aes(label = paste(..count..,",", scales::percent(..count../sum(..count..),accuracy = 0.01))), 
-      stat= "count", vjust = -0.5) 
+      theme(axis.text.x=element_text(size=5)) +
+      theme(axis.title.y=element_text(size=10)) +
+      ylim(0,300) 
 
 #Bar chart for resident's household size distribution
 p2 <- ggplot(data= participants_new,
       aes(x = householdSize)) +
-      geom_bar() +
+      geom_bar_interactive(aes(tooltip = participants_new$tooltip, stackgroups = TRUE,
+                               data_id= age_group)) +
+      scale_fill_manual(values = wes_palette("Chevalier1")) +
       xlab("Size of Household") +
-      ylab("No.of\nResidents") +
-      ylim(0,400) +
-      geom_text(aes(label = paste(..count..,",", scales::percent(..count../sum(..count..),accuracy = 0.01))), 
-      stat= "count", vjust = -0.5) 
+      ylab("No.of Residents") +
+      theme(axis.text.x=element_text(size=5)) +
+      theme(axis.title.y=element_text(size=10)) +
+      ylim(0,400) 
 
 
 #Bar chart for resident's education level
 p3 <- ggplot(data= participants_new,
       aes(x = educationLevel)) +
-      geom_bar() +
+      geom_bar_interactive(aes(tooltip = participants_new$tooltip, stackgroups = TRUE,
+                               data_id= age_group)) +
       xlab("Education Level") +
       ylab("No.of\nResidents") +
-      ylim(0,600) +
-      geom_text(aes(label = paste(..count..,",", scales::percent(..count../sum(..count..),accuracy = 0.01))), 
-      stat= "count", vjust = -0.5) 
+      theme(axis.text.x=element_text(size=5)) +
+      theme(axis.title.y=element_text(size=10)) +
+      ylim(0,600)
 
 #Bar chart to visualize if residents have kids 
 p4 <- ggplot(data= participants_new,
       aes(x = haveKids)) +
-      geom_bar() +
+      geom_bar_interactive(aes(tooltip = participants_new$tooltip, stackgroups = TRUE,
+                               data_id= age_group)) +
       ylab("No.of\nResidents") +
-      ylim(0,850) +
-      geom_text(aes(label = paste(..count..,",", scales::percent(..count../sum(..count..),accuracy = 0.01))), 
-      stat= "count", vjust = -0.5) 
-
-#Bar chart for resident's joviality 
-#MISSING THE TEXT ABOVE 
-
-p5 <- ggplot(data= participants_new,
-      aes(x = joviality)) +
-      geom_histogram(bins=10, color="black",      
-                 fill= "grey25") +
-      xlab("Joviality Level") +
-      ylab("No.of\nResidents") 
+      theme(axis.text.x=element_text(size=5)) +
+      theme(axis.title.y=element_text(size=10)) +
+      ylim(0,850) 
 
 #Bar chart for residents' interest group 
-p6 <- ggplot(data= participants_new,
+p5 <- ggplot(data= participants_new,
       aes(x = interestGroup)) +
-      geom_bar() +
+      geom_bar_interactive(aes(tooltip = participants_new$tooltip, stackgroups = TRUE,
+                               data_id= age_group)) +
       xlab("Interest Group") +
       ylab("No.of\nResidents") +
-      ylim(0,150) +
-      geom_text(aes(label = paste(scales::percent(..count../sum(..count..),
-            accuracy = 0.01))), 
-            stat= "count", vjust = -0.5) 
+      theme(axis.text.x=element_text(size=5)) +
+      theme(axis.title.y=element_text(size=10)) +
+      ylim(0,150) 
 
+#figure design layout 
 design <- "
-  321
-  551
-  664
+  132
+  132
+  132
+  554
 "
 
-p1 + p2 + p3 + p4 + p5 + p6 + plot_layout(design = design)
+girafe(code = print(p1 + p2 + p3 + p4 + p5  + 
+                      plot_layout(design = design, ) + 
+                      plot_annotation(title = 
+                    "Demographics Insights of residents \n in City of Engagement",
+                     theme = theme(plot.title = element_text(size = 20, hjust=0.5))
+                      )), 
+       width_svg = 12,
+       height_svg = 6,
+       options = list(
+         opts_hover(css = "fill: #02401B;"),
+         opts_hover_inv(css = "opacity:0.2;")
+         )
+       ) 
 ```
 
-**`-to fill in observations later -`**
+**Insights:**
 
-##4.1 Chi-square test for Age group and Education Level
+::: callout-note
+## Interactivity
+
+Click on the graph and hover around each demographics. The respective age group will be displayed.
+:::
+
+## 4.1 Chi-square test for Age group and Education Level
 
 ```{r}
 ggbarstats(data = resident_profile, 
@@ -454,52 +490,191 @@ p3
 
 # 5. Financial Health Insights
 
-to include graphs of ID financial health over the 2 years
+`to include graphs of ID financial health over the 2 years.`
+
+## 5.1 Resident's Financial Health
+
+```{r}
+#| code-fold: true
+#| fig-width: 12
+#| fig-height: 6
+
+tooltip_css <- "background-color:lightgrey; #<<
+font-style:bold; color:black;" #<<
+
+ie <-  ggplot(data=resident_profile) +
+     geom_point_interactive (aes(x=Expenses, y= Income, 
+                                 tooltip = participantId, data_id = Cashflow)) +
+     xlim(0,5000)
+
+girafe(                                  
+  ggobj = ie,                             
+  width_svg = 6,                         
+  height_svg = 6*0.618,
+  options = list( #<<
+    opts_tooltip(css = tooltip_css), #<<
+    opts_hover_inv(css = "opacity:0.2;") #<<
+  )                                        
+)   
+   
+```
+
+::: callout-important
+## Update
+
+7 rows have been excluded in the graph
+:::
 
 ```{r}
 
 ```
+
+## 5.2 Differences in joviality across income
+
+We want to find out if there are any differences in joviality across income.
+
+The following considerations have been made:
+
+-   assume income increases over the years
+
+-   opacity included to highlight the contrast
+
+-   Tooltip to indicate variables
+
+    -   participantID
+
+    -   Income
+
+    -   Cashflow
+
+We will be using `plot_ly` for the interactive graph.
 
 ```{r}
 plot_ly(data = resident_profile, 
-             x = ~joviality, y = ~Income)
+             x = ~joviality, y = ~Income,
+        hovertemplate = ~paste("<br>Participant's ID:",participantId,
+                               "<br>Cashflow:", Cashflow,
+                              "<br>Income:", Income,
+                               "<br>Expenses:", Expenses),
+             
+            type = "scatter",
+            mode = "markers",
+            marker = list(opacity = 0.7,sizemode = "diameter", 
+                          line = list(width =0.1, color = "white"))) |>
+
+#add title and labels to axis 
+        layout(title = "Interactive scatterplot of Income vs Joviality" ,
+         xaxis = list(title = "Joviality level") ,
+         yaxis = list(title = "Income"))
+
+```
+
+**Insights**
+
+-   When income exceeds \$15k, joviality level decreases
+
+-   it is similar to income range of \$10-\$15k where majority have low joviality
+
+-   Joviality level are more spread out when income range below \$5k
+
+::: callout-note
+## Note
+
+Happiness level of `joviality` ranges from 0 to 1. A score of 0.4 indicates that participant is dull while a score of 0.8 indicates joy.
+:::
+
+```{r}
+DT::datatable(resident_profile, class= "compact")
 ```
 
 ```{r}
-p <- ggplot(data=resident_profile, 
-       aes(x = Shelter)) +
-  geom_dotplot_interactive(              
-    aes(tooltip = Expenses, 
-        data_id = Expenses),              
-    stackgroups = TRUE,                  
-    binwidth = 1,                        
-    method = "histodot") +               
-  scale_y_continuous(NULL,               
-                     breaks = NULL)
-girafe(                                  
-  ggobj = p,                             
-  width_svg = 6,                         
-  height_svg = 6*0.618,
-  options = list(                        
-    opts_hover(css = "fill: #202020;"),  
-    opts_hover_inv(css = "opacity:0.2;") 
-  )                                        
-)                                        
+d <- highlight_key(resident_profile) 
+p <- ggplot(d, 
+            aes(Expenses, 
+                Income)) + 
+  geom_point(size =1) 
+
+gg <- highlight(ggplotly(p),        
+                "plotly_selected")  
+
+dt <- DT::datatable(d,
+                    selection =list(mode="single",
+                                    target="column"))
+crosstalk::bscols(gg,               
+                  dt, 
+                  widths = 6)        
+
 ```
 
 ```{r}
-#Initiating the base plot
-plot_ly(data = resident_profile,
-        x = ~joviality,
-        y = ~age,
-        color = ~haveKids,
-        hovertemplate = ~paste("<br>ID", participantId,
-                               "<br>Education Level:", educationLevel,
-                               "<br>Household Size ", householdSize),
-        type = 'scatter',
-        mode = 'markers',
-        marker = list(opacity = 0.6,
-                      sizemode = 'diameter',
-                      line = list(width = 0.2, color = 'white'))) 
+fj_cat <- financial_journal_lessdup %>%
   
+#recode ID from dbl to chr, year_mth
+    mutate(participantId = as.character(participantId),
+         year = format(as.Date(financial_journal_lessdup$timestamp), "%Y"),
+         mth = format(as.Date(financial_journal_lessdup$timestamp), "%m"),
+         amount = abs(round(amount,2)),
+         .before = 3) %>%
+  
+#group the columns in the following order 
+  group_by(year, mth, category) %>%
+  summarize(total_amount = sum(amount))
+
+fj_cat
+```
+
+```{r}
+ggplot(data = fj_cat,
+       aes(x= category, y=total_amount, size = total_amount)) + 
+         geom_point(alpha=0.8, show.legend= FALSE) +
+         scale_size(range =c(2,12)) +
+         labs(titles = "Year{as.integer(frame_time)}",
+              x = "Category",
+              y = "Total_amount") +
+         transition_time(as.integer(year)) +
+         ease_aes("linear") +
+         scale_y_continuous(limit =c(0,2000000))
+```
+
+### Average Cashflow available for Residents across Age Group
+
+```{r}
+#| code-fold: true
+#| fig-width: 12
+#| fig-height: 6
+
+tooltip_css <- "background-color:#C7B19C; #<<
+font-style:bold; color:#446455;" #<<
+
+tooltip <- function(y, ymax, accuracy = 1) {   #<<
+  mean <- scales::number(y, accuracy = accuracy) #<<
+  sem <- scales::number(ymax - y, accuracy = accuracy) #<<
+  paste("Average Cashflow:", mean, "+/-", sem) #<<
+} #<<
+
+pp <- ggplot(data=resident_profile, 
+                   aes(x = age_group),
+) +
+  stat_summary(aes(y = Cashflow, 
+                   tooltip = after_stat(  #<<
+                     tooltip(y, ymax))),  #<<
+    fun.data = "mean_se", 
+    geom = GeomInteractiveCol,  #<<
+    fill = "#D3DDDC"
+  ) +
+  stat_summary(aes(y = Cashflow),
+    fun.data = mean_se,
+    geom = "errorbar", width = 0.2, linewidth = 0.2
+  ) +
+  labs(title="Average Cashflow available to Residents by age_group") +
+  ylab("Total Cashflow") +
+  xlab("Age Group") 
+
+girafe(ggobj = pp,
+       width_svg = 8,
+       height_svg = 8*0.618,
+       options = list(    #<<
+       opts_tooltip(    #<<
+       css = tooltip_css)) #<<
+       )
 ```
