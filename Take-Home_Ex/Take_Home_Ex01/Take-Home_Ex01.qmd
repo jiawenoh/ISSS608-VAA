@@ -3,7 +3,7 @@ title: "Take Home Exercise 1"
 subtitle: " Visual Analytics of the demographic and financial characteristics of residents in City of Engagement"
 author: "Oh Jia Wen"
 date: "5/6/2023"
-date-modified: "5/6/2023"
+date-modified: "5/12/2023"
 code-fold: false
 execute: 
 #  echo: true
@@ -25,18 +25,36 @@ Data has been collected by the local council of the city. The survey sampled 1,0
 
 |           | 1\) Participants.csv | 2\) FinancialJourval.csv |
 |:---------:|:--------------------:|:------------------------:|
-|   rows    |        1,011         |        1,513,636         |
-| variables |          7           |            4             |
+|   Rows    |        1,011         |        1,513,636         |
+| Variables |          7           |            4             |
 
 ## 2.1 Metadata
 
-| File             | Columns | Description |
-|------------------|---------|-------------|
-| participants.csv |         |             |
-|                  |         |             |
-|                  |         |             |
-|                  |         |             |
-|                  |         |             |
++----------------------+----------------+-----------------------------------------------------------------------------+
+| File                 | Variables Name | Description                                                                 |
++:====================:+:==============:+:===========================================================================:+
+| participants.csv     | participantId  | Unique identification to represent the Participants                         |
+|                      |                |                                                                             |
+| FinancialJourval.csv |                |                                                                             |
++----------------------+----------------+-----------------------------------------------------------------------------+
+| participants.csv     | HouseholdSize  | Represents the number of people in the household                            |
++----------------------+----------------+-----------------------------------------------------------------------------+
+| participants.csv     | haveKids       | Binary value (True/False) indicating if participant have a kid(s)           |
++----------------------+----------------+-----------------------------------------------------------------------------+
+| participants.csv     | Age            | Represents age of the participant                                           |
++----------------------+----------------+-----------------------------------------------------------------------------+
+| participants.csv     | educationLevel | Represents the highest education attained by participant                    |
++----------------------+----------------+-----------------------------------------------------------------------------+
+| FinancialJourval.csv | interestGroup  | Represents the group associated with the participant                        |
++----------------------+----------------+-----------------------------------------------------------------------------+
+| FinancialJourval.csv | joviality      | Represents the level of happiness by participant at the start of the survey |
++----------------------+----------------+-----------------------------------------------------------------------------+
+| FinancialJourval.csv | timestamp      | Represents the date and time the entry was inputted                         |
++----------------------+----------------+-----------------------------------------------------------------------------+
+| FinancialJourval.csv | category       | Represents the type of income/expenses incurred at a given timestamp        |
++----------------------+----------------+-----------------------------------------------------------------------------+
+| FinancialJourval.csv | amount         | Represents the amount received ( *+ income),* amount paid *( - expenses )*  |
++----------------------+----------------+-----------------------------------------------------------------------------+
 
 # 3. Data Preparation
 
@@ -64,14 +82,14 @@ Using p_load() of pacman package to load and install the following libraries:
 #to double check if got use DT, scales, ggpubr
 pacman::p_load(ggiraph, plotly, patchwork, DT, tidyverse,
                knitr,scales,ggstatsplot,paletteer,wesanderson,
-               ggpubr,crosstalk,gganimate)
+               ggpubr,crosstalk,gganimate,ggridges,viridis,ggdist)
 options(scipen = 999)
 ```
 
 ::: callout-tip
 ## Tip
 
-`options(scipen = 999)` : The above code removes scientific notation in our exercise.
+`options(scipen = 999)` : removes scientific notation in our exercise.
 :::
 
 ## 3.2 Import Data
@@ -126,15 +144,42 @@ head(financial_journal)
 
 ## 3.3 Data Wrangling
 
-As seen from the two data tables above, there are several quality issues. 1) for Participants.csv
+As seen from the two data tables above, we noticed a few issues and have included the following adjustments:
 
-Inaccurate data types. - participantID is in `dbl` instead of `chr` -timestamp format is in `POSIX` instead of `chr` - householdSize is in `dbl`. We will convert it to `ord`. -reformat age group after looking at the min and max - round up jovality to 2 d.p.
+**In participants.csv :**
 
-Code with mutate from dplyr to reformat participantID from dbl to chr. Check for duplicates(remove 1,113 rows)
+1.  ParticipantId is a `<dbl>` variable. (Rectify by reformatting it to `<chr>`)
 
-groupby participantID remove duplicates reformat timestamp to year and month create new variables for income, expenses, cashflow
+2.  HouseholdSize is a `<dbl>` variable. (Revised to `<ord>` for the order of categories)
 
-The function distinct() \[dplyr package\] can be used to keep only unique/distinct rows from a data frame.
+3.  educationLevel is a `<chr>` variable. (Revised to `<ord>` for the order of categories)
+
+4.  joviality has nine decimal places. (Rectify by rounding it to 2.d.p)
+
+**In FinancialJourval.csv :**
+
+1.  Similar issue as point 1 above.
+
+2.  Timestamp is a `<POSIX>` variable. (Rectify by reformatting it to `<chr>`)
+
+3.  As per the code below, there are duplicate entries in the financial journal. (Rectify by using the `distinct()` function from `[dplyr package]` )
+
+```{r}
+#| code-fold: true
+#check for duplicates 
+dup <- (nrow(financial_journal) - nrow(unique(financial_journal)))
+#reformat output 
+dup_reformat <- format(dup, big.mark=",")
+#print output
+dup_reformat
+```
+
+4.  Type of Income/Expenses are all labelled in a column, "Category" which is not very useful. (Rectify by using `pivot_wider()` function from `[tidyr package]` to transpose)
+5.  TBC
+
+```{r}
+any(is.na(financial_journal))
+```
 
 ```{r}
 unique(financial_journal$category)
@@ -220,7 +265,8 @@ pivoted_fj$Cashflow <- pivoted_fj$Income - pivoted_fj$Expenses
 pivoted_fj$Shelter <- pivoted_fj$Shelter + pivoted_fj$RentAdjustment
 
 # Output the pivoted data frame
-pivoted_fj
+pivoted_fj %>%
+    select(c(1:6,8:11))
 ```
 
 The function distinct() \[dplyr package\] can be used to keep only unique/distinct rows from a data frame. If there are duplicate rows, only the first row is preserved.
@@ -256,7 +302,7 @@ resident_profile %>%
 ```
 
 ```{r}
-kable(head(resident_profile), "simple")
+kable(head(resident_profile), "simple") 
 ```
 
 # 4. Exploratory Data Analysis (EDA)
@@ -330,7 +376,7 @@ p5 <- ggplot(data= participants_new,
       theme(axis.title.y=element_text(size=10)) +
       ylim(0,150) 
 
-#figure design layout 
+#design layout for the patchwork figure
 design <- "
   132
   132
@@ -361,7 +407,75 @@ girafe(code = print(p1 + p2 + p3 + p4 + p5  +
 Click on the graph and hover around each demographics. The respective age group will be displayed.
 :::
 
-## 4.1 Chi-square test for Age group and Education Level
+## 4.1 Expenses incurred by Residents
+
+```{r}
+#| warning: false
+#| code-fold: true
+
+#create a new dataset
+grouped_data_rev <- financial_journal_lessdup %>%
+  #recode ID from dbl to chr, year_mth
+    mutate(participantId = as.character(participantId),
+         year_mth = format(as.Date(financial_journal_lessdup$timestamp), "%Y-%m"),
+         amount = abs(round(amount,2)),
+         .before = 3) %>%
+  #group the columns in the following order 
+  group_by(year_mth, category) %>%
+  summarize(total_amount = sum(amount)) 
+
+#creating interactive graph
+plot_ly(data = grouped_data_rev, 
+  x = ~year_mth, y = ~total_amount, color = ~category,
+  type = 'scatter', mode = 'line',
+  hovertemplate = ~paste("Year-Month:", year_mth,
+                         "<br>Amount:", format(total_amount, big.mark = ","))) |>
+
+#Configure title and axes
+  layout(title = "Amount earned/incurred by participant",
+         xaxis = list(title = "Time Period"),
+         yaxis = list(title = "Amount"))
+
+```
+
+## 4.2 Distribution of Expenses 
+
+```{r}
+#| warning: false
+#| code-fold: true
+
+#create a new dataset
+grouped_data_rev_new <- financial_journal_lessdup %>%
+    #recode ID from dbl to chr, year_mth
+    mutate(participantId = as.character(participantId),
+         year_mth = format(as.Date(financial_journal_lessdup$timestamp), "%Y-%m"),
+         amount = abs(round(amount,2)),
+         .before = 3) %>%
+  #group the columns in the following order 
+  group_by(category,year_mth) %>%
+  summarize(total_amount = sum(amount)) 
+
+# Filter out "Wage" category from the data frame
+grouped_data_rev_newest <- grouped_data_rev_new %>% 
+   filter(category != "Wage")
+
+#creating interactive graph
+plot_ly(data = grouped_data_rev_newest, 
+  x = ~year_mth, y = ~total_amount, color = ~category,
+  type = 'scatter', mode = 'line',
+  hovertemplate = ~paste("Year-Month:", year_mth,
+                         "<br>Amount:", format(total_amount, big.mark = ","))) |>
+
+#Configure title and axes
+  layout(title = "Total Expenses incurred by partcipants \nin City of Engagement from Mar 2022 - Feb 2023",
+         xaxis = list(title = "Time Period"),
+         yaxis = list(title = "Total Expenses"))
+
+```
+
+
+
+## 4.3 Chi-square test for Age group and Education Level
 
 ```{r}
 ggbarstats(data = resident_profile, 
@@ -370,11 +484,11 @@ ggbarstats(data = resident_profile,
            )
 ```
 
-## 4.2 Differences in Joviality based on Education Level
+## 4.4 Differences in Joviality based on Education Level
 
 As defined, Joviality indicates the participant's overall happiness at the start of the study. We will like to found out if there is a difference in Joviality based on Education Level. Before testing our hypothesis, we will perform a normality assumption test at 95% confidence level.
 
-### 4.2.1 Normality Assumption Test
+### 4.4.1 Normality Assumption Test
 
 At 95% confidence level:
 
@@ -427,7 +541,7 @@ ggplot(data=resident_profile,
 
 Based on the result above, we concluded that there is enough statistical evidence to reject the null hypothesis. Since the p-values fall below (p \< 0.05), we will use the Wilcoxon test.
 
-### 4.2.2 Kruskal-Wallis Test for Joviality across Education Level
+### 4.4.2 Kruskal-Wallis Test for Joviality across Education Level
 
 We will test the following hypothesis at 95% Confidence Level:
 
@@ -452,7 +566,7 @@ As seen above, the P-value is lower than the 0.05. As such, there is enough stat
 
 Additionally, we want to find out if there any distinct similarities between the district. Through the graph above, we discovered that not all pair comparison are statistically significant. The pair (Low and HighSchoolOrCollege) is not statistically significant with a P-value of 0.14, which is greater than 0.05. Thus, we cannot reject the null hypothesis that there is not differences between the joviality level between the pair.
 
-## 4.3 Association between Age group and Joviality
+## 4.5 Association between Age group and Joviality
 
 We discovered that there is a statistical difference in joviality across Education Level, we would like to examine if the same applies and if there is an association between the age group. As Joviality is a continuous variable, we used `mutate` from `dplyr` to split it into 5-class variables, with each range at 20%.
 
@@ -633,7 +747,7 @@ ggplot(data = fj_cat,
               y = "Total_amount") +
          transition_time(as.integer(year)) +
          ease_aes("linear") +
-         scale_y_continuous(limit =c(0,2000000))
+         scale_y_continuous(limit =c(0,8000000))
 ```
 
 ### Average Cashflow available for Residents across Age Group
@@ -677,4 +791,23 @@ girafe(ggobj = pp,
        opts_tooltip(    #<<
        css = tooltip_css)) #<<
        )
+```
+
+```{r}
+ggplot(data =resident_profile, 
+       aes(x = Food, 
+           y = age_group)) +
+  geom_density_ridges(
+    scale = 3,
+    rel_min_height = 0.01,
+    bandwidth = 3.4,
+    fill = "#D3DDDC",
+    color = "#446455"
+  ) +
+  scale_x_continuous(
+    name = "English grades",
+    expand = c(0, 0)
+    ) +
+  scale_y_discrete(name = NULL, expand = expansion(add = c(0.2, 2.6))) +
+  theme_ridges()
 ```
