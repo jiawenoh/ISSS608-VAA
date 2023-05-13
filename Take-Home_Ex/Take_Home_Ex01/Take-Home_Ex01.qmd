@@ -16,7 +16,7 @@ City of Engagement is a small city located at Country of Nowhere, with a total p
 
 ## 1.1 The Task
 
-In this take-home exercise, you are required to apply the concepts and methods you had learned in Lesson 1-4 to reveal the demographic and financial characteristics of the city of Engagement, using appropriate **static and interactive statistical graphics** methods.
+In this take-home exercise, patterns containing demographics and financial characteristics of residents in City of Engagement will be unveiled using appropriate static and interactive statistical graphics methods.
 
 # 2. Datasets
 
@@ -81,7 +81,7 @@ Using p_load() of pacman package to load and install the following libraries:
 #to double check if got use DT, scales, ggpubr
 pacman::p_load(ggiraph, plotly, patchwork, DT, tidyverse,
                knitr,scales,ggstatsplot,paletteer,wesanderson,
-               ggpubr,crosstalk,gganimate,ggridges,viridis,ggdist,ggside)
+               ggpubr,crosstalk,gganimate, ggridges, rstatix,gt,webshot2,png,nortest)
 options(scipen = 999)
 ```
 
@@ -143,46 +143,26 @@ head(financial_journal)
 
 ## 3.3 Data Wrangling
 
-As seen from the two data tables above, we noticed a few issues and have included the following adjustments:
+As seen from the two data tables above, there are some issues that could be rectify. Henceforth, the following adjustments are made:
 
-**In participants.csv :**
+**3.3.1 participants.csv :**
 
-1.  ParticipantId is a `<dbl>` variable. (Rectify by reformatting it to `<chr>`)
+1.  participantId is a `<dbl>` variable. (Rectify by reformatting it to `<chr>`)
 
-2.  HouseholdSize is a `<dbl>` variable. (Revised to `<ord>` for the order of categories)
+2.  householdSize is a `<dbl>` variable. (Revised to `<ord>` for the order of categories)
 
-3.  educationLevel is a `<chr>` variable. (Revised to `<ord>` for the order of categories)
-
-4.  joviality has nine decimal places. (Rectify by rounding it to 2.d.p)
-
-**In FinancialJourval.csv :**
-
-1.  Similar issue as point 1 above.
-
-2.  Timestamp is a `<POSIX>` variable. (Rectify by reformatting it to `<chr>`)
-
-3.  As per the code below, there are duplicate entries in the financial journal. (Rectify by using the `distinct()` function from `[dplyr package]` )
+3.  age is a continuous variable which makes it harder to visualize the demographics (Create a new column with 5-class variables after determining the youngest and oldest demographics.)
 
 ```{r}
 #| code-fold: true
-#check for duplicates 
-dup <- (nrow(financial_journal) - nrow(unique(financial_journal)))
-#reformat output 
-dup_reformat <- format(dup, big.mark=",")
-#print output
-dup_reformat
+#check min and max age of residents in COE. 
+min(participants$age)
+max(participants$age)
 ```
 
-4.  Type of Income/Expenses are all labelled in a column, "Category" which is not very useful. (Rectify by using `pivot_wider()` function from `[tidyr package]` to transpose)
-5.  TBC
+4.  educationLevel is a `<chr>` variable. (Revised to `<ord>` for the order of categories)
 
-```{r}
-any(is.na(financial_journal))
-```
-
-```{r}
-unique(financial_journal$category)
-```
+5.  joviality has nine decimal places. (Rectify by rounding it to 2.d.p and create new 5-class variables for future analysis)
 
 ```{r}
 #| code-fold: true
@@ -215,75 +195,94 @@ participants_new$educationLevel <- factor(participants$educationLevel,
 
 #round up joviality to 2 decimal places 
 participants_new$joviality <- round(participants$joviality, 2) 
-  
+
+#output data frame
 participants_new
 
 ```
 
-```{r}
-#check min and max age of residents in COE. 
-min(participants$age)
-max(participants$age)
+**3.3.2 FinancialJourval.csv :**
 
-```
+1.  Similar issue as point 1 above.
 
-```{r}
-#remove duplicate rows for all columns
-financial_journal_lessdup <- financial_journal %>% 
-  distinct()
+2.  Timestamp is a `<POSIX>` variable. (Rectify by reformatting it to `<chr>` in *year-mth* format)
 
-```
-
-You can use group_by() function along with the summarise() from dplyr package to find the group by sum in R DataFrame, group_by() returns the grouped_df ( A grouped Data Frame) and use summarise() on grouped df results to get the group by sum.
+3.  As per the code below, there are duplicate entries in the financial journal. (Rectify by using the `distinct()` function from `[dplyr package]` )
 
 ```{r}
 #| code-fold: true
-#create new dataset 
-grouped_data <- financial_journal_lessdup %>%
-  
-#recode ID from dbl to chr, year_mth
-    mutate(participantId = as.character(participantId),
-         year_mth = format(as.Date(financial_journal_lessdup$timestamp), "%Y-%m"),
-         amount = abs(round(amount,2)),
-         .before = 3) %>%
-  
-#group the columns in the following order 
-  group_by(participantId,year_mth, category) %>%
-  summarize(total_amount = sum(amount)) 
-
-# Pivot the data frame to have categories as columns
-pivoted_fj <- grouped_data %>%
-  pivot_wider(names_from = "category", values_from = "total_amount", values_fill = 0)
-
-# Add a new column with mixed categories
-pivoted_fj$Expenses <- pivoted_fj$Education + pivoted_fj$Food + pivoted_fj$Recreation + pivoted_fj$Shelter +pivoted_fj$RentAdjustment
-pivoted_fj$Income <- pivoted_fj$Wage
-pivoted_fj$Cashflow <- pivoted_fj$Income - pivoted_fj$Expenses
-pivoted_fj$Shelter <- pivoted_fj$Shelter + pivoted_fj$RentAdjustment
-
-# Output the pivoted data frame
-pivoted_fj %>%
-    select(c(1:6,8:11))
+#check for duplicates 
+dup <- (nrow(financial_journal) - nrow(unique(financial_journal)))
+#reformat output 
+dup_reformat <- format(dup, big.mark=",")
+#print output
+dup_reformat
 ```
 
-The function distinct() \[dplyr package\] can be used to keep only unique/distinct rows from a data frame. If there are duplicate rows, only the first row is preserved.
+4.  "Category" is not very useful. (Rectify by using `pivot_wider()` function from `[tidyr package]` to transpose)
+
+```{r}
+#| code-fold: true
+
+    #remove duplicate rows for all columns
+    financial_journal_lessdup <- financial_journal %>% 
+      distinct()
+
+    #create new dataset 
+    grouped_data <- financial_journal_lessdup %>%
+      
+    #recode participantId from dbl to chr, format timestamp to year_mth and round amount 
+        mutate(participantId = as.character(participantId),
+             year_mth = format(as.Date(financial_journal_lessdup$timestamp), "%Y-%m"),
+             amount = abs(round(amount,2)),
+             .before = 3) %>%
+      
+    #group the columns in the following order and sum the amount to total_amount
+      group_by( participantId, year_mth,category) %>%
+      summarize(total_amount = sum(amount)) 
+
+    # pivot the data frame to have categories as columns
+    pivoted_fj <- grouped_data %>%
+      pivot_wider(names_from = "category", 
+                  values_from = "total_amount", values_fill = 0)
+
+    # create new column from list of categories
+    pivoted_fj$Shelter_new <- pivoted_fj$Shelter + pivoted_fj$RentAdjustment
+    pivoted_fj$Expenses <- pivoted_fj$Education + pivoted_fj$Food +  
+    pivoted_fj$Recreation + pivoted_fj$Shelter + pivoted_fj$RentAdjustment
+    pivoted_fj$Income <- pivoted_fj$Wage
+    pivoted_fj$Cashflow <- pivoted_fj$Income - pivoted_fj$Expenses
+
+    # output the pivoted data frame
+    pivoted_fj %>%
+      select(c(1:5,7,9:12))
+```
+
+5.  Type of Income/Expenses are all labelled in a column. (Create new columns)
+
+    +----------------------+----------------+------------------------------------------------------------------------------------+
+    | Data Table           | Variables Name | Description                                                                        |
+    +:====================:+:==============:+:==================================================================================:+
+    | resident_profile_rev | Income         | Category :Wage                                                                     |
+    +----------------------+----------------+------------------------------------------------------------------------------------+
+    | resident_profile_rev | Expenses       | Category: Education + Recreation + Food + Shelter_new *(Shelter + RentAdjustment)* |
+    +----------------------+----------------+------------------------------------------------------------------------------------+
+    | resident_profile_rev | Cashflow       | NEW : Income - Expenses                                                            |
+    +----------------------+----------------+------------------------------------------------------------------------------------+
+
+6.  Multiple zero values for RentAdjustment. As seen from the data frame above and the code chunk below, there are only 72 rows. Thus, it will be combined with Shelter.
 
 ```{r}
 colSums(pivoted_fj[-1] !=0)
 ```
 
-Check for missing values
+## 3.4 Merging of Data frame
 
-```{r}
-#Check for missing values
-any(is.na(participants_new))
-any(is.na(pivoted_fj))
-```
-
-### Merge Data Table
+`Full_join` will be used to create a new table by joining the cleaned participants file and pivoted financial journal. It will be match by participant's ID. Likewise, the sequence in the dataset will be relocated to highlight several columns.
 
 ```{r}
 #| code-fold: true
+
 #join both data sets 
 resident_profile <- full_join(participants_new, pivoted_fj, 
                        by = c("participantId" = "participantId")) %>%
@@ -298,27 +297,61 @@ resident_profile %>%
     select(c(1:18))
 ```
 
-+------------------+----------------+------------------------------------------------------------------------------------------+
-| Data Table       | Variables Name | Description                                                                              |
-+:================:+:==============:+:========================================================================================:+
-| resident_profile | Expenses       | Consists of the following category: Education, Shelter, Recreation, Food, RentAdjustment |
-+------------------+----------------+------------------------------------------------------------------------------------------+
-| resident_profile | Cashflow       | Derived by subtracting Income (\~Wage) to Expenses                                       |
-+------------------+----------------+------------------------------------------------------------------------------------------+
+### 3.4.1 Entries Check
+
+To ensure data accuracy, the code chunk below checks the completeness of the data. Given that the data has a time period of one year, the code examines if the participants have entries for the entire time period.
 
 ```{r}
-kable(head(resident_profile), "simple") 
+#| code-fold: true
+#check if participants_id have entries for the entire year 
+participant_counts <- resident_profile %>%
+  group_by(participantId) %>%
+  summarise(num_months = n_distinct(year_mth)) %>%
+  ungroup()
+
+filtered_count <- participant_counts %>%
+  filter(num_months != 12) %>%
+  nrow()
+
+filtered_count 
 ```
 
+It has been observed that there are **131 participants** who only have 1 entry on Mar 2022. To avoid inaccuracy, these group of participants will be excluded from the analysis.
 
+### 3.4.2 Missing Values Check
+
+Through the code chunk below, we confirmed that there are no missing values in resident_profile dataset.
+
+```{r}
+#Check for missing values
+any(is.na(resident_profile))
+```
+
+### 3.4.3 Revised Resident's Profile Dataset
+
+Given that we have removed duplicates in section 3.3.2, removed entries in section 3.4.1 and observed no missing values in section 3.4.2, the resident's profile data set have been revised. We will be using the `knitr: kable()` function to display the final dataset.
+
+```{r}
+#| code-fold: true
+#create a revised dataframe to exclude id that do not have entries for the time period
+resident_profile_rev <- resident_profile %>%
+  group_by(participantId) %>%
+  mutate(num_months = n_distinct(year_mth)) %>%
+  ungroup() %>%
+  filter(num_months == 12) %>%
+  select(1:13,15:19)
+
+#output for dataframe using knitr:: kable
+kable(head(resident_profile_rev), "simple") 
+```
 
 # 4. Exploratory Data Visualization
 
-In this section, we will design plots with interactivity for users to study the data with the use of `giraph` , `plotly`, and `patchwork` packages.
+In this section, we will design plots with interactivity for users to study and explore the data. The plots are created with the use of `giraph` , `plotly`, and `patchwork` packages.
 
 ## 4.1 Interactive Dashboard
 
-A dashboard is created to provide an overview of the demographics of residents in City of Engagement. Bar chart is chosen to show segments of information by comparing different categorical variables. A design layout is included in the code to better visualized the output through `patchwork`.
+A dashboard is created to provide an overview of the demographics of residents in City of Engagement across age group. Bar chart is chosen to show segments of information by comparing different categorical variables. A design layout is included in the code to better visualized the output through `patchwork`. Moreover, `tooltip` is used to highlight the specific age group at the point of the data.
 
 ```{r}
 #| code-fold: true
@@ -326,84 +359,109 @@ A dashboard is created to provide an overview of the demographics of residents i
 #| fig-height: 6
 #| warning : false
 
+#Create new df by doing a full join with participants_counts
+participants_new_rev <- full_join(
+  participants_new, participant_counts, 
+  by = c("participantId" = "participantId"))  %>%
+  group_by(participantId) %>%
+  #participants_counts contains the number of months the participants entries are in
+  ungroup() %>%
+  #filter away participantsId who do not have entries for the full year
+  filter(num_months == 12) %>%
+  select(-num_months)
+
 #create tooltip to display age group 
-participants_new$tooltip <-c(paste0(
-  "Age Group:", participants_new$age_group))
+participants_new_rev$tooltip <-c(paste0(
+  "Age Group:", participants_new_rev$age_group))
 
 #Bar chart for resident's age distribution
-p1 <- ggplot(data= participants_new,
+p1 <- ggplot(data= participants_new_rev,
       aes(x = age_group)) +
-      geom_bar_interactive(aes(tooltip = participants_new$tooltip, 
+      geom_bar_interactive(aes(tooltip = participants_new_rev$tooltip, 
                                stackgroups = TRUE,
                                data_id= age_group)) + 
       scale_fill_manual(values = wes_palette("Chevalier1")) +
       xlab("Age Group") +
-      ylab("No.of\nResidents") +
+      ylab("No. of participants") +
       theme(axis.text.x=element_text(size=5)) +
       theme(axis.title.y=element_text(size=10)) +
-      ylim(0,300) 
+      ylim(0,250)
 
 #Bar chart for resident's household size distribution
-p2 <- ggplot(data= participants_new,
+p2 <- ggplot(data= participants_new_rev,
       aes(x = householdSize)) +
-      geom_bar_interactive(aes(tooltip = participants_new$tooltip, 
+      geom_bar_interactive(aes(tooltip = participants_new_rev$tooltip, 
                                stackgroups = TRUE,
                                data_id= age_group)) +
       scale_fill_manual(values = wes_palette("Chevalier1")) +
       xlab("Size of Household") +
-      ylab("No.of Residents") +
+      ylab("") +
       theme(axis.text.x=element_text(size=5)) +
       theme(axis.title.y=element_text(size=10)) +
-      ylim(0,400) 
+      ylim(0,350)
 
 
 #Bar chart for resident's education level
-p3 <- ggplot(data= participants_new,
+p3 <- ggplot(data= participants_new_rev,
       aes(x = educationLevel)) +
-      geom_bar_interactive(aes(tooltip = participants_new$tooltip, 
+      geom_bar_interactive(aes(tooltip = participants_new_rev$tooltip, 
                                stackgroups = TRUE,
                                data_id= age_group)) +
       xlab("Education Level") +
-      ylab("No.of\nResidents") +
+      ylab("") +
       theme(axis.text.x=element_text(size=5)) +
       theme(axis.title.y=element_text(size=10)) +
-      ylim(0,600)
+      ylim(0,350)
 
 #Bar chart to visualize if residents have kids 
-p4 <- ggplot(data= participants_new,
+p4 <- ggplot(data= participants_new_rev,
       aes(x = haveKids)) +
-      geom_bar_interactive(aes(tooltip = participants_new$tooltip, 
+      geom_bar_interactive(aes(tooltip = participants_new_rev$tooltip, 
                                stackgroups = TRUE,
                                data_id= age_group)) +
-      ylab("No.of\nResidents") +
+      ylab("") +
       theme(axis.text.x=element_text(size=5)) +
       theme(axis.title.y=element_text(size=10)) +
-      ylim(0,850) 
+      ylim(0,400)
 
 #Bar chart for residents' interest group 
-p5 <- ggplot(data= participants_new,
+p5 <- ggplot(data= participants_new_rev,
       aes(x = interestGroup)) +
-      geom_bar_interactive(aes(tooltip = participants_new$tooltip, 
+      geom_bar_interactive(aes(tooltip = participants_new_rev$tooltip, 
                                stackgroups = TRUE,
                                data_id= age_group)) +
       xlab("Interest Group") +
-      ylab("No.of\nResidents") +
+      ylab("No. of participants") +
       theme(axis.text.x=element_text(size=5)) +
       theme(axis.title.y=element_text(size=10)) +
-      ylim(0,150) 
+      ylim(0,120)
+
+#Bar chart for residents' joviality in bins 
+p6 <- ggplot(data= participants_new_rev,
+      aes(x = joviality_bins)) +
+      geom_bar_interactive(aes(tooltip = participants_new_rev$tooltip, 
+                               stackgroups = TRUE,
+                               data_id= age_group)) +
+      xlab("Joviality") +
+      ylab("No. of participants") +
+      theme(axis.text.x=element_text(size=5)) +
+      theme(axis.title.y=element_text(size=10)) +
+      ylim(0,250)
 
 #design layout for the patchwork figure
 design <- "
   132
   132
-  132
   554
+  554
+  666
+  666
 "
 
-girafe(code = print(p1 + p2 + p3 + p4 + p5  + 
+girafe(code = print(p1 + p2 + p3 + p4 + p5  + p6 +
                       plot_layout(design = design,) + 
                       plot_annotation(title = 
-                    "Demographics Insights of residents \n in City of Engagement",
+                    "Demographics Insights of residents in City of Engagement",
                      theme = theme(plot.title = element_text(size = 20, hjust=0.5))
                       )), 
        width_svg = 12,
@@ -417,7 +475,11 @@ girafe(code = print(p1 + p2 + p3 + p4 + p5  +
 
 **Observations:**
 
--   Age.
+-   The city is facing an aging population as age group is left-skewed.
+-   Low interest for future education as education level is right-skewed.
+-   Small family size with higher proportion of participants of not having Kids.
+-   Uniformly distributed Interest Group. No preference among age group.
+-   Joviality level seems to be decreasing at a decreasing rate
 
 ::: callout-note
 ## Interactivity
@@ -427,58 +489,95 @@ Click on the graph and hover around each demographics.
 The respective age group will be displayed.
 :::
 
-```{r}
-p6 <- ggplot(data= participants_new,
-      aes(x = joviality)) +
-      geom_bar_interactive(aes(tooltip = participants_new$tooltip, 
-                               stackgroups = TRUE,
-                               data_id= age_group)) +
-      xlab("Interest Group") +
-      ylab("No.of\nResidents") +
-      theme(axis.text.x=element_text(size=5)) +
-      theme(axis.title.y=element_text(size=10)) +
-      ylim(0,150) 
-p6
-```
+## 4.2 Financial Health of Participants
 
-## 4.1 Financial Health of Participants
+To know more about the financial health of the participants, interactive `geom_point` is used to plot against the time period. `tooltip` is included to create a snapshot of the financial health status of the participants at the time period. In addition, the plot contains hover effect with the use of `data_id` aesthetic to highlight the trend of the participant's cash flow.
 
 ```{r}
 #| code-fold: true
+#| fig-width: 12
+#| fig-height: 6
 
-plot_ly(data = resident_profile, 
-             x = ~year_mth, y = ~Cashflow,
-        hovertemplate = ~paste("<br>Participant's ID:",participantId,
-                               "<br>Cashflow:", Cashflow,
-                              "<br>Income:", Income,
-                               "<br>Expenses:", Expenses),
-            type = "scatter", mode = "markers",
-            marker = list(opacity = 0.6,sizemode = "diameter", 
-                          line = list(width =0.1, color = "white"))) |>
+#tooltip output to display ID, Cashflow, Income, and Expenses
+resident_profile_rev$tooltip <- paste0(
+  "Participant's ID = ", resident_profile_rev$participantId,
+  "\n Cashflow = ", format(resident_profile_rev$Cashflow, big.mark = ","),
+  "\n Income = ", format(resident_profile_rev$Income, big.mark = ","),
+  "\n Expenses = ", format(resident_profile_rev$Expenses, big.mark = ",")
+                                  )
+#tool_tip design
+tooltip_css <- "background-color: lightgrey; #<<
+font-style:bold; color: #446455;" #<<
 
-#add title and labels to axis 
-        layout(title = "Financial Health status of participants" ,
-         xaxis = list(title = "year-mth") ,
-         yaxis = list(title = "cashflow"))
+ie <-  ggplot(data=resident_profile_rev) +
+       geom_point_interactive(aes(x = year_mth, y = Cashflow,
+                                   tooltip = resident_profile_rev$tooltip,
+                                   data_id = participantId,
+                                   #if Cashflow >0 = Green, else Red
+                                   color = ifelse(Cashflow >= 0, 
+                                                  "Above 0", "Below 0")
+                                   )) +
+        scale_color_manual(values = c("Above 0" = "#446455", 
+                                      "Below 0" = "#C93312")) +
+        #remove legend title 
+      labs(color = "") +
+      labs(title="Financial Health of Participants from Mar 2022 to Feb 2023") +
+      ylab("Cashflow ($)") + xlab("Year-month") +  
+      scale_y_continuous(labels = comma_format()) +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+      theme_minimal()        |>
+
+girafe(                                  
+  ggobj = ie,                             
+  width_svg = 6,                         
+  height_svg = 6*0.618,
+  options = list( #<<
+    opts_tooltip(css = tooltip_css), #<<
+    opts_hover_inv(css = "opacity:0.1;") #<<
+  )                                        
+)   
+   
 ```
 
 **Observations:**
 
--   Age.
+-   Majority of participants have positive cash flow (Good Credit Rating)
+-   Negligible growth on cash flow
+-   No drastic changes in participant's cash flow over time
 
-## 4.1 Expenses incurred by Residents
+## 4.3 The Circulation of Money
+
+As illustrated earlier, the cash flow is a holding transaction. It is holded by the individual after repaying the necessary debt/expenses. To build more wealth, it is ideal for Wage to increase or for expenses to decrease.
+
+With that in mind, a `line scatter pot` is used to identify the trend in various categories over a time period. The *participants* dataset have been revised to exclude participants who did not fulfill the entries check. It has been reformatted before executing a `full_join` with *participants_count* data set. The joined table concatenates the count of the year-mth period (num_months) that is not available in the dataset and filters it away.
+
+The `plot_ly()` graph below shows the total amount circulated by the participants.
 
 ```{r}
 #| warning: false
 #| code-fold: true
 
-#create a new dataset
-grouped_data_rev <- financial_journal_lessdup %>%
-  #recode ID from dbl to chr, year_mth
-    mutate(participantId = as.character(participantId),
-         year_mth = format(as.Date(financial_journal_lessdup$timestamp), "%Y-%m"),
-         amount = abs(round(amount,2)),
-         .before = 3) %>%
+#to reformat partcipantId, create year-mth, round off amount to 2.d.p
+financial_journal_lessdup <- financial_journal_lessdup %>%
+  mutate(participantId = as.character(participantId),
+        year_mth = format(as.Date(financial_journal_lessdup$timestamp), "%Y-%m",
+        amount = abs(round(amount,2)),
+        .before = 1)) 
+
+#Create new df by doing a full join with participants_counts
+financial_journal_lessdup_lessentries <- full_join(
+  financial_journal_lessdup, participant_counts, 
+  by = c("participantId" = "participantId"))  %>%
+  group_by(participantId) %>%
+  #participants_counts contains the number of months the participants entries are in
+  mutate(num_months = n_distinct(year_mth)) %>%
+  ungroup() %>%
+  #filter away participantsId who do not have entries for the full year
+  filter(num_months == 12) %>%
+  select(participantId, year_mth, category,amount)
+
+#create another df to group by year_mth, category
+grouped_data_rev <- financial_journal_lessdup_lessentries %>%
   #group the columns in the following order 
   group_by(year_mth, category) %>%
   summarize(total_amount = sum(amount)) 
@@ -491,7 +590,7 @@ plot_ly(data = grouped_data_rev,
                          "<br>Amount:", format(total_amount, big.mark = ","))) |>
 
 #Configure title and axes
-  layout(title = "Amount earned/incurred by participant",
+  layout(title = "The Circulation of Money",
          xaxis = list(title = "Time Period"),
          yaxis = list(title = "Amount"))
 
@@ -499,21 +598,22 @@ plot_ly(data = grouped_data_rev,
 
 **Observations:**
 
--   Age.
+-   Income *(\~Wage)* is fairly constant except for Mar 2022. As Income varies with overtime, it can be inferred that the abnormally could be a form of bonus, grant, incentives given by the service centre
+-   Expenses distribution seems to be constant with lesser spending on Education expenses . However, there is a slight fluctuation in Recreation expenses.
 
-## 4.2 Spending patterns of participants
+### 4.3.1 Spending Patterns of participants
+
+As observed earlier, there are a slight fluctuation in Recreation expenses. Henceforth, Wage will be removed in the graph to better visualize the expenses.
+
+`Plot_ly` graph is plotted to visualize the spending patterns.
 
 ```{r}
 #| warning: false
 #| code-fold: true
 
 #create a new dataset
-grouped_data_rev_new <- financial_journal_lessdup %>%
-    #recode ID from dbl to chr, year_mth
-    mutate(participantId = as.character(participantId),
-         year_mth = format(as.Date(financial_journal_lessdup$timestamp), "%Y-%m"),
-         amount = abs(round(amount,2)),
-         .before = 3) %>%
+grouped_data_rev_new <- financial_journal_lessdup_lessentries %>%
+  mutate(amount = abs(round(amount,2))) %>%
   #group the columns in the following order 
   group_by(category,year_mth) %>%
   summarize(total_amount = sum(amount)) 
@@ -538,73 +638,88 @@ plot_ly(data = grouped_data_rev_newest,
 
 **Observations:**
 
--   Age.
+-   Education remain constant throughout while Shelter decrease in Mar 2022 and remain constant. As identified, both expenses are a fixed expense.
+-   Recreation expenses fluctuates more in comparison to Food expenses.
 
-## 4.3 Chi-square test for Age group and Education Level
+# 5. Confirmatory Data Analysis Visualization
+
+In this section, we will focus more on the statistical testing that are used in Confirmatory Data analysis. The plots are created with the use of `ggbarstats` , `ggbetweenstats`, and `gscatterstats` packages.
+
+## 5.1 Association Test between Age group and Education Level
+
+As observed in Section 4.1 - Interactive Dashboard, we noticed that the age-group is left-skewed while the education level is right-skewed. Therefore, we would like to test if there is any association between the two variables. Notably, the association test is non-parametric and thus, does not have to conform to the normality assumption.
+
+[At 95% confidence level,]{.underline}
+
+Ho : No association exists between the age group and education level
+
+H1: Association exists between the age group and education level
 
 ```{r}
-ggbarstats(data = resident_profile, 
+#| code-fold: true
+ggbarstats(data = resident_profile_rev, 
            x = educationLevel, y = age_group,
+           xlab= "Age Group", ylab = "Education Level",
+           title = "Comparison of Education level across Age Group",
+           type = "nonparametric", conf.level = 0.95,
            package = "wesanderson", palette = "Chevalier1"
            )
 ```
 
-## 4.4 Differences in Joviality based on Education Level
+From the graph, we observed that majority of the age group have a HighSchoolOrCollege education level whereas the interest for further study decreases as the age increase. Interestingly, young adults aged 20-29 have attained a higher education level than other age group.
 
-As defined, Joviality indicates the participant's overall happiness at the start of the study. We will like to found out if there is a difference in Joviality based on Education Level. Before testing our hypothesis, we will perform a normality assumption test at 95% confidence level.
+From the test result above (p\<0.05) , we conclude that there is an association between the age group and education level as we **reject** the null hypothesis.
+
+## 5.2 Differences in Joviality based on Education Level
+
+As defined earlier, Joviality indicates the participant's overall happiness at the start of the study. We will like to found out if there is a difference in Joviality based on Education Level. Before testing our hypothesis, we will perform a normality assumption test at 95% confidence level.
 
 ### 4.4.1 Normality Assumption Test
 
+Normal Quantile Plot (QQ Plot). For a normally distributed data values, the dot points should be with the 95% envelope or scatter very closely to the slope line in between the two envelopes lines. From the data visualization above, we can visually confirmed that the observed values failed to conform to the normality assumption.
+
 At 95% confidence level:
 
-Ho: the mean Joviality across different Education Level is the same
+Ho: the observed distribution resembles normal distribution
 
-H1: the mean Joviality across different Education Level is not the same
+H1: the observed distribution failed to resemble normal distribution
+
+We failed to reject the Ho if p-value is above the alpha value of 0.05.
+
+We reject Ho if p-value is \<0.05.
+
+Given that normality is not assumed, we will use the non-parametric test such as Wilcoxon test statistics.
 
 ```{r}
-#compute statistics 
-average_joviality <- round(mean(resident_profile$joviality),2)
-median_joviality <- round(median(resident_profile$joviality),2)
-maximum_joviality <- as.numeric(round((IQR(resident_profile$joviality)*1.5) +
-                quantile(resident_profile$joviality,0.75)),2)
-min_joviality <- as.integer(min(resident_profile$joviality))
-IQR_joviality <- round(IQR(resident_profile$joviality)*1.5)
-average_joviality
-median_joviality
-maximum_joviality
-min_joviality
-IQR_joviality
+#| code-fold: true
+#| fig-width: 12
+#| fig-height: 6
+qq_plot <- ggplot(data=resident_profile_rev,
+                  aes(sample = joviality)) + 
+                  stat_qq() +
+                  stat_qq_line()
 ```
 
 ```{r}
-ggplot(data = resident_profile ,
-  aes(x=joviality, after_stat(count), color = educationLevel)) +
-  geom_density(adjust=1, position ="stack") +
-  xlim(0,1) +
-  geom_vline(aes(xintercept = average_joviality), col ="grey", linewidth=1 ) +
-  geom_vline(aes(xintercept = median_joviality), col ="orange", linewidth=1 ) 
-```
-
-```{r}
-ggplot(data=resident_profile,
+ggplot(data=resident_profile_rev,
        aes(sample = joviality)) + 
   stat_qq() +
   stat_qq_line()
 ```
 
 ```{r}
-  ggplot(data = resident_profile,
-         aes(x= joviality)) + 
-  geom_histogram(bins=10) +
-  xlab("Joviality") +
-  ylab("No.of Residents") +
-  geom_vline(aes(xintercept = average_joviality), col ="red", linewidth=1 ) +
-  annotate("text", x=0.37, y= 1400, label="Average Joviality:", size=4, color = "red") +    annotate("text", x=0.37, y= 1300, label=format(average_joviality, big.mark=","), size=4, color = "red") 
-  geom_vline(aes(xintercept = median_joviality), col ="green", linewidth=1 ) 
+#  ggplot(data = resident_profile_rev,
+#         aes(x= joviality)) + 
+#  geom_histogram(bins=10) +
+#  xlab("Joviality") +
+#  ylab("No.of Residents") +
+#  geom_vline(aes(xintercept = average_joviality), col ="red", linewidth=1 ) +
+#  annotate("text", x=0.37, y= 1400, label="Average Joviality:", size=4, color = "red") +    annotate("text", x=0.37, y= 1300, label=format(average_joviality, big.mark=","), size=4, color = "red") 
+#  geom_vline(aes(xintercept = median_joviality), col ="green", linewidth=1 ) 
 
 ```
 
-Based on the result above, we concluded that there is enough statistical evidence to reject the null hypothesis. Since the p-values fall below (p \< 0.05), we will use the Wilcoxon test.
+Based on the result above, we concluded that there is enough statistical evidence to reject the null hypothesis. Since the p-values fall below (p \< 0.05), normality is not assumed. Henceforth, we will use the Kruskal-Wallis test.
 
 ### 4.4.2 Kruskal-Wallis Test for Joviality across Education Level
 
@@ -618,7 +733,7 @@ H1: the median Joviality across different education level is not the same
 #| code-fold: true
 #| fig-width: 12
 #| fig-height: 6
-ggbetweenstats(data = resident_profile,
+ggbetweenstats(data = resident_profile_rev,
        x= educationLevel, y= joviality, type ="np",
        xlab= "Education Level", ylab = "Joviality",
        title = "Comparison of Joviality across Education Level",
@@ -635,95 +750,20 @@ Additionally, we want to find out if there any distinct similarities between the
 
 We discovered that there is a statistical difference in joviality across Education Level, we would like to examine if the same applies and if there is an association between the age group. As Joviality is a continuous variable, we used `mutate` from `dplyr` to split it into 5-class variables, with each range at 20%.
 
-At 95% confidence level,
+[At 95% confidence level,]{.underline}
 
 Ho : No association exists between the age group and joviality level
 
 H1: Association exists between the age group and joviality level
 
 ```{r}
-ggbarstats(data = resident_profile, 
+ggbarstats(data = resident_profile_rev, 
            x = joviality_bins, y = age_group,
           title = "Comparison of Joviality across age-group",
           pairwise.comparisons = TRUE, pairwise.display ="s", conf.level = 0.95,
           package = "wesanderson", palette = "Chevalier1"
            )
 ```
-
-```{r}
-##KIV TO COME BACK AND EDIT. 
-p3 <- ggplot(data= resident_profile,
-      aes(x = Income)) +
-      geom_histogram(bins=30,            
-                 color="black",      
-                 fill= "darkgrey") +
-      xlab("Income") +
-      ylab("No.of\nResidents") +
-      ylim(0,2100) +
-      xlim(-1000,20000) +
-      ggtitle("Income Distribution of Residents ") +
-      theme(plot.title = element_text(hjust = 0.5))
-p3
-
-```
-
-# 5. Financial Health Insights
-
-`to include graphs of ID financial health over the 2 years.`
-
-## 5.1 Resident's Financial Health
-
-```{r}
-#| code-fold: true
-#| fig-width: 12
-#| fig-height: 6
-
-#tooltip output to display ID, Cashflow, Income, and Expenses
-resident_profile$tooltip <- paste0(
-  "Participant's ID = ", resident_profile$participantId,
-  "\n Cashflow = ", format(resident_profile$Cashflow, big.mark = ","),
-  "\n Income = ", format(resident_profile$Income, big.mark = ","),
-  "\n Expenses = ", format(resident_profile$Expenses, big.mark = ",")
-                                  )
-#tool_tip design
-tooltip_css <- "background-color: lightgrey; #<<
-font-style:bold; color: #446455;" #<<
-
-ie <-  ggplot(data=resident_profile) +
-       geom_point_interactive(aes(x = year_mth, y = Cashflow,
-                                   tooltip = resident_profile$tooltip,
-                                   data_id = participantId,
-                                   #if Cashflow >0 = Green, else Red
-                                   color = ifelse(Cashflow >= 0, 
-                                                  "Above 0", "Below 0")
-                                   )) +
-        scale_color_manual(values = c("Above 0" = "#446455", 
-                                      "Below 0" = "#C93312")) +
-        #remove legend title 
-      labs(color = "") +
-      labs(title="Financial Health of Participants from Mar 2022 to Feb 2023") +
-      ylab("Cashflow ($)") + xlab("Year-month") +  
-      scale_y_continuous(labels = comma_format()) +
-      theme(axis.text.x = element_text(angle = 45, hjust = 1))
-      theme_minimal()        |>
-
-girafe(                                  
-  ggobj = ie,                             
-  width_svg = 6,                         
-  height_svg = 6*0.618,
-  options = list( #<<
-    opts_tooltip(css = tooltip_css), #<<
-    opts_hover_inv(css = "opacity:0.1;") #<<
-  )                                        
-)   
-   
-```
-
-::: callout-important
-## Update
-
-7 rows have been excluded in the graph
-:::
 
 ```{r}
 
@@ -750,7 +790,7 @@ The following considerations have been made:
 We will be using `plot_ly` for the interactive graph.
 
 ```{r}
-plot_ly(data = resident_profile, 
+plot_ly(data = resident_profile_rev, 
              x = ~joviality, y = ~Income,
         hovertemplate = ~paste("<br>Participant's ID:",participantId,
                                "<br>Cashflow:", Cashflow,
@@ -769,7 +809,7 @@ plot_ly(data = resident_profile,
 
 ```
 
-**Insights**
+**Observations:**
 
 -   When income exceeds \$15k, joviality level decreases
 
@@ -784,11 +824,11 @@ Happiness level of `joviality` ranges from 0 to 1. A score of 0.4 indicates that
 :::
 
 ```{r}
-DT::datatable(resident_profile, class= "compact")
+DT::datatable(resident_profile_rev, class= "compact")
 ```
 
 ```{r}
-d <- highlight_key(resident_profile) 
+d <- highlight_key(resident_profile_rev) 
 p <- ggplot(d, 
             aes(Expenses, 
                 Income)) + 
@@ -852,7 +892,7 @@ tooltip <- function(y, ymax, accuracy = 1) {   #<<
   paste("Average Cashflow:", mean, "+/-", sem) #<<
 } #<<
 
-pp <- ggplot(data=resident_profile, 
+pp <- ggplot(data=resident_profile_rev, 
                    aes(x = age_group),
 ) +
   stat_summary(aes(y = Cashflow, 
@@ -880,7 +920,7 @@ girafe(ggobj = pp,
 ```
 
 ```{r}
-ggplot(data =resident_profile, 
+ggplot(data =resident_profile_rev, 
        aes(x = Food, 
            y = age_group)) +
   geom_density_ridges(
@@ -900,7 +940,7 @@ ggplot(data =resident_profile,
 
 ```{r}
 ggscatterstats(
-  data = resident_profile,
+  data = resident_profile_rev,
   x = Expenses,
   y = Shelter,
   type = "nonparametric",
@@ -913,7 +953,7 @@ ggscatterstats(
 
 ```{r}
 #plotting correlation between age and income 
-ggscatterstats(data = resident_profile,
+ggscatterstats(data = resident_profile_rev,
   x = age, y = Income,
   type = "nonparametric",
   marginal = TRUE,
@@ -932,7 +972,7 @@ Cashflow / Income
 #| warning: false
 
 #plotting correlation between age and income across education level
-edu_low <- ggscatterstats(data = resident_profile |> 
+edu_low <- ggscatterstats(data = resident_profile_rev |> 
                            filter(educationLevel == "Low"), 
                            x = Income, y = Cashflow,
                            type = "nonparametric") + 
@@ -941,7 +981,7 @@ edu_low <- ggscatterstats(data = resident_profile |>
            x = "Income", y = "Cashflow") +
            scale_y_continuous(labels = comma_format()) 
 
-edu_hc <- ggscatterstats(data = resident_profile |> 
+edu_hc <- ggscatterstats(data = resident_profile_rev |> 
                            filter(educationLevel == "HighSchoolOrCollege"), 
                            x = Income, y = Cashflow,
                            type = "nonparametric") + 
@@ -950,7 +990,7 @@ edu_hc <- ggscatterstats(data = resident_profile |>
           x = "Income", y = "Cashflow") +
           scale_y_continuous(labels = comma_format()) 
 
-edu_bach <- ggscatterstats(data = resident_profile |> 
+edu_bach <- ggscatterstats(data = resident_profile_rev |> 
                            filter(educationLevel == "Bachelors"), 
                            x = Income, y = Cashflow,
                            type = "nonparametric") + 
@@ -959,7 +999,7 @@ edu_bach <- ggscatterstats(data = resident_profile |>
             x = "Income", y = "Cashflow") +
             scale_y_continuous(labels = comma_format()) 
 
-edu_grad <- ggscatterstats(data = resident_profile |> 
+edu_grad <- ggscatterstats(data = resident_profile_rev |> 
                            filter(educationLevel == "Graduate"), 
                            x = Income, y = Cashflow,
                            type = "nonparametric") + 
@@ -982,6 +1022,6 @@ corr_edu + plot_annotation(title = "Correlation between Cashflow and Income",
 
 ***Observations:***
 
--   High positive correlation between Cashflow and Income (\>0.9)
+-   Almost perfect positive linear relationship between Cashflow and Income (\>0.9)
 
 -   As education level increases, the Sprearman correlation coefficient increases
