@@ -2,8 +2,8 @@
 title: "Take Home Exercise 1"
 subtitle: " Visual Analytics of the demographic and financial characteristics of residents in City of Engagement"
 author: "Oh Jia Wen"
-date: "5/6/2023"
-date-modified: "5/12/2023"
+date: "5/13/2023"
+date-modified: "5/13/2023"
 code-fold: false
 execute: 
   echo: true
@@ -299,10 +299,13 @@ resident_profile %>%
     select(c(1:18))
 ```
 
-|    Data Table    | Variables Name |                                       Description                                        |
-|:----------------:|:--------------:|:----------------------------------------------------------------------------------------:|
-| resident_profile |    Expenses    | Consists of the following category: Education, Shelter, Recreation, Food, RentAdjustment |
-| resident_profile |    Cashflow    |                    Derived by subtracting Income (\~Wage) to Expenses                    |
++------------------+----------------+------------------------------------------------------------------------------------------+
+| Data Table       | Variables Name | Description                                                                              |
++:================:+:==============:+:========================================================================================:+
+| resident_profile | Expenses       | Consists of the following category: Education, Shelter, Recreation, Food, RentAdjustment |
++------------------+----------------+------------------------------------------------------------------------------------------+
+| resident_profile | Cashflow       | Derived by subtracting Income (\~Wage) to Expenses                                       |
++------------------+----------------+------------------------------------------------------------------------------------------+
 
 ```{r}
 kable(head(resident_profile), "simple") 
