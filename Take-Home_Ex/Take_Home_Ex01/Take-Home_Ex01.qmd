@@ -299,13 +299,10 @@ resident_profile %>%
     select(c(1:18))
 ```
 
-+------------------+----------------+------------------------------------------------------------------------------------------+
-| Data Table       | Variables Name | Description                                                                              |
-+:================:+:==============:+:========================================================================================:+
-| resident_profile | Expenses       | Consists of the following category: Education, Shelter, Recreation, Food, RentAdjustment |
-+------------------+----------------+------------------------------------------------------------------------------------------+
-| resident_profile | Cashflow       | Derived by subtracting Income (\~Wage) to Expenses                                       |
-+------------------+----------------+------------------------------------------------------------------------------------------+
+|    Data Table    | Variables Name |                                       Description                                        |
+|:----------------:|:--------------:|:----------------------------------------------------------------------------------------:|
+| resident_profile |    Expenses    | Consists of the following category: Education, Shelter, Recreation, Food, RentAdjustment |
+| resident_profile |    Cashflow    |                    Derived by subtracting Income (\~Wage) to Expenses                    |
 
 ```{r}
 kable(head(resident_profile), "simple") 
@@ -315,7 +312,7 @@ kable(head(resident_profile), "simple")
 
 In this section, we will design plots with interactivity for users to study the data with the use of `giraph` , `plotly`, and `patchwork` packages.
 
-## 4.1 Interactive Dashboard 
+## 4.1 Interactive Dashboard
 
 A dashboard is created to provide an overview of the demographics of residents in City of Engagement. Bar chart is chosen to show segments of information by comparing different categorical variables. A design layout is included in the code to better visualized the output through `patchwork`.
 

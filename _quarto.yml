@@ -53,7 +53,9 @@ website:
             
 format:
   html:
-    theme: flaty
+    theme:
+      light: flatly
+      dark: [flatly, theme-dark.scss]
     css: styles.css
     code-fold: false
     code-summary: "Show the code"
