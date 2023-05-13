@@ -6,8 +6,8 @@ date: "5/6/2023"
 date-modified: "5/12/2023"
 code-fold: false
 execute: 
-#  echo: true
-#  eval: true
+  echo: true
+  eval: true
   warning: false
 ---
 
@@ -37,11 +37,11 @@ Data has been collected by the local council of the city. The survey sampled 1,0
 |                      |                |                                                                             |
 | FinancialJourval.csv |                |                                                                             |
 +----------------------+----------------+-----------------------------------------------------------------------------+
-| participants.csv     | HouseholdSize  | Represents the number of people in the household                            |
+| participants.csv     | householdSize  | Represents the number of people in the household                            |
 +----------------------+----------------+-----------------------------------------------------------------------------+
 | participants.csv     | haveKids       | Binary value (True/False) indicating if participant have a kid(s)           |
 +----------------------+----------------+-----------------------------------------------------------------------------+
-| participants.csv     | Age            | Represents age of the participant                                           |
+| participants.csv     | age            | Represents age of the participant                                           |
 +----------------------+----------------+-----------------------------------------------------------------------------+
 | participants.csv     | educationLevel | Represents the highest education attained by participant                    |
 +----------------------+----------------+-----------------------------------------------------------------------------+
@@ -82,7 +82,7 @@ Using p_load() of pacman package to load and install the following libraries:
 #to double check if got use DT, scales, ggpubr
 pacman::p_load(ggiraph, plotly, patchwork, DT, tidyverse,
                knitr,scales,ggstatsplot,paletteer,wesanderson,
-               ggpubr,crosstalk,gganimate,ggridges,viridis,ggdist)
+               ggpubr,crosstalk,gganimate,ggridges,viridis,ggdist,ggside)
 options(scipen = 999)
 ```
 
@@ -237,8 +237,6 @@ financial_journal_lessdup <- financial_journal %>%
 
 You can use group_by() function along with the summarise() from dplyr package to find the group by sum in R DataFrame, group_by() returns the grouped_df ( A grouped Data Frame) and use summarise() on grouped df results to get the group by sum.
 
-scales package (part of the Tidyverse) does exactly this:
-
 ```{r}
 #| code-fold: true
 #create new dataset 
@@ -301,13 +299,25 @@ resident_profile %>%
     select(c(1:18))
 ```
 
++------------------+----------------+------------------------------------------------------------------------------------------+
+| Data Table       | Variables Name | Description                                                                              |
++:================:+:==============:+:========================================================================================:+
+| resident_profile | Expenses       | Consists of the following category: Education, Shelter, Recreation, Food, RentAdjustment |
++------------------+----------------+------------------------------------------------------------------------------------------+
+| resident_profile | Cashflow       | Derived by subtracting Income (\~Wage) to Expenses                                       |
++------------------+----------------+------------------------------------------------------------------------------------------+
+
 ```{r}
 kable(head(resident_profile), "simple") 
 ```
 
-# 4. Exploratory Data Analysis (EDA)
+# 4. Exploratory Data Visualization
 
-Overview of City of Engagement's resident.
+In this section, we will design plots with interactivity for users to study the data with the use of `giraph` , `plotly`, and `patchwork` packages.
+
+## 4.1 Interactive Dashboard 
+
+A dashboard is created to provide an overview of the demographics of residents in City of Engagement. Bar chart is chosen to show segments of information by comparing different categorical variables. A design layout is included in the code to better visualized the output through `patchwork`.
 
 ```{r}
 #| code-fold: true
@@ -322,7 +332,8 @@ participants_new$tooltip <-c(paste0(
 #Bar chart for resident's age distribution
 p1 <- ggplot(data= participants_new,
       aes(x = age_group)) +
-      geom_bar_interactive(aes(tooltip = participants_new$tooltip, stackgroups = TRUE,
+      geom_bar_interactive(aes(tooltip = participants_new$tooltip, 
+                               stackgroups = TRUE,
                                data_id= age_group)) + 
       scale_fill_manual(values = wes_palette("Chevalier1")) +
       xlab("Age Group") +
@@ -334,7 +345,8 @@ p1 <- ggplot(data= participants_new,
 #Bar chart for resident's household size distribution
 p2 <- ggplot(data= participants_new,
       aes(x = householdSize)) +
-      geom_bar_interactive(aes(tooltip = participants_new$tooltip, stackgroups = TRUE,
+      geom_bar_interactive(aes(tooltip = participants_new$tooltip, 
+                               stackgroups = TRUE,
                                data_id= age_group)) +
       scale_fill_manual(values = wes_palette("Chevalier1")) +
       xlab("Size of Household") +
@@ -347,7 +359,8 @@ p2 <- ggplot(data= participants_new,
 #Bar chart for resident's education level
 p3 <- ggplot(data= participants_new,
       aes(x = educationLevel)) +
-      geom_bar_interactive(aes(tooltip = participants_new$tooltip, stackgroups = TRUE,
+      geom_bar_interactive(aes(tooltip = participants_new$tooltip, 
+                               stackgroups = TRUE,
                                data_id= age_group)) +
       xlab("Education Level") +
       ylab("No.of\nResidents") +
@@ -358,7 +371,8 @@ p3 <- ggplot(data= participants_new,
 #Bar chart to visualize if residents have kids 
 p4 <- ggplot(data= participants_new,
       aes(x = haveKids)) +
-      geom_bar_interactive(aes(tooltip = participants_new$tooltip, stackgroups = TRUE,
+      geom_bar_interactive(aes(tooltip = participants_new$tooltip, 
+                               stackgroups = TRUE,
                                data_id= age_group)) +
       ylab("No.of\nResidents") +
       theme(axis.text.x=element_text(size=5)) +
@@ -368,7 +382,8 @@ p4 <- ggplot(data= participants_new,
 #Bar chart for residents' interest group 
 p5 <- ggplot(data= participants_new,
       aes(x = interestGroup)) +
-      geom_bar_interactive(aes(tooltip = participants_new$tooltip, stackgroups = TRUE,
+      geom_bar_interactive(aes(tooltip = participants_new$tooltip, 
+                               stackgroups = TRUE,
                                data_id= age_group)) +
       xlab("Interest Group") +
       ylab("No.of\nResidents") +
@@ -385,7 +400,7 @@ design <- "
 "
 
 girafe(code = print(p1 + p2 + p3 + p4 + p5  + 
-                      plot_layout(design = design, ) + 
+                      plot_layout(design = design,) + 
                       plot_annotation(title = 
                     "Demographics Insights of residents \n in City of Engagement",
                      theme = theme(plot.title = element_text(size = 20, hjust=0.5))
@@ -399,13 +414,42 @@ girafe(code = print(p1 + p2 + p3 + p4 + p5  +
        ) 
 ```
 
-**Insights:**
+**Observations:**
+
+-   Age.
 
 ::: callout-note
 ## Interactivity
 
-Click on the graph and hover around each demographics. The respective age group will be displayed.
+Click on the graph and hover around each demographics.
+
+The respective age group will be displayed.
 :::
+
+## 4.1 Financial Health of Participants
+
+```{r}
+#| code-fold: true
+
+plot_ly(data = resident_profile, 
+             x = ~year_mth, y = ~Cashflow,
+        hovertemplate = ~paste("<br>Participant's ID:",participantId,
+                               "<br>Cashflow:", Cashflow,
+                              "<br>Income:", Income,
+                               "<br>Expenses:", Expenses),
+            type = "scatter", mode = "markers",
+            marker = list(opacity = 0.6,sizemode = "diameter", 
+                          line = list(width =0.1, color = "white"))) |>
+
+#add title and labels to axis 
+        layout(title = "Financial Health status of participants" ,
+         xaxis = list(title = "year-mth") ,
+         yaxis = list(title = "cashflow"))
+```
+
+**Observations:**
+
+-   Age.
 
 ## 4.1 Expenses incurred by Residents
 
@@ -438,7 +482,11 @@ plot_ly(data = grouped_data_rev,
 
 ```
 
-## 4.2 Distribution of Expenses 
+**Observations:**
+
+-   Age.
+
+## 4.2 Spending patterns of participants
 
 ```{r}
 #| warning: false
@@ -473,7 +521,9 @@ plot_ly(data = grouped_data_rev_newest,
 
 ```
 
+**Observations:**
 
+-   Age.
 
 ## 4.3 Chi-square test for Age group and Education Level
 
@@ -613,13 +663,34 @@ p3
 #| fig-width: 12
 #| fig-height: 6
 
-tooltip_css <- "background-color:lightgrey; #<<
-font-style:bold; color:black;" #<<
+#tooltip output to display ID, Cashflow, Income, and Expenses
+resident_profile$tooltip <- paste0(
+  "Participant's ID = ", resident_profile$participantId,
+  "\n Cashflow = ", format(resident_profile$Cashflow, big.mark = ","),
+  "\n Income = ", format(resident_profile$Income, big.mark = ","),
+  "\n Expenses = ", format(resident_profile$Expenses, big.mark = ",")
+                                  )
+#tool_tip design
+tooltip_css <- "background-color: lightgrey; #<<
+font-style:bold; color: #446455;" #<<
 
 ie <-  ggplot(data=resident_profile) +
-     geom_point_interactive (aes(x=Expenses, y= Income, 
-                                 tooltip = participantId, data_id = Cashflow)) +
-     xlim(0,5000)
+       geom_point_interactive(aes(x = year_mth, y = Cashflow,
+                                   tooltip = resident_profile$tooltip,
+                                   data_id = participantId,
+                                   #if Cashflow >0 = Green, else Red
+                                   color = ifelse(Cashflow >= 0, 
+                                                  "Above 0", "Below 0")
+                                   )) +
+        scale_color_manual(values = c("Above 0" = "#446455", 
+                                      "Below 0" = "#C93312")) +
+        #remove legend title 
+      labs(color = "") +
+      labs(title="Financial Health of Participants from Mar 2022 to Feb 2023") +
+      ylab("Cashflow ($)") + xlab("Year-month") +  
+      scale_y_continuous(labels = comma_format()) +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+      theme_minimal()        |>
 
 girafe(                                  
   ggobj = ie,                             
@@ -627,7 +698,7 @@ girafe(
   height_svg = 6*0.618,
   options = list( #<<
     opts_tooltip(css = tooltip_css), #<<
-    opts_hover_inv(css = "opacity:0.2;") #<<
+    opts_hover_inv(css = "opacity:0.1;") #<<
   )                                        
 )   
    
@@ -747,10 +818,10 @@ ggplot(data = fj_cat,
               y = "Total_amount") +
          transition_time(as.integer(year)) +
          ease_aes("linear") +
-         scale_y_continuous(limit =c(0,8000000))
+         scale_y_continuous(labels = comma_format()) 
 ```
 
-### Average Cashflow available for Residents across Age Group
+## 5.3 Average Cashflow available for Residents across Age Group
 
 ```{r}
 #| code-fold: true
@@ -811,3 +882,91 @@ ggplot(data =resident_profile,
   scale_y_discrete(name = NULL, expand = expansion(add = c(0.2, 2.6))) +
   theme_ridges()
 ```
+
+```{r}
+ggscatterstats(
+  data = resident_profile,
+  x = Expenses,
+  y = Shelter,
+  type = "nonparametric",
+  marginal = TRUE,
+  title = "Significant Test of Correlation between Expenses and Shelter",
+  xlab = "Expenses",
+  ylab = "Shelter"
+)
+```
+
+```{r}
+#plotting correlation between age and income 
+ggscatterstats(data = resident_profile,
+  x = age, y = Income,
+  type = "nonparametric",
+  marginal = TRUE,
+  title = "Significant Test of Correlation between Age and Income",
+  xlab = "Age",
+  ylab = "Income"
+)
+```
+
+Cashflow / Income
+
+```{r}
+#| fig-width: 12
+#| fig-height: 6
+#| code-fold: true
+#| warning: false
+
+#plotting correlation between age and income across education level
+edu_low <- ggscatterstats(data = resident_profile |> 
+                           filter(educationLevel == "Low"), 
+                           x = Income, y = Cashflow,
+                           type = "nonparametric") + 
+           theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+           labs(title = "Low", 
+           x = "Income", y = "Cashflow") +
+           scale_y_continuous(labels = comma_format()) 
+
+edu_hc <- ggscatterstats(data = resident_profile |> 
+                           filter(educationLevel == "HighSchoolOrCollege"), 
+                           x = Income, y = Cashflow,
+                           type = "nonparametric") + 
+          theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+          labs(title = "High School", 
+          x = "Income", y = "Cashflow") +
+          scale_y_continuous(labels = comma_format()) 
+
+edu_bach <- ggscatterstats(data = resident_profile |> 
+                           filter(educationLevel == "Bachelors"), 
+                           x = Income, y = Cashflow,
+                           type = "nonparametric") + 
+            theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+            labs(title = "Bachelors", 
+            x = "Income", y = "Cashflow") +
+            scale_y_continuous(labels = comma_format()) 
+
+edu_grad <- ggscatterstats(data = resident_profile |> 
+                           filter(educationLevel == "Graduate"), 
+                           x = Income, y = Cashflow,
+                           type = "nonparametric") + 
+            theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+            labs(title = "Graduate", 
+            x = "Income", y = "Cashflow") +
+            scale_y_continuous(labels = comma_format()) 
+
+#combined plot and ensure layout is in order
+corr_edu <- ((edu_low + edu_hc) / (edu_bach + edu_grad) + plot_spacer())
+
+#add labels
+corr_edu + plot_annotation(title = "Correlation between Cashflow and Income", 
+                           subtitle = "High correlation between Cashflow and Income at all education level",
+                           theme = theme(
+                             plot.title = element_text(size = 18),
+                             plot.subtitle = element_text(size = 12)))
+
+```
+
+***Observations:***
+
+-   High positive correlation between Cashflow and Income (\>0.9)
+
+-   As education level increases, the Sprearman correlation coefficient increases
