@@ -1,9 +1,104 @@
-
 ---
 title: "In-Class Exercise 5"
+subtitle: " VAST Challenge Project & GAStech"
 author: "Oh Jia Wen"
 date: 5/13/2023
 date-modified: 5/13/2023
 execute: 
+  echo: true
+  eval: true
   warning: false
 ---
+
+# Getting started with VAST
+
+1.  Using p_load() of pacman package to load the required libraries
+
+```{r}
+pacman :: p_load (jsonlite, tidygraph, ggraph, visNetwork, tidyverse)
+```
+
+2.  Importing data
+
+```{r}
+MC1 <- fromJSON("data/MC1.json")
+```
+
+## Create Tibble Dataframe
+
+```{r}
+MC1_nodes <-as_tibble(MC1$nodes) %>%
+  select(id,type, country)
+```
+
+```{r}
+MC1_edges <-as_tibble(MC1$links) %>%
+  select(source,target,type,weight,key)
+```
+
+# Getting started with GAStech
+
+1.  Using p_load() of pacman package to load the required libraries
+
+```{r}
+pacman::p_load(igraph, tidygraph, ggraph, 
+               visNetwork, lubridate, clock,
+               tidyverse, graphlayouts)
+```
+
+2.  Importing data
+
+```{r}
+GAStech_nodes <- read_csv("data/GAStech_email_node.csv")
+GAStech_edges <- read_csv("data/GAStech_email_edge-v2.csv")
+```
+
+## Refer to Hands-on Exercise 5
+
+1.  Wrangling Time
+
+```{r}
+GAStech_edges <- GAStech_edges %>%
+  mutate(SendDate = dmy(SentDate)) %>%
+  mutate(Weekday = wday(SentDate,
+                        label = TRUE,
+                        abbr = FALSE))
+```
+
+2. Wrangling attributes
+
+```{r}
+GAStech_edges_aggregated <- GAStech_edges %>%
+  filter(MainSubject == "Work related") %>%
+  group_by(source, target, Weekday) %>%
+    summarise(Weight = n()) %>%
+  filter(source!=target) %>%
+  filter(Weight > 1) %>%
+  ungroup()
+```
+
+3.  Using `tbl_graph()` to build tidygraph data model
+
+```{r}
+GAStech_graph <- tbl_graph(nodes = GAStech_nodes,
+                           edges = GAStech_edges_aggregated, 
+                           directed = TRUE)
+
+GAStech_graph
+```
+
+4.  Changing the active object
+
+```{r}
+GAStech_graph %>%
+  activate(edges) %>%
+  arrange(desc(Weight))
+```
+
+5.  Plotting basic network graph
+
+```{r}
+ggraph(GAStech_graph) +
+  geom_edge_link() +
+  geom_node_point()
+```

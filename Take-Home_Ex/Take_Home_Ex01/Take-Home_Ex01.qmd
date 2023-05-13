@@ -4,7 +4,6 @@ subtitle: " Visual Analytics of the demographic and financial characteristics of
 author: "Oh Jia Wen"
 date: "5/13/2023"
 date-modified: "5/13/2023"
-code-fold: false
 execute: 
   echo: true
   eval: true
@@ -311,6 +310,8 @@ resident_profile %>%
 kable(head(resident_profile), "simple") 
 ```
 
+
+
 # 4. Exploratory Data Visualization
 
 In this section, we will design plots with interactivity for users to study the data with the use of `giraph` , `plotly`, and `patchwork` packages.
@@ -425,6 +426,20 @@ Click on the graph and hover around each demographics.
 
 The respective age group will be displayed.
 :::
+
+```{r}
+p6 <- ggplot(data= participants_new,
+      aes(x = joviality)) +
+      geom_bar_interactive(aes(tooltip = participants_new$tooltip, 
+                               stackgroups = TRUE,
+                               data_id= age_group)) +
+      xlab("Interest Group") +
+      ylab("No.of\nResidents") +
+      theme(axis.text.x=element_text(size=5)) +
+      theme(axis.title.y=element_text(size=10)) +
+      ylim(0,150) 
+p6
+```
 
 ## 4.1 Financial Health of Participants
 

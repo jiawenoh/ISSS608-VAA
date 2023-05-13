@@ -522,8 +522,8 @@ funnel_plot(
   group = covid19$`Sub-district`
 )
 ```
-A funnel plot object with 267 points of which 0 are outliers. 
-Plot is adjusted for overdispersion. 
+
+A funnel plot object with 267 points of which 0 are outliers. Plot is adjusted for overdispersion.
 
 ##### 4.2.1.1) Makeover 1
 
@@ -537,8 +537,8 @@ funnel_plot(
   yrange = c(0, 0.05)   #<<
 )
 ```
-A funnel plot object with 267 points of which 7 are outliers. 
-Plot is adjusted for overdispersion. 
+
+A funnel plot object with 267 points of which 7 are outliers. Plot is adjusted for overdispersion.
 
 ##### 4.2.1.2) Makeover 2
 
@@ -556,10 +556,10 @@ funnel_plot(
   y_label = "Cumulative Fatality Rate"  #<<
 )
 ```
-A funnel plot object with 267 points of which 7 are outliers. 
-Plot is adjusted for overdispersion. 
 
-### 4.3) FunnelPlotR methods: **ggplot2** methods 
+A funnel plot object with 267 points of which 7 are outliers. Plot is adjusted for overdispersion.
+
+### 4.3) FunnelPlotR methods: **ggplot2** methods
 
 To begin with, we derive cumulative death rate and standard error of cumulative death rate.
 
@@ -649,5 +649,3 @@ fp_ggplotly <- ggplotly(p,
               "y"))
 fp_ggplotly
 ```
-
-

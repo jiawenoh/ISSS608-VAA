@@ -8,6 +8,7 @@ execute:
   eval: true
   warning: false
 ---
+
 # Getting started
 
 1.  Using p_load() of pacman package to load the required libraries
@@ -21,14 +22,14 @@ pacman::p_load(rstatix,gt,patchwork,tidyverse,webshot2,png)
 ```{r}
 exam_data <- read_csv("data/Exam_data.csv")
 ```
+
 # Plotting the graph
 
 ## 1) Visualizing statistical graph **QQ Plot**
 
-The quantile-quantile (q-q) plot is a graphical technique for determining if two data sets come from populations with a common distribution. 
+The quantile-quantile (q-q) plot is a graphical technique for determining if two data sets come from populations with a common distribution.
 
-::: {.panel-tabset}
-
+::: panel-tabset
 ## Plot
 
 ```{r}
@@ -52,13 +53,11 @@ ggplot(exam_data,
   stat_qq() +
   stat_qq_line()
 ```
-
 :::
 
 ## 2) Combining statistical graph and analysis table
 
-::: {.panel-tabset}
-
+::: panel-tabset
 ## Plot
 
 ```{r}
@@ -76,8 +75,7 @@ sw_t <- exam_data %>%
 
 tmp <-tempfile(fileext = ".png")
 gtsave(sw_t,tmp)
-table_png <- png::readPNG(tmp,
-native= TRUE)
+table_png <- png::readPNG(tmp,native= TRUE)
 
 qq + table_png
 ```
@@ -104,7 +102,4 @@ native= TRUE)
 
 qq + table_png
 ```
-
 :::
-
-
