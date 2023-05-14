@@ -738,15 +738,13 @@ table_data <- data.frame(
       )
 
 # Save plot and table as png image
-png("qq_plot_with_table.png")
+png("qq_plot_with_table.png", height = 500, width= 900, units ="px")
 grid.arrange(qq, tableGrob(table_data), nrow = 1, 
-                 top = text_grob("Normality Quantile Plot with Anderson-Darling Normality Test", size =18))
+                 top = text_grob("Normality Quantile Plot with Anderson-Darling Normality Test", size =10))
 
 #display output using knitr 
 knitr::include_graphics("qq_plot_with_table.png")
 ```
-
-    </div>
 
 Based on the result above, we concluded that there is enough statistical evidence to **reject** the null hypothesis. Since the p-values fall below (p \< 0.05), normality is not assumed. Henceforth, we will use the non-parametric test to conduct our analysis.
 
