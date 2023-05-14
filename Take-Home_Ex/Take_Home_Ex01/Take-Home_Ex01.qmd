@@ -714,36 +714,38 @@ Ho: the observed distribution resembles normal distribution
 
 H1: the observed distribution failed to resemble normal distribution
 
-```{r}
-#| code-fold: true
-#| fig-width: 12
-#| fig-height: 6
+-   <div>
 
-#Anderson-Darling normality test
-ad_test <- ad.test(resident_profile_rev$joviality)
+    ```{r}
+    #| code-fold: true
 
-# QQ plot
-qq <- ggplot(data = resident_profile_rev, 
-             aes(sample = joviality)) +
-      stat_qq() +
-      stat_qq_line() 
-      
+    #Anderson-Darling normality test
+    ad_test <- ad.test(resident_profile_rev$joviality)
 
-# Create a data frame with ad_test result
-table_data <- data.frame(
-  Test = "Anderson-Darling",
-  Statistic = ad_test$statistic,
-  p_value = ad_test$p.value
-  )
+    # QQ plot
+    qq <- ggplot(data = resident_profile_rev, 
+                 aes(sample = joviality)) +
+          stat_qq() +
+          stat_qq_line() 
+          
 
-# Save plot and table as png image
-png("qq_plot_with_table.png")
-grid.arrange(qq, tableGrob(table_data), nrow = 1, 
-             top = text_grob("Normality Quantile Plot with Anderson-Darling Normality Test", size =20))
+    # Create a data frame with ad_test result
+    table_data <- data.frame(
+      Test = "Anderson-Darling",
+      Statistic = ad_test$statistic,
+      p_value = ad_test$p.value
+      )
 
-#display output using knitr 
-knitr::include_graphics("qq_plot_with_table.png")
-```
+    # Save plot and table as png image
+    png("qq_plot_with_table.png")
+    grid.arrange(qq, tableGrob(table_data), nrow = 1, 
+                 top = text_grob("Normality Quantile Plot with Anderson-Darling Normality Test", size =20))
+
+    #display output using knitr 
+    knitr::include_graphics("qq_plot_with_table.png")
+    ```
+
+    </div>
 
 Based on the result above, we concluded that there is enough statistical evidence to **reject** the null hypothesis. Since the p-values fall below (p \< 0.05), normality is not assumed. Henceforth, we will use the non-parametric test to conduct our analysis.
 
