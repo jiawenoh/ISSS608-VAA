@@ -2,8 +2,8 @@
 title: "Take Home Exercise 1"
 subtitle: " Visual Analytics of the demographic and financial characteristics of residents in City of Engagement"
 author: "Oh Jia Wen"
-date: "5/13/2023"
-date-modified: "5/13/2023"
+date: "5/14/2023"
+date-modified: "5/14/2023"
 execute: 
   echo: true
   eval: true
@@ -20,9 +20,9 @@ In this take-home exercise, patterns containing demographics and financial chara
 
 # 2. Datasets
 
-Data has been collected by the local council of the city. The survey sampled 1,000 respondents to collect data related to their household demographic, spending patterns and among, other things. The data is stored in two separate files ranging from **Mar 2022 to Feb 2023** :
+Data has been collected by the local council of the city. The survey sampled 1,000 respondents to collect data related to their household demographic, spending patterns and among, other things. The data is stored in two separate files with FinancialJournal.csv ranging from **Mar 2022 to Feb 2023** :
 
-|           | 1\) Participants.csv | 2\) FinancialJourval.csv |
+|           | 1\) Participants.csv | 2\) FinancialJournal.csv |
 |:---------:|:--------------------:|:------------------------:|
 |   Rows    |        1,011         |        1,513,636         |
 | Variables |          7           |            4             |
@@ -77,29 +77,32 @@ Using p_load() of pacman package to load and install the following libraries:
 
 -   `wesanderson`: *Wes Anderson*'s theme Palette Generator
 
--   png
+-   `scales`: For customizing the appearance of axis and legend labels
 
--   nortest
+-   `png`: For reading, writing, and displaying bitmap imaged in PNG format
 
--   webshot
+-   `nortest`: For normality test
 
--   gt
+-   `webshot2`: For taking screenshot of web pages
 
--   stats
+-   `rstatix`: For performing statistical tests and correlation analyses
 
--   gridExtra
+-   `gt` : For constructing of table
 
--   textGrob : create a text graphical object with the desired title text. ggpubr
+-   `stats` : For statistical calculations
 
--   ggdist
+-   `gridExtra`: For arranging multiple grid-based plot on a page, and draw tables
+
+-   `ggpubr`: For creating and customizing *'ggplot2'* based plots
+
+-   `ggdist`: For visualization of distributions and uncertainty
 
 ```{r}
-#to double check if got use DT, scales, ggpubr
-pacman::p_load(ggiraph, plotly, patchwork, DT, tidyverse,
-               knitr,scales,ggstatsplot,paletteer,wesanderson,
-               ggpubr,gganimate, ggridges, rstatix,gt,webshot2,
-               png,nortest, stats, gridExtra,ggdist)
 
+pacman::p_load(ggiraph, plotly, patchwork, tidyverse,
+               knitr,ggstatsplot,paletteer,wesanderson,
+               scales, ggpubr, rstatix,gt,webshot2,
+               png,nortest, stats, gridExtra,ggdist)
 
 options(scipen = 999)
 ```
@@ -226,7 +229,7 @@ participants_new
 
 2.  Timestamp is a `<POSIX>` variable. (Rectify by reformatting it to `<chr>` in *year-mth* format)
 
-3.  As per the code below, there are duplicate entries in the financial journal. (Rectify by using the `distinct()` function from `[dplyr package]` )
+3.  As per the code below, there are duplicate entries in the financial journal. (Rectify by using the `distinct()` function from `[dplyr package]` in tidyverse)
 
 ```{r}
 #| code-fold: true
@@ -297,7 +300,7 @@ colSums(pivoted_fj[-1] !=0)
 
 ## 3.4 Merging of Data frame
 
-`Full_join` will be used to create a new table by joining the cleaned participants file and pivoted financial journal. It will be match by participant's ID. Likewise, the sequence in the dataset will be relocated to highlight several columns.
+`Full_join` will be used to create a new table by joining the cleaned **participants dataset** and **pivoted financial journal dataset**. It will be match by participant's ID. Likewise, the sequence in the dataset will be relocated to highlight several columns.
 
 ```{r}
 #| code-fold: true
@@ -335,11 +338,11 @@ filtered_count <- participant_counts %>%
 filtered_count 
 ```
 
-It has been observed that there are **131 participants** who only have 1 entry on Mar 2022. To avoid inaccuracy, these group of participants will be excluded from the analysis.
+It has been observed that there are **131 participants** who do not have entries for the entire time period. To avoid inaccuracy, these group of participants will be excluded from the analysis.
 
 ### 3.4.2 Missing Values Check
 
-Through the code chunk below, we confirmed that there are no missing values in resident_profile dataset.
+Through the code chunk below, we confirmed that there are no missing values in **resident_profile dataset.**
 
 ```{r}
 #Check for missing values
@@ -358,7 +361,7 @@ resident_profile_rev <- resident_profile %>%
   mutate(num_months = n_distinct(year_mth)) %>%
   ungroup() %>%
   filter(num_months == 12) %>%
-  select(1:13,15:19)
+  select(-num_months, -Shelter, -RentAdjustment, -Wage)
 
 #output for dataframe using knitr:: kable
 kable(head(resident_profile_rev), "simple") 
@@ -494,7 +497,7 @@ girafe(code = print(p1 + p2 + p3 + p4 + p5  + p6 +
 
 **Observations:**
 
--   The city is facing an aging population as age group is left-skewed.
+-   The city might be facing an aging population as age group is left-skewed.
 -   Low interest for future education as education level is right-skewed.
 -   Small family size with higher proportion of participants of not having Kids.
 -   Uniformly distributed Interest Group. No preference among age group.
@@ -619,7 +622,8 @@ plot_ly(data = grouped_data_rev,
 
 **Observations:**
 
--   Income *(\~Wage)* is fairly constant except for Mar 2022. As Income varies with overtime, it can be inferred that the abnormally could be a form of bonus, grant, incentives given by the service centre
+-   Income *(\~Wage)* is fairly constant except for Mar 2022. It can be inferred that the spike in Wage could be a form of bonus, grant, incentives given by the service centre and might not be an one off special event (requires longer time period to determine).
+
 -   Expenses distribution seems to be constant with lesser spending on Education expenses . However, there is a slight fluctuation in Recreation expenses.
 
 ### 4.3.1 Spending Patterns of participants
@@ -659,7 +663,7 @@ plot_ly(data = grouped_data_rev_newest,
 
 **Observations:**
 
--   Education remain constant throughout while Shelter decrease in Mar 2022 and remain constant. As identified, both expenses are a fixed expense.
+-   Education remain constant throughout while Shelter decrease in Mar 2022 and remains constant. Both expenses are a fixed expense.
 -   Recreation expenses fluctuates more in comparison to Food expenses.
 
 # 5. Confirmatory Data Analysis Visualization
@@ -678,7 +682,7 @@ H1: Association exists between the age group and education level
 
 ```{r}
 #| code-fold: true
-#| #| fig-width: 12
+#| fig-width: 12
 #| fig-height: 6
 
 ggbarstats(data = resident_profile_rev, 
@@ -690,7 +694,7 @@ ggbarstats(data = resident_profile_rev,
            )
 ```
 
-From the graph, we observed that majority of the age group have a HighSchoolOrCollege education level whereas the interest for further study decreases as the age increase. Interestingly, young adults aged 20-29 have attained a higher education level than other age group.
+From the graph, we observed that majority of the age group have a HighSchoolOrCollege education level. Likewise, we also note that the interest for further education decreases as the age increases. Interestingly, young adults aged 20-29 have attained a higher education level than any other age group.
 
 From the test result above (p\<0.05) , we conclude that there is an association between the age group and education level as we **reject** the null hypothesis.
 
@@ -733,7 +737,7 @@ table_data <- data.frame(
   )
 
 # Save plot and table as png image
-png("qq_plot_with_table.png", width = 800, height = 800, units = "px")
+png("qq_plot_with_table.png")
 grid.arrange(qq, tableGrob(table_data), nrow = 1, 
              top = text_grob("Normality Quantile Plot with Anderson-Darling Normality Test", size =20))
 
@@ -764,7 +768,7 @@ ggbetweenstats(data = resident_profile_rev,
        )
 ```
 
-As observed from the test results above, the P-value is lower than the 0.05. As such, there is enough statistical evidence to r**eject** the null hypothesis that the median joviality across education level is the same.
+As observed from the test results above, the P-value is lower than the 0.05. As such, there is enough statistical evidence to **reject** the null hypothesis that the median joviality across education level is the same.
 
 Additionally, we want to find out if there any distinct similarities between the district. From the figure above, we discovered that not all pair comparison are statistically significant. The pair (Low and HighSchoolOrCollege) is not statistically significant with a P-value of 0.08, which is greater than 0.05. Thus, we cannot reject the null hypothesis that there is not differences between the joviality level between the pair.
 
@@ -787,13 +791,14 @@ ggplot(data = resident_profile_rev,
   labs(title = "Visualizing Confidence Intervals of Median Joviality", 
        x = "Education Level", y = "Joviality") +
 #add colors to graph 
-  scale_color_manual(values = c("#446455","#D3DDDC"), aesthetics = "interval_color") +
+  scale_color_manual(values = c("#D3DDDC","#446455"), 
+                     aesthetics = "interval_color") +
 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) 
   
 ```
 
-As seen above, the are high uncertainties across the education level, with an increase in median estimate. This suggests that there might be large presence of outliers in each education level.
+As seen above, the are high uncertainty across the education level, with an increase in median estimate. This suggests that there might be large presence of outliers in each education level.
 
 ### 5.2.4 Kruskal-Wallis Test for Joviality across Age Group
 
@@ -818,7 +823,7 @@ ggbetweenstats(data = resident_profile_rev,
        )
 ```
 
-As observed from the test results above, the P-value is lower than the 0.05. As such, there is enough statistical evidence to r**eject** the null hypothesis that the median joviality across age group is the same.
+As observed from the test results above, the P-value is lower than the 0.05. As such, there is enough statistical evidence to **reject** the null hypothesis that the median joviality across age group is the same.
 
 From the figure above, we discovered that not all pair comparison are statistically significant as there are two pairs with p-value greater than 0.05. The pairs (age group 20-29 and age group 30-39) and (age group 30-39 and age group 40-49) are not statistically significant with a P-value of 0.36 and 0.20 respectively. Thus, we cannot reject the null hypothesis that there is not differences between the joviality level between the pairs.
 
@@ -855,7 +860,7 @@ plot_ly(data = resident_profile_rev,
 
 -   Similar to income range of \$10-\$15k where majority have low joviality
 
--   Joviality level are more spread out when income range below \$5k
+-   Joviality level are more spread out when income ranges below \$5k
 
 ### 5.3.1 Correlation Analysis between Joviality and Income
 
@@ -887,14 +892,16 @@ To interpret the values of correlation (-1 \<= x\<= 1),
 
 -   '-' reflects a negative linear relationship
 
--   Correspondingly, a value of \<0.3 is weak, 0.5 is moderate, \>0.8 is strong, and 1 is perfect
+-   A value of \<0.3 is weak, 0.5 is moderate, \>0.8 is strong, and 1 is perfect
 :::
 
 ## 5.4 Factors affecting Cash flow
 
-Notably, the circulation of money is crucial for City of Engagement and could potentially impact the Local Plan 2023 that is in the midst of preparation. Henceforth, we would like to examine if age group and education level would affect the cashflow.
+Notably, the circulation of money is crucial for City of Engagement and could potentially impact the Local Plan 2023 that is in the midst of preparation. Henceforth, we would like to into the correlation between income and expenses across education level.
 
-## 5.4.1 Cash flow vs Income across Education Level
+### 5.4.1 Cash flow vs Income across Education Level
+
+Multiple `ggscatterstats()` from \[`ggstatsplot]` is used to build a visual for Significant Test of Correlation between Cashflow and Income by filtering the education level. `patchwork` is included to combine the graphs.
 
 ```{r}
 #| fig-width: 12
@@ -902,7 +909,7 @@ Notably, the circulation of money is crucial for City of Engagement and could po
 #| code-fold: true
 #| warning: false
 
-#plotting correlation between age and income across education level
+#plotting correlation between cashflow and income across education level
 edu_low <- ggscatterstats(data = resident_profile_rev |> 
                            filter(educationLevel == "Low"), 
                            x = Income, y = Cashflow,
@@ -951,4 +958,138 @@ corr_edu + plot_annotation(title = "Correlation between Cashflow and Income",
 
 ```
 
-There is an almost perfect positive linear relationship (\>0.9) between Cash flow and Income across Education level. The Spearman correlation coefficient also increases at different education level.
+As seen above, there is an almost perfect positive linear relationship (\>0.9) between Cash flow and Income across Education level. The Spearman correlation coefficient also increases at different education level.
+
+### 5.4.2 Cash flow vs Expenses across Education Level
+
+Similar approach to the previous section.
+
+```{r}
+#| fig-width: 12
+#| fig-height: 6
+#| code-fold: true
+#| warning: false
+
+#plotting correlation between expenses and cashflow across education level
+edu_low_ex <- ggscatterstats(data = resident_profile_rev |> 
+                           filter(educationLevel == "Low"), 
+                           x = Expenses, y = Cashflow,
+                           type = "nonparametric") + 
+           theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+           labs(title = "Low", 
+           x = "Expenses", y = "Cash flow") +
+           scale_y_continuous(labels = comma_format()) 
+
+edu_hc_ex <- ggscatterstats(data = resident_profile_rev |> 
+                           filter(educationLevel == "HighSchoolOrCollege"), 
+                           x = Expenses, y = Cashflow,
+                           type = "nonparametric") + 
+          theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+          labs(title = "High School", 
+          x = "Expenses", y = "Cash flow") +
+          scale_y_continuous(labels = comma_format()) 
+
+edu_bach_ex <- ggscatterstats(data = resident_profile_rev |> 
+                           filter(educationLevel == "Bachelors"), 
+                           x = Expenses, y = Cashflow,
+                           type = "nonparametric") + 
+            theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+            labs(title = "Bachelors", 
+            x = "Expenses", y = "Cash flow") +
+            scale_y_continuous(labels = comma_format()) 
+
+edu_grad_ex <- ggscatterstats(data = resident_profile_rev |> 
+                           filter(educationLevel == "Graduate"), 
+                           x = Expenses, y = Cashflow,
+                           type = "nonparametric") + 
+            theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+            labs(title = "Graduate", 
+            x = "Expenses", y = "Cash flow") +
+            scale_y_continuous(labels = comma_format()) 
+
+#combined plot and ensure layout is in order
+corr_edu <- ((edu_low_ex + edu_hc_ex) / (edu_bach_ex + edu_grad_ex) + 
+               plot_spacer())
+
+#add labels
+corr_edu + plot_annotation(title = "Correlation between Cashflow and Expenses", 
+                           subtitle = "Weak-to-moderate correlation between Cashflow and Expenses at all education level",
+                           theme = theme(
+                             plot.title = element_text(size = 18),
+                             plot.subtitle = element_text(size = 12)))
+
+```
+
+As seen above, there is a negative linear relationship between Cash flow and Expenses across Education level. Low Education Level and Bachelors Education level have a weak-to-moderate correlation while HighSchoolOrCollege and Graduate have a weak negative linear relationship. Although the correlation is weak, we can still infer that the cashflow increases when expenses decreases.
+
+### 5.4.3 Correlation between Income and Expenses (Various Categories) 
+
+Notably, we observed fluctuations in Recreation and Food expenses. Henceforth, we could like to know if there are any correlation between Income and various categories. Similarly, a `ggscatterstats()` from \[`ggstatsplot]` is used to build a visual for Significant Test of Correlation between Income and Various Categories.
+
+```{r}
+#| fig-width: 12
+#| fig-height: 6
+#| code-fold: true
+#| warning: false
+
+#plotting correlation between income and various expenses
+in_food <- ggscatterstats(data = resident_profile_rev,
+                           x = Food, y = Income,
+                           type = "nonparametric") + 
+           theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+           labs(title = "Food", 
+           x = "Food", y = "Income") +
+           scale_y_continuous(labels = comma_format()) 
+
+in_recreation <- ggscatterstats(data = resident_profile_rev,
+                           x = Recreation, y = Income,
+                           type = "nonparametric") + 
+           theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+           labs(title = "Recreation", 
+           x = "Recreation", y = "Income") +
+           scale_y_continuous(labels = comma_format())
+
+in_shelter <- ggscatterstats(data = resident_profile_rev,
+                           x = Shelter_new, y = Income,
+                           type = "nonparametric") + 
+           theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+           labs(title = "Shelter", 
+           x = "Shelter", y = "Income") +
+           scale_y_continuous(labels = comma_format()) 
+
+in_education <- ggscatterstats(data = resident_profile_rev,
+                           x = Education, y = Income,
+                           type = "nonparametric") + 
+           theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+           labs(title = "Education", 
+           x = "Education", y = "Income") +
+           scale_y_continuous(labels = comma_format()) 
+
+#combined plot and ensure layout is in order
+corr_income <- ((in_recreation + in_food) / (in_shelter + in_education) + 
+               plot_spacer())
+
+#add labels
+corr_income + plot_annotation(title = "Correlation between Income and various Expenses", 
+                           subtitle = "Weak correlation between Income and various Expenses at all education level", 
+                           theme = theme(
+                             plot.title = element_text(size = 18),
+                             plot.subtitle = element_text(size = 12)))
+
+```
+
+From the results above, we noticed that all categories have a weak negative linear relationship with Income. Despite the fact that Education and Shelter belongs to fixed expenses whereas Recreation and Food are variable expenses, the correlation coefficient results prove otherwise.
+
+# 6. Conclusion 
+
+From the above analysis, we observed the following:
+
+-   City of Engagement might be facing an aging population.
+
+-   Association exists between the age group and education level. The interest for further education decreases as the age increases.
+
+-   Majority of participants have positive cash flow.
+
+-   Joviality level varies across Education Level and Age Group with high uncertainty. In comparison to Income, we note that Joviality level decreases as Income increases. However, we found that there is a weak negative linear relationship between both variables.
+
+-   With regards to factors affecting cashflow, Income across Education level have close to perfect positive linear relationship (\>0.9). The Spearman correlation coefficient also increases at different education level. However, it has a weak-to-moderate negative linear relationship with Expenses. Likewise, there is a weak negative linear relationship between Income and Various Expenses.
