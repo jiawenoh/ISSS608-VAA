@@ -77,11 +77,30 @@ Using p_load() of pacman package to load and install the following libraries:
 
 -   `wesanderson`: *Wes Anderson*'s theme Palette Generator
 
+-   png
+
+-   nortest
+
+-   webshot
+
+-   gt
+
+-   stats
+
+-   gridExtra
+
+-   textGrob : create a text graphical object with the desired title text. ggpubr
+
+-   ggdist
+
 ```{r}
 #to double check if got use DT, scales, ggpubr
 pacman::p_load(ggiraph, plotly, patchwork, DT, tidyverse,
                knitr,scales,ggstatsplot,paletteer,wesanderson,
-               ggpubr,crosstalk,gganimate, ggridges, rstatix,gt,webshot2,png,nortest)
+               ggpubr,gganimate, ggridges, rstatix,gt,webshot2,
+               png,nortest, stats, gridExtra,ggdist)
+
+
 options(scipen = 999)
 ```
 
@@ -491,7 +510,9 @@ The respective age group will be displayed.
 
 ## 4.2 Financial Health of Participants
 
-To know more about the financial health of the participants, interactive `geom_point` is used to plot against the time period. `tooltip` is included to create a snapshot of the financial health status of the participants at the time period. In addition, the plot contains hover effect with the use of `data_id` aesthetic to highlight the trend of the participant's cash flow.
+To know more about the financial health of the participants, interactive `geom_point` is used to plot against the time period. `tooltip` is included to create a snapshot of the financial health status of the participants at the time period.
+
+`scale_color_manual` of `[ggplot2]` is used to differentiate between positive and negative cash flow. In addition, the plot contains hover effect with the use of `data_id` aesthetic to highlight the trend of the participant's cash flow.
 
 ```{r}
 #| code-fold: true
@@ -630,7 +651,7 @@ plot_ly(data = grouped_data_rev_newest,
                          "<br>Amount:", format(total_amount, big.mark = ","))) |>
 
 #Configure title and axes
-  layout(title = "Total Expenses incurred by partcipants \nin City of Engagement from Mar 2022 - Feb 2023",
+  layout(title = "Spending Patterns of participants from Mar 2022 - Feb 2023",
          xaxis = list(title = "Time Period"),
          yaxis = list(title = "Total Expenses"))
 
@@ -657,6 +678,9 @@ H1: Association exists between the age group and education level
 
 ```{r}
 #| code-fold: true
+#| #| fig-width: 12
+#| fig-height: 6
+
 ggbarstats(data = resident_profile_rev, 
            x = educationLevel, y = age_group,
            xlab= "Age Group", ylab = "Education Level",
@@ -670,60 +694,58 @@ From the graph, we observed that majority of the age group have a HighSchoolOrCo
 
 From the test result above (p\<0.05) , we conclude that there is an association between the age group and education level as we **reject** the null hypothesis.
 
-## 5.2 Differences in Joviality based on Education Level
+## 5.2 Differences in Joviality based on Education Level/Age Group
 
 As defined earlier, Joviality indicates the participant's overall happiness at the start of the study. We will like to found out if there is a difference in Joviality based on Education Level. Before testing our hypothesis, we will perform a normality assumption test at 95% confidence level.
 
-### 4.4.1 Normality Assumption Test
+### 5.2.1 Normality Assumption Test
 
-Normal Quantile Plot (QQ Plot). For a normally distributed data values, the dot points should be with the 95% envelope or scatter very closely to the slope line in between the two envelopes lines. From the data visualization above, we can visually confirmed that the observed values failed to conform to the normality assumption.
+The statistical graph - Normal Quantile Plot (QQ Plot) is used to visualize a normal distribution as it shows the type of distribution. To be normally distributed, the dot points should be scatter very closely to the slope line. However, as seen from bottom left figure, the dot points curve. Therefore, by the data visualization alone, we can visually confirmed that the observed values failed to conform to the normality assumption.
 
-At 95% confidence level:
+To confirm our data visualization, we perform an Anderson-Darling normality test.
+
+[At 95% confidence level:]{.underline}
 
 Ho: the observed distribution resembles normal distribution
 
 H1: the observed distribution failed to resemble normal distribution
 
-We failed to reject the Ho if p-value is above the alpha value of 0.05.
-
-We reject Ho if p-value is \<0.05.
-
-Given that normality is not assumed, we will use the non-parametric test such as Wilcoxon test statistics.
-
 ```{r}
 #| code-fold: true
 #| fig-width: 12
 #| fig-height: 6
-qq_plot <- ggplot(data=resident_profile_rev,
-                  aes(sample = joviality)) + 
-                  stat_qq() +
-                  stat_qq_line()
+
+#Anderson-Darling normality test
+ad_test <- ad.test(resident_profile_rev$joviality)
+
+# QQ plot
+qq <- ggplot(data = resident_profile_rev, 
+             aes(sample = joviality)) +
+      stat_qq() +
+      stat_qq_line() 
+      
+
+# Create a data frame with ad_test result
+table_data <- data.frame(
+  Test = "Anderson-Darling",
+  Statistic = ad_test$statistic,
+  p_value = ad_test$p.value
+  )
+
+# Save plot and table as png image
+png("qq_plot_with_table.png", width = 800, height = 800, units = "px")
+grid.arrange(qq, tableGrob(table_data), nrow = 1, 
+             top = text_grob("Normality Quantile Plot with Anderson-Darling Normality Test", size =20))
+
+#display output using knitr 
+knitr::include_graphics("qq_plot_with_table.png")
 ```
 
-```{r}
-ggplot(data=resident_profile_rev,
-       aes(sample = joviality)) + 
-  stat_qq() +
-  stat_qq_line()
-```
+Based on the result above, we concluded that there is enough statistical evidence to **reject** the null hypothesis. Since the p-values fall below (p \< 0.05), normality is not assumed. Henceforth, we will use the non-parametric test to conduct our analysis.
 
-```{r}
-#  ggplot(data = resident_profile_rev,
-#         aes(x= joviality)) + 
-#  geom_histogram(bins=10) +
-#  xlab("Joviality") +
-#  ylab("No.of Residents") +
-#  geom_vline(aes(xintercept = average_joviality), col ="red", linewidth=1 ) +
-#  annotate("text", x=0.37, y= 1400, label="Average Joviality:", size=4, color = "red") +    annotate("text", x=0.37, y= 1300, label=format(average_joviality, big.mark=","), size=4, color = "red") 
-#  geom_vline(aes(xintercept = median_joviality), col ="green", linewidth=1 ) 
+### 5.2.2 Kruskal-Wallis Test for Joviality across Education Level
 
-```
-
-Based on the result above, we concluded that there is enough statistical evidence to reject the null hypothesis. Since the p-values fall below (p \< 0.05), normality is not assumed. Henceforth, we will use the Kruskal-Wallis test.
-
-### 4.4.2 Kruskal-Wallis Test for Joviality across Education Level
-
-We will test the following hypothesis at 95% Confidence Level:
+We will test the following hypothesis [at 95% Confidence Level:]{.underline}
 
 Ho : the median Joviality across different education level is the same
 
@@ -742,54 +764,72 @@ ggbetweenstats(data = resident_profile_rev,
        )
 ```
 
-As seen above, the P-value is lower than the 0.05. As such, there is enough statistical evidence to reject the null hypothesis that the median joviality across education level is the same.
+As observed from the test results above, the P-value is lower than the 0.05. As such, there is enough statistical evidence to r**eject** the null hypothesis that the median joviality across education level is the same.
 
-Additionally, we want to find out if there any distinct similarities between the district. Through the graph above, we discovered that not all pair comparison are statistically significant. The pair (Low and HighSchoolOrCollege) is not statistically significant with a P-value of 0.14, which is greater than 0.05. Thus, we cannot reject the null hypothesis that there is not differences between the joviality level between the pair.
+Additionally, we want to find out if there any distinct similarities between the district. From the figure above, we discovered that not all pair comparison are statistically significant. The pair (Low and HighSchoolOrCollege) is not statistically significant with a P-value of 0.08, which is greater than 0.05. Thus, we cannot reject the null hypothesis that there is not differences between the joviality level between the pair.
 
-## 4.5 Association between Age group and Joviality
+### 5.2.3 Plotting Confidence Interval of Point Estimates
 
-We discovered that there is a statistical difference in joviality across Education Level, we would like to examine if the same applies and if there is an association between the age group. As Joviality is a continuous variable, we used `mutate` from `dplyr` to split it into 5-class variables, with each range at 20%.
-
-[At 95% confidence level,]{.underline}
-
-Ho : No association exists between the age group and joviality level
-
-H1: Association exists between the age group and joviality level
+`stat_pointinterval()` of `[ggdist]` package is used to visualize the distribution of confidence interval by education level. Due to skewness of data, the median point estimate are used. To distinguish between the interval, `scale_color_manual()` of `[ggplot2]` is used *(Note: color contrast is added)* .
 
 ```{r}
-ggbarstats(data = resident_profile_rev, 
-           x = joviality_bins, y = age_group,
-          title = "Comparison of Joviality across age-group",
-          pairwise.comparisons = TRUE, pairwise.display ="s", conf.level = 0.95,
-          package = "wesanderson", palette = "Chevalier1"
-           )
+#| code-fold: true
+#| fig-width: 12
+#| fig-height: 6
+
+#plot points and intervals 
+ggplot(data = resident_profile_rev, 
+       aes(x = educationLevel, y = joviality)) +
+  stat_pointinterval(aes(interval_color = after_stat(level)),
+                     point_interval = "median_qi",
+                     .width = c(0.95,0.99),
+                     point_color = "#C93312") +
+  labs(title = "Visualizing Confidence Intervals of Median Joviality", 
+       x = "Education Level", y = "Joviality") +
+#add colors to graph 
+  scale_color_manual(values = c("#446455","#D3DDDC"), aesthetics = "interval_color") +
+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) 
+  
 ```
 
-```{r}
+As seen above, the are high uncertainties across the education level, with an increase in median estimate. This suggests that there might be large presence of outliers in each education level.
 
+### 5.2.4 Kruskal-Wallis Test for Joviality across Age Group
+
+Earlier, we discovered that there is a statistical difference in joviality across Education Level, we would like to examine if the same applies across age group. As per section 5.2.1, normality is not assumed. Thus, we will use non-parametric test to conduct our analysis.
+
+We will test the following hypothesis [at 95% Confidence Level:]{.underline}
+
+Ho : the median Joviality across the age group is the same
+
+H1: the median Joviality across the age group is not the same
+
+```{r}
+#| code-fold: true
+#| fig-width: 12
+#| fig-height: 6
+ggbetweenstats(data = resident_profile_rev,
+       x= age_group, y= joviality, type ="np",
+       xlab= "Age Group", ylab = "Joviality",
+       title = "Comparison of Joviality across Age Group",
+       pairwise.comparisons = TRUE, pairwise.display ="ns", conf.level = 0.95,
+       package = "wesanderson", palette = "Chevalier1"
+       )
 ```
 
-## 5.2 Differences in joviality across income
+As observed from the test results above, the P-value is lower than the 0.05. As such, there is enough statistical evidence to r**eject** the null hypothesis that the median joviality across age group is the same.
 
-We want to find out if there are any differences in joviality across income.
+From the figure above, we discovered that not all pair comparison are statistically significant as there are two pairs with p-value greater than 0.05. The pairs (age group 20-29 and age group 30-39) and (age group 30-39 and age group 40-49) are not statistically significant with a P-value of 0.36 and 0.20 respectively. Thus, we cannot reject the null hypothesis that there is not differences between the joviality level between the pairs.
 
-The following considerations have been made:
+## 5.3 Differences in Joviality based on Income
 
--   assume income increases over the years
-
--   opacity included to highlight the contrast
-
--   Tooltip to indicate variables
-
-    -   participantID
-
-    -   Income
-
-    -   Cashflow
-
-We will be using `plot_ly` for the interactive graph.
+We will like to found out if there is a difference in Joviality based on Income. A `plot_ly()` graph is use to graph. Opacity is included to highlight the contrast and a `hovertemplate` is included to reflect the `<participantID>`, `<Cashflow>`, `<Income>`, and `Expenses` .
 
 ```{r}
+#| code-fold: true
+#| fig-width: 12
+#| fig-height: 6
 plot_ly(data = resident_profile_rev, 
              x = ~joviality, y = ~Income,
         hovertemplate = ~paste("<br>Participant's ID:",participantId,
@@ -803,7 +843,7 @@ plot_ly(data = resident_profile_rev,
                           line = list(width =0.1, color = "white"))) |>
 
 #add title and labels to axis 
-        layout(title = "Interactive scatterplot of Income vs Joviality" ,
+        layout(title = "Income vs Joviality" ,
          xaxis = list(title = "Joviality level") ,
          yaxis = list(title = "Income"))
 
@@ -811,159 +851,50 @@ plot_ly(data = resident_profile_rev,
 
 **Observations:**
 
--   When income exceeds \$15k, joviality level decreases
+-   Joviality level decreases as income level increases. It decreases sharply when income exceeds \$15k.
 
--   it is similar to income range of \$10-\$15k where majority have low joviality
+-   Similar to income range of \$10-\$15k where majority have low joviality
 
 -   Joviality level are more spread out when income range below \$5k
 
-::: callout-note
-## Note
+### 5.3.1 Correlation Analysis between Joviality and Income
 
-Happiness level of `joviality` ranges from 0 to 1. A score of 0.4 indicates that participant is dull while a score of 0.8 indicates joy.
-:::
-
-```{r}
-DT::datatable(resident_profile_rev, class= "compact")
-```
-
-```{r}
-d <- highlight_key(resident_profile_rev) 
-p <- ggplot(d, 
-            aes(Expenses, 
-                Income)) + 
-  geom_point(size =1) 
-
-gg <- highlight(ggplotly(p),        
-                "plotly_selected")  
-
-dt <- DT::datatable(d,
-                    selection =list(mode="single",
-                                    target="column"))
-crosstalk::bscols(gg,               
-                  dt, 
-                  widths = 6)        
-
-```
-
-```{r}
-fj_cat <- financial_journal_lessdup %>%
-  
-#recode ID from dbl to chr, year_mth
-    mutate(participantId = as.character(participantId),
-         year = format(as.Date(financial_journal_lessdup$timestamp), "%Y"),
-         mth = format(as.Date(financial_journal_lessdup$timestamp), "%m"),
-         amount = abs(round(amount,2)),
-         .before = 3) %>%
-  
-#group the columns in the following order 
-  group_by(year, mth, category) %>%
-  summarize(total_amount = sum(amount))
-
-fj_cat
-```
-
-```{r}
-ggplot(data = fj_cat,
-       aes(x= category, y=total_amount, size = total_amount)) + 
-         geom_point(alpha=0.8, show.legend= FALSE) +
-         scale_size(range =c(2,12)) +
-         labs(titles = "Year{as.integer(frame_time)}",
-              x = "Category",
-              y = "Total_amount") +
-         transition_time(as.integer(year)) +
-         ease_aes("linear") +
-         scale_y_continuous(labels = comma_format()) 
-```
-
-## 5.3 Average Cashflow available for Residents across Age Group
+Since joviality is not normally distributed, a `ggscatterstats()` from \[`ggstatsplot]` is used to build a visual for Significant Test of Correlation between Joviality and Income.
 
 ```{r}
 #| code-fold: true
 #| fig-width: 12
 #| fig-height: 6
 
-tooltip_css <- "background-color:#C7B19C; #<<
-font-style:bold; color:#446455;" #<<
-
-tooltip <- function(y, ymax, accuracy = 1) {   #<<
-  mean <- scales::number(y, accuracy = accuracy) #<<
-  sem <- scales::number(ymax - y, accuracy = accuracy) #<<
-  paste("Average Cashflow:", mean, "+/-", sem) #<<
-} #<<
-
-pp <- ggplot(data=resident_profile_rev, 
-                   aes(x = age_group),
-) +
-  stat_summary(aes(y = Cashflow, 
-                   tooltip = after_stat(  #<<
-                     tooltip(y, ymax))),  #<<
-    fun.data = "mean_se", 
-    geom = GeomInteractiveCol,  #<<
-    fill = "#D3DDDC"
-  ) +
-  stat_summary(aes(y = Cashflow),
-    fun.data = mean_se,
-    geom = "errorbar", width = 0.2, linewidth = 0.2
-  ) +
-  labs(title="Average Cashflow available to Residents by age_group") +
-  ylab("Total Cashflow") +
-  xlab("Age Group") 
-
-girafe(ggobj = pp,
-       width_svg = 8,
-       height_svg = 8*0.618,
-       options = list(    #<<
-       opts_tooltip(    #<<
-       css = tooltip_css)) #<<
-       )
-```
-
-```{r}
-ggplot(data =resident_profile_rev, 
-       aes(x = Food, 
-           y = age_group)) +
-  geom_density_ridges(
-    scale = 3,
-    rel_min_height = 0.01,
-    bandwidth = 3.4,
-    fill = "#D3DDDC",
-    color = "#446455"
-  ) +
-  scale_x_continuous(
-    name = "English grades",
-    expand = c(0, 0)
-    ) +
-  scale_y_discrete(name = NULL, expand = expansion(add = c(0.2, 2.6))) +
-  theme_ridges()
-```
-
-```{r}
 ggscatterstats(
   data = resident_profile_rev,
-  x = Expenses,
-  y = Shelter,
-  type = "nonparametric",
-  marginal = TRUE,
-  title = "Significant Test of Correlation between Expenses and Shelter",
-  xlab = "Expenses",
-  ylab = "Shelter"
-)
-```
-
-```{r}
-#plotting correlation between age and income 
-ggscatterstats(data = resident_profile_rev,
-  x = age, y = Income,
-  type = "nonparametric",
-  marginal = TRUE,
-  title = "Significant Test of Correlation between Age and Income",
-  xlab = "Age",
+  x = joviality, y = Income,
+  type = "nonparametric", marginal = TRUE,
+  title = "Significant Test of Correlation between Joviality and Income",
+  xlab = "Joviality",
   ylab = "Income"
 )
 ```
 
-Cashflow / Income
+The test result of The Spearman correlation coefficient indicates that the there is a **weak negative linear relationship** between Joviality and Income. Even though the correlation is on the weaker end, we can conclude that there is an inverse relationship between them. The higher you earn, the lower your joviality.
+
+::: callout-note
+## Correlation Coefficient
+
+To interpret the values of correlation (-1 \<= x\<= 1),
+
+-   '+' reflects a positive linear relationship
+
+-   '-' reflects a negative linear relationship
+
+-   Correspondingly, a value of \<0.3 is weak, 0.5 is moderate, \>0.8 is strong, and 1 is perfect
+:::
+
+## 5.4 Factors affecting Cash flow
+
+Notably, the circulation of money is crucial for City of Engagement and could potentially impact the Local Plan 2023 that is in the midst of preparation. Henceforth, we would like to examine if age group and education level would affect the cashflow.
+
+## 5.4.1 Cash flow vs Income across Education Level
 
 ```{r}
 #| fig-width: 12
@@ -978,7 +909,7 @@ edu_low <- ggscatterstats(data = resident_profile_rev |>
                            type = "nonparametric") + 
            theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
            labs(title = "Low", 
-           x = "Income", y = "Cashflow") +
+           x = "Income", y = "Cash flow") +
            scale_y_continuous(labels = comma_format()) 
 
 edu_hc <- ggscatterstats(data = resident_profile_rev |> 
@@ -987,7 +918,7 @@ edu_hc <- ggscatterstats(data = resident_profile_rev |>
                            type = "nonparametric") + 
           theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
           labs(title = "High School", 
-          x = "Income", y = "Cashflow") +
+          x = "Income", y = "Cash flow") +
           scale_y_continuous(labels = comma_format()) 
 
 edu_bach <- ggscatterstats(data = resident_profile_rev |> 
@@ -996,7 +927,7 @@ edu_bach <- ggscatterstats(data = resident_profile_rev |>
                            type = "nonparametric") + 
             theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
             labs(title = "Bachelors", 
-            x = "Income", y = "Cashflow") +
+            x = "Income", y = "Cash flow") +
             scale_y_continuous(labels = comma_format()) 
 
 edu_grad <- ggscatterstats(data = resident_profile_rev |> 
@@ -1005,7 +936,7 @@ edu_grad <- ggscatterstats(data = resident_profile_rev |>
                            type = "nonparametric") + 
             theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
             labs(title = "Graduate", 
-            x = "Income", y = "Cashflow") +
+            x = "Income", y = "Cash flow") +
             scale_y_continuous(labels = comma_format()) 
 
 #combined plot and ensure layout is in order
@@ -1020,8 +951,4 @@ corr_edu + plot_annotation(title = "Correlation between Cashflow and Income",
 
 ```
 
-***Observations:***
-
--   Almost perfect positive linear relationship between Cashflow and Income (\>0.9)
-
--   As education level increases, the Sprearman correlation coefficient increases
+There is an almost perfect positive linear relationship (\>0.9) between Cash flow and Income across Education level. The Spearman correlation coefficient also increases at different education level.
