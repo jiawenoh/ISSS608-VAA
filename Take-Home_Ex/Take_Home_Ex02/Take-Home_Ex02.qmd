@@ -1,0 +1,21 @@
+---
+title: "Take Home Exercise 2"
+subtitle: " Mini Case 2 of Vast Challenge 2023"
+author: "Oh Jia Wen"
+date: "5/16/2023"
+date-modified: "5/16/2023"
+execute: 
+  echo: true
+  eval: true
+  warning: false
+---
+
+# 1. OVERVIEW
+
+## 1.1 The Task
+
+# 2. Datasets
+
+# 3. Data Preparation
+
+## 3.1 Install R-packages
