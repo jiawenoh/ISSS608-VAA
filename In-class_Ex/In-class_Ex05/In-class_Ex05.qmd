@@ -65,7 +65,7 @@ GAStech_edges <- GAStech_edges %>%
                         abbr = FALSE))
 ```
 
-2. Wrangling attributes
+2.  Wrangling attributes
 
 ```{r}
 GAStech_edges_aggregated <- GAStech_edges %>%

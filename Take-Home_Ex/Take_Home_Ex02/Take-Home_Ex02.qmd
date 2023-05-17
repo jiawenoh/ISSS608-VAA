@@ -14,8 +14,26 @@ execute:
 
 ## 1.1 The Task
 
+With reference to [Mini-Challenge 2](https://vast-challenge.github.io/2023/MC2.html) of [VAST Challenge 2023](https://vast-challenge.github.io/2023/) and by using appropriate **static and interactive statistical graphics** methods, you are required to help FishEye identify companies that may be engaged in illegal fishing?
+
 # 2. Datasets
 
 # 3. Data Preparation
 
 ## 3.1 Install R-packages
+
+```{r}
+pacman :: p_load (jsonlite, tidygraph, ggraph, visNetwork, tidyverse)
+```
+
+## 3.2 Importing Data
+
+```{r}
+
+```
+
+## 3.3 Create Tibble Dataframe
+
+```{r}
+
+```
