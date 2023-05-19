@@ -300,6 +300,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <li><a href="#install-r-packages" id="toc-install-r-packages" class="nav-link" data-scroll-target="#install-r-packages">3.1 Install R-packages</a></li>
   <li><a href="#importing-data" id="toc-importing-data" class="nav-link" data-scroll-target="#importing-data">3.2 Importing Data</a></li>
   <li><a href="#create-tibble-dataframe" id="toc-create-tibble-dataframe" class="nav-link" data-scroll-target="#create-tibble-dataframe">3.3 Create Tibble Dataframe</a></li>
+  <li><a href="#concatenate-tibble-dataframe-edges" id="toc-concatenate-tibble-dataframe-edges" class="nav-link" data-scroll-target="#concatenate-tibble-dataframe-edges">3.4 Concatenate Tibble Dataframe Edges</a></li>
+  <li><a href="#data-wrangling" id="toc-data-wrangling" class="nav-link" data-scroll-target="#data-wrangling">3.5 Data Wrangling</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -357,20 +359,272 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h1>3. Data Preparation</h1>
 <section id="install-r-packages" class="level2">
 <h2 class="anchored" data-anchor-id="install-r-packages">3.1 Install R-packages</h2>
+<p>Using p_load() of pacman package to load and install the following libraries:</p>
+<ul>
+<li><p><code>jsonlite</code> : To import data from JSON file into R</p></li>
+<li><p><code>lubridate</code> : To convert date and time</p></li>
+<li><p><code>dplyr</code>:</p></li>
+</ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman <span class="sc">::</span> <span class="fu">p_load</span> (jsonlite, tidygraph, ggraph, visNetwork, tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman <span class="sc">::</span> <span class="fu">p_load</span> (jsonlite, lubridate, tidygraph, ggraph, visNetwork, tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="importing-data" class="level2">
 <h2 class="anchored" data-anchor-id="importing-data">3.2 Importing Data</h2>
+<p>There are 12 JSON files that will be imported into R the <code>fromJSON</code> function from <code>jsonlite</code>.</p>
 <div class="cell">
-
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>MC2_carp <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/carp.json"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>MC2_catfish <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/catfish.json"</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>MC2_chub_mackerel <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/chub_mackerel.json"</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>MC2_cod2 <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/cod2.json"</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>MC2_herring <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/herring.json"</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>MC2_lichen <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/lichen.json"</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>MC2_mackerel <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/mackerel.json"</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>MC2_pollock <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/pollock.json"</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>MC2_salmon_wgl <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/salmon_wgl.json"</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>MC2_salmon <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/salmon.json"</span>)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>MC2_shark <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/shark.json"</span>)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>MC2_tuna <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/tuna.json"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>MC2_challenge <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/mc2_challenge_graph.json"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="create-tibble-dataframe" class="level2">
 <h2 class="anchored" data-anchor-id="create-tibble-dataframe">3.3 Create Tibble Dataframe</h2>
 <div class="cell">
-
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>MC2_challenge_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_challenge<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id,dataset,shpcountry,rcvcountry)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>MC2_challenge_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_challenge<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(<span class="dv">7</span>,<span class="dv">8</span>,<span class="dv">6</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">#1_fish type :carp</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>MC2_carp_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_carp<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id,dataset,shpcountry,rcvcountry)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>MC2_carp_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_carp<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(<span class="dv">8</span>,<span class="dv">9</span>,<span class="dv">7</span>,<span class="dv">6</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co">#2_fish type: catfish</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>MC2_catfish_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_catfish<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id,dataset,shpcountry,rcvcountry)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>MC2_catfish_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_catfish<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(<span class="dv">6</span>,<span class="dv">7</span>,<span class="dv">5</span>,<span class="dv">4</span>)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="co">#3_fish type: chub_mackerel</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>MC2_chub_mackerel_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_chub_mackerel<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id,dataset,shpcountry,rcvcountry)</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>MC2_chub_mackerel_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_chub_mackerel<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(<span class="dv">8</span>,<span class="dv">9</span>,<span class="dv">7</span>,<span class="dv">6</span>)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="co">#4_fish type: cod2</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>MC2_cod2_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_cod2<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id,dataset,shpcountry,rcvcountry)</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>MC2_cod2_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_cod2<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(<span class="dv">8</span>,<span class="dv">9</span>,<span class="dv">7</span>,<span class="dv">6</span>)</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="co">#5_fish type: herring</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>MC2_herring_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_herring<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id,dataset,shpcountry,rcvcountry)</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>MC2_herring_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_herring<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(<span class="dv">7</span>,<span class="dv">8</span>,<span class="dv">6</span>,<span class="dv">5</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">9</span>,<span class="dv">3</span>,<span class="dv">4</span>)</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a><span class="co">#6_fish type: lichen</span></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>MC2_lichen_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_lichen<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id,dataset,shpcountry,rcvcountry)</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>MC2_lichen_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_lichen<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>    <span class="fu">relocate</span>(<span class="dv">7</span>,<span class="dv">8</span>,<span class="dv">6</span>,<span class="dv">5</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">9</span>,<span class="dv">3</span>,<span class="dv">4</span>)</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a><span class="co">#6_fish type: lichen</span></span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>MC2_lichen_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_lichen<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id,dataset,shpcountry,rcvcountry)</span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>MC2_lichen_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_lichen<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>    <span class="fu">relocate</span>(<span class="dv">7</span>,<span class="dv">8</span>,<span class="dv">6</span>,<span class="dv">5</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">9</span>,<span class="dv">3</span>,<span class="dv">4</span>)</span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a><span class="co">#7_fish type: mackerel</span></span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>MC2_mackerel_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_mackerel<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id,dataset,shpcountry,rcvcountry)</span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>MC2_mackerel_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_mackerel<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a>    <span class="fu">relocate</span>(<span class="dv">6</span>,<span class="dv">7</span>,<span class="dv">5</span>,<span class="dv">4</span>)</span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a><span class="co">#8_fish type: pollock</span></span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>MC2_pollock_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_pollock<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id,dataset,shpcountry,rcvcountry)</span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>MC2_pollock_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_pollock<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>    <span class="fu">relocate</span>(<span class="dv">8</span>,<span class="dv">9</span>,<span class="dv">7</span>,<span class="dv">6</span>)</span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a><span class="co">#9_fish type: salmon_wgl</span></span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a>MC2_salmon_wgl_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_salmon_wgl<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id,dataset,shpcountry,rcvcountry)</span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a>MC2_salmon_wgl_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_salmon_wgl<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(<span class="dv">7</span>,<span class="dv">8</span>,<span class="dv">6</span>,<span class="dv">5</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">9</span>,<span class="dv">3</span>,<span class="dv">4</span>)</span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a><span class="co">#10_fish type: salmon</span></span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a>MC2_salmon_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_salmon<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id,dataset,shpcountry,rcvcountry)</span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a>MC2_salmon_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_salmon<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(<span class="dv">8</span>,<span class="dv">9</span>,<span class="dv">7</span>,<span class="dv">6</span>)</span>
+<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a><span class="co">#11_fish type: shark</span></span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a>MC2_shark_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_shark<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
+<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id,dataset,shpcountry,rcvcountry)</span>
+<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a>MC2_shark_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_shark<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
+<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a>    <span class="fu">relocate</span>(<span class="dv">7</span>,<span class="dv">8</span>,<span class="dv">6</span>,<span class="dv">5</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">9</span>,<span class="dv">3</span>,<span class="dv">4</span>)</span>
+<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a><span class="co">#12_fish type: tuna</span></span>
+<span id="cb5-74"><a href="#cb5-74" aria-hidden="true" tabindex="-1"></a>MC2_tuna_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_tuna<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
+<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id,dataset,shpcountry,rcvcountry)</span>
+<span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a>MC2_tuna_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_tuna<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
+<span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(<span class="dv">5</span>,<span class="dv">6</span>,<span class="dv">4</span>,<span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="concatenate-tibble-dataframe-edges" class="level2">
+<h2 class="anchored" data-anchor-id="concatenate-tibble-dataframe-edges">3.4 Concatenate Tibble Dataframe Edges</h2>
+<p>Among the 12 files, there are 3 data frames which have 7 variables whereas the rest have 9 variables. As such, <code>bind_rows()</code> - a function from the <code>dplyr</code> package within the <code>tidyverse</code> is used.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>combined_edges <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(MC2_carp_edges,MC2_chub_mackerel_edges,</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>                        MC2_cod2_edges,MC2_herring_edges,MC2_lichen_edges,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>                        MC2_pollock_edges,MC2_salmon_wgl_edges,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>                        MC2_salmon_edges,MC2_shark_edges, </span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>                        MC2_catfish_edges,MC2_mackerel_edges,MC2_tuna_edges)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="callout-Tip callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Catfish, Mackerel, and Tuna have 7 variables while other fishes have 9 variables. It is better to concatenate with the use <code>blind_rows</code> instead of <code>rbind()</code> as the latter requires an exact match in the numbers of columns.</p>
+</div>
+</div>
+</section>
+<section id="data-wrangling" class="level2">
+<h2 class="anchored" data-anchor-id="data-wrangling">3.5 Data Wrangling</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>combined_edges_cleaned<span class="ot">&lt;-</span> combined_edges <span class="sc">%&gt;%</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">arrivaldate =</span><span class="fu">ymd</span>(arrivaldate),</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">hscode =</span> <span class="fu">as.character</span>(hscode))</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>combined_edges_cleaned</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2,569 × 9
+   source        target dataset generated_by arrivaldate hscode valueofgoods_omu
+   &lt;chr&gt;         &lt;chr&gt;  &lt;chr&gt;   &lt;chr&gt;        &lt;date&gt;      &lt;chr&gt;             &lt;dbl&gt;
+ 1 Tshimbua Gmb… "Cara… MC2     carp         2034-03-20  80440             15915
+ 2 Marine Maste… "Play… MC2     carp         2034-08-01  940179               NA
+ 3 Marine Maste… "Salt… MC2     carp         2034-11-27  940161               NA
+ 4 Marine Maste… "Salt… MC2     carp         2034-10-10  940161               NA
+ 5 zhāng yú Ges… "Port… MC2     carp         2034-04-09  40729                NA
+ 6 Nile   S.A. … "Cara… MC2     carp         2034-03-30  700711               NA
+ 7 Nile   S.A. … "Play… MC2     carp         2034-03-12  701090               NA
+ 8 AquaBite Lim… "Mar … MC2     carp         2034-04-02  160419            63125
+ 9 Limpopo Rive… "Bu y… MC2     carp         2034-01-26  841950               NA
+10 Bu yu wang NV "Lake… MC2     carp         2034-12-06  200600            57020
+# ℹ 2,559 more rows
+# ℹ 2 more variables: volumeteu &lt;dbl&gt;, weightkg &lt;int&gt;</code></pre>
+</div>
+</div>
+<div class="callout-Note callout callout-style-default no-icon callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>collapse = “true”</p>
+<p>HS code, also known as The Harmonized System are alphanumeric codes used for classifying goods for international trade and customs purposes.</p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(<span class="fu">unique</span>(combined_edges_cleaned))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1262</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>MC2_challenge_edges<span class="ot">&lt;-</span> MC2_challenge_edges <span class="sc">%&gt;%</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">arrivaldate =</span><span class="fu">ymd</span>(arrivaldate),</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">hscode =</span> <span class="fu">as.character</span>(hscode))</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>MC2_challenge_edges</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5,464,378 × 9
+   source  target dataset arrivaldate hscode valueofgoods_omu volumeteu weightkg
+   &lt;chr&gt;   &lt;chr&gt;  &lt;chr&gt;   &lt;date&gt;      &lt;chr&gt;             &lt;dbl&gt;     &lt;dbl&gt;    &lt;int&gt;
+ 1 AquaDe… Barin… MC2     2034-02-12  630630           141015         0     4780
+ 2 AquaDe… Barin… MC2     2034-03-13  630630           141015         0     6125
+ 3 AquaDe… -15045 MC2     2028-02-07  470710               NA         0    10855
+ 4 AquaDe… -15045 MC2     2028-02-23  470710               NA         0    11250
+ 5 AquaDe… -15045 MC2     2028-09-11  470710               NA         0    11165
+ 6 AquaDe… -15045 MC2     2028-10-09  470710               NA         0    11290
+ 7 AquaDe… Océan… MC2     2028-04-12  304890               NA         0     9000
+ 8 AquaDe… Olas … MC2     2028-06-04  304890               NA         0    19490
+ 9 AquaDe… Shou … MC2     2028-09-03  303890               NA         0     6865
+10 AquaDe… Shou … MC2     2028-09-08  306170               NA         0    19065
+# ℹ 5,464,368 more rows
+# ℹ 1 more variable: valueofgoodsusd &lt;dbl&gt;</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(MC2_challenge_edges)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 5,464,378
+Columns: 9
+$ source           &lt;chr&gt; "AquaDelight Inc and Son's", "AquaDelight Inc and Son…
+$ target           &lt;chr&gt; "BaringoAmerica Marine Ges.m.b.H.", "BaringoAmerica M…
+$ dataset          &lt;chr&gt; "MC2", "MC2", "MC2", "MC2", "MC2", "MC2", "MC2", "MC2…
+$ arrivaldate      &lt;date&gt; 2034-02-12, 2034-03-13, 2028-02-07, 2028-02-23, 2028…
+$ hscode           &lt;chr&gt; "630630", "630630", "470710", "470710", "470710", "47…
+$ valueofgoods_omu &lt;dbl&gt; 141015, 141015, NA, NA, NA, NA, NA, NA, NA, NA, NA, N…
+$ volumeteu        &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
+$ weightkg         &lt;int&gt; 4780, 6125, 10855, 11250, 11165, 11290, 9000, 19490, …
+$ valueofgoodsusd  &lt;dbl&gt; NA, NA, NA, NA, NA, NA, 87110, 188140, NA, 221110, 58…</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">#check for duplicates </span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>dup <span class="ot">&lt;-</span> (<span class="fu">nrow</span>(MC2_challenge_edges) <span class="sc">-</span> <span class="fu">nrow</span>(<span class="fu">unique</span>(MC2_challenge_edges)))</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co">#reformat output </span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>dup_reformat <span class="ot">&lt;-</span> <span class="fu">format</span>(dup, <span class="at">big.mark=</span><span class="st">","</span>)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="co">#print output</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>dup_reformat</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "155,291"</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>MC2_challenge_edges_aggregated <span class="ot">&lt;-</span> MC2_challenge_edges <span class="sc">%&gt;%</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(source,target,hscode) <span class="sc">%&gt;%</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">weight =</span><span class="fu">n</span>(),</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">total_weight =</span> <span class="fu">sum</span>(weightkg))</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>MC2_challenge_edges_aggregated</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 776,225 × 5
+# Groups:   source, target [245,807]
+   source                            target           hscode weight total_weight
+   &lt;chr&gt;                             &lt;chr&gt;            &lt;chr&gt;   &lt;int&gt;        &lt;dbl&gt;
+ 1 " Direct Herring Company Transit" -1327            307590      5       106645
+ 2 " Direct Herring Company Transit" -5678            306170      1        17400
+ 3 " Direct Herring Company Transit" Adriatic Catch … 307490      1        23155
+ 4 " Direct Herring Company Transit" Adriatic Tuna S… 307490      2        39095
+ 5 " Direct Herring Company Transit" Adriatic Tuna S… 307590      4        52340
+ 6 " Direct Herring Company Transit" Caracola Azul N… 160529      4        46105
+ 7 " Direct Herring Company Transit" Caracola Azul N… 210690      1        12370
+ 8 " Direct Herring Company Transit" Caracola Azul N… 306170      6       161735
+ 9 " Direct Herring Company Transit" Caracola Azul N… 390110      4        68275
+10 " Direct Herring Company Transit" Caracola Azul O… 307590      2       183530
+# ℹ 776,215 more rows</code></pre>
+</div>
 </div>
 
 

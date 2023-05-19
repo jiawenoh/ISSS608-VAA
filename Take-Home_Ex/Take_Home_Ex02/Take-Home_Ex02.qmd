@@ -22,18 +22,193 @@ With reference to [Mini-Challenge 2](https://vast-challenge.github.io/2023/MC2.h
 
 ## 3.1 Install R-packages
 
+Using p_load() of pacman package to load and install the following libraries:
+
+-   `jsonlite` : To import data from JSON file into R
+
+-   `lubridate` : To convert date and time
+
+-   `dplyr`:
+
 ```{r}
-pacman :: p_load (jsonlite, tidygraph, ggraph, visNetwork, tidyverse)
+pacman :: p_load (jsonlite, lubridate, tidygraph, ggraph, visNetwork, tidyverse)
 ```
 
 ## 3.2 Importing Data
 
-```{r}
+There are 12 JSON files that will be imported into R the `fromJSON` function from `jsonlite`.
 
+```{r}
+#| code-fold: true
+MC2_carp <- fromJSON("data/bundles/carp.json")
+MC2_catfish <- fromJSON("data/bundles/catfish.json")
+MC2_chub_mackerel <- fromJSON("data/bundles/chub_mackerel.json")
+MC2_cod2 <- fromJSON("data/bundles/cod2.json")
+MC2_herring <- fromJSON("data/bundles/herring.json")
+MC2_lichen <- fromJSON("data/bundles/lichen.json")
+MC2_mackerel <- fromJSON("data/bundles/mackerel.json")
+MC2_pollock <- fromJSON("data/bundles/pollock.json")
+MC2_salmon_wgl <- fromJSON("data/bundles/salmon_wgl.json")
+MC2_salmon <- fromJSON("data/bundles/salmon.json")
+MC2_shark <- fromJSON("data/bundles/shark.json")
+MC2_tuna <- fromJSON("data/bundles/tuna.json")
+
+```
+
+```{r}
+MC2_challenge <- fromJSON("data/mc2_challenge_graph.json")
 ```
 
 ## 3.3 Create Tibble Dataframe
 
 ```{r}
+MC2_challenge_nodes <-as_tibble(MC2_challenge$nodes) %>%
+  select(id,dataset,shpcountry,rcvcountry)
+MC2_challenge_edges <-as_tibble(MC2_challenge$links) %>%
+  relocate(7,8,6)
+```
 
+```{r}
+#1_fish type :carp
+MC2_carp_nodes <-as_tibble(MC2_carp$nodes) %>%
+  select(id,dataset,shpcountry,rcvcountry)
+MC2_carp_edges <-as_tibble(MC2_carp$links) %>%
+  relocate(8,9,7,6)
+
+#2_fish type: catfish
+MC2_catfish_nodes <-as_tibble(MC2_catfish$nodes) %>%
+  select(id,dataset,shpcountry,rcvcountry)
+MC2_catfish_edges <-as_tibble(MC2_catfish$links) %>%
+  relocate(6,7,5,4)
+
+#3_fish type: chub_mackerel
+MC2_chub_mackerel_nodes <-as_tibble(MC2_chub_mackerel$nodes) %>%
+  select(id,dataset,shpcountry,rcvcountry)
+MC2_chub_mackerel_edges <-as_tibble(MC2_chub_mackerel$links) %>%
+  relocate(8,9,7,6)
+
+#4_fish type: cod2
+MC2_cod2_nodes <-as_tibble(MC2_cod2$nodes) %>%
+  select(id,dataset,shpcountry,rcvcountry)
+MC2_cod2_edges <-as_tibble(MC2_cod2$links) %>%
+  relocate(8,9,7,6)
+
+#5_fish type: herring
+MC2_herring_nodes <-as_tibble(MC2_herring$nodes) %>%
+  select(id,dataset,shpcountry,rcvcountry)
+MC2_herring_edges <-as_tibble(MC2_herring$links) %>%
+  relocate(7,8,6,5,1,2,9,3,4)
+
+#6_fish type: lichen
+MC2_lichen_nodes <-as_tibble(MC2_lichen$nodes) %>%
+  select(id,dataset,shpcountry,rcvcountry)
+MC2_lichen_edges <-as_tibble(MC2_lichen$links) %>%
+    relocate(7,8,6,5,1,2,9,3,4)
+
+#6_fish type: lichen
+MC2_lichen_nodes <-as_tibble(MC2_lichen$nodes) %>%
+  select(id,dataset,shpcountry,rcvcountry)
+MC2_lichen_edges <-as_tibble(MC2_lichen$links) %>%
+    relocate(7,8,6,5,1,2,9,3,4)
+
+#7_fish type: mackerel
+MC2_mackerel_nodes <-as_tibble(MC2_mackerel$nodes) %>%
+  select(id,dataset,shpcountry,rcvcountry)
+MC2_mackerel_edges <-as_tibble(MC2_mackerel$links) %>%
+    relocate(6,7,5,4)
+
+#8_fish type: pollock
+MC2_pollock_nodes <-as_tibble(MC2_pollock$nodes) %>%
+  select(id,dataset,shpcountry,rcvcountry)
+MC2_pollock_edges <-as_tibble(MC2_pollock$links) %>%
+    relocate(8,9,7,6)
+
+#9_fish type: salmon_wgl
+MC2_salmon_wgl_nodes <-as_tibble(MC2_salmon_wgl$nodes) %>%
+  select(id,dataset,shpcountry,rcvcountry)
+MC2_salmon_wgl_edges <-as_tibble(MC2_salmon_wgl$links) %>%
+  relocate(7,8,6,5,1,2,9,3,4)
+
+#10_fish type: salmon
+MC2_salmon_nodes <-as_tibble(MC2_salmon$nodes) %>%
+  select(id,dataset,shpcountry,rcvcountry)
+MC2_salmon_edges <-as_tibble(MC2_salmon$links) %>%
+  relocate(8,9,7,6)
+
+#11_fish type: shark
+MC2_shark_nodes <-as_tibble(MC2_shark$nodes) %>%
+  select(id,dataset,shpcountry,rcvcountry)
+MC2_shark_edges <-as_tibble(MC2_shark$links) %>%
+    relocate(7,8,6,5,1,2,9,3,4)
+
+#12_fish type: tuna
+MC2_tuna_nodes <-as_tibble(MC2_tuna$nodes) %>%
+  select(id,dataset,shpcountry,rcvcountry)
+MC2_tuna_edges <-as_tibble(MC2_tuna$links) %>%
+  relocate(5,6,4,3)
+```
+
+## 3.4 Concatenate Tibble Dataframe Edges
+
+Among the 12 files, there are 3 data frames which have 7 variables whereas the rest have 9 variables. As such, `bind_rows()` - a function from the `dplyr` package within the `tidyverse` is used.
+
+```{r}
+combined_edges <- bind_rows(MC2_carp_edges,MC2_chub_mackerel_edges,
+                        MC2_cod2_edges,MC2_herring_edges,MC2_lichen_edges,
+                        MC2_pollock_edges,MC2_salmon_wgl_edges,
+                        MC2_salmon_edges,MC2_shark_edges, 
+                        MC2_catfish_edges,MC2_mackerel_edges,MC2_tuna_edges)
+```
+
+::: callout-Tip
+Catfish, Mackerel, and Tuna have 7 variables while other fishes have 9 variables. It is better to concatenate with the use `blind_rows` instead of `rbind()` as the latter requires an exact match in the numbers of columns.
+:::
+
+## 3.5 Data Wrangling
+
+```{r}
+combined_edges_cleaned<- combined_edges %>%
+  mutate(arrivaldate =ymd(arrivaldate),
+         hscode = as.character(hscode))
+
+combined_edges_cleaned
+```
+
+::: callout-Note
+collapse = "true"
+
+HS code, also known as The Harmonized System are alphanumeric codes used for classifying goods for international trade and customs purposes.
+:::
+
+```{r}
+nrow(unique(combined_edges_cleaned))
+```
+
+```{r}
+MC2_challenge_edges<- MC2_challenge_edges %>%
+  mutate(arrivaldate =ymd(arrivaldate),
+         hscode = as.character(hscode))
+
+MC2_challenge_edges
+```
+
+```{r}
+glimpse(MC2_challenge_edges)
+```
+
+```{r}
+#check for duplicates 
+dup <- (nrow(MC2_challenge_edges) - nrow(unique(MC2_challenge_edges)))
+#reformat output 
+dup_reformat <- format(dup, big.mark=",")
+#print output
+dup_reformat
+```
+
+```{r}
+MC2_challenge_edges_aggregated <- MC2_challenge_edges %>%
+  group_by(source,target,hscode) %>%
+  summarise(weight =n(),
+            total_weight = sum(weightkg))
+MC2_challenge_edges_aggregated
 ```
