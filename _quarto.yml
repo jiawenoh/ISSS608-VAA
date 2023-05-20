@@ -38,8 +38,10 @@ website:
             href: "Hands-on_Ex/Hands-on_Ex04/Hands-on_Ex04.html"
           - text: "Hands-on Exercise 5"
             href: "Hands-on_Ex/Hands-on_Ex05/Hands-on_Ex05.html"
-          - text: "Hands-on Exercise 6"
+          - text: "Hands-on Exercise 6 Part One"
             href: "Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06.html"
+          - text: "Hands-on Exercise 6 Part Two"
+            href: "Hands-on_Ex/Hands-on_Ex06/Hands_on_Ex06_PartTwo.html"
 
       - section: "In-class Exercise"
         contents:

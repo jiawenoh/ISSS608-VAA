@@ -1,10 +1,112 @@
 ---
-title: "Hands-on Exercise 6"
+title: "Hands-on Exercise 6 Part One"
 author: "Oh Jia Wen"
-date: 5/17/2023
-date-modified: 5/17/2023
+date: 5/20/2023
+date-modified: 5/20/2023
 execute: 
   echo: true
   eval: true
   warning: false
 ---
+
+# Getting started
+
+1.  Using p_load() of pacman package to load the required libraries
+
+-   [**ggtern**](http://www.ggtern.com/), a ggplot extension specially designed to plot ternary diagrams. The package will be used to plot static ternary plots.
+
+-   [**Plotly R**](https://plot.ly/r/), an R package for creating interactive web-based graphs via plotly's JavaScript graphing library, plotly.js . The **plotly R** libary contains the *ggplotly* function, which will convert **ggplot2** figures into a Plotly object.
+
+```{r}
+pacman::p_load('plotly', 'tidyverse',"ggtern", 'corrplot', 'ggstatsplot', 'corrgram', 'ellipse')
+```
+
+2.  Importing data
+
+```{r}
+pop_data <- read_csv("data/respopagsex2000to2018_tidy.csv") 
+
+```
+
+3.  Preparing the data
+
+```{r}
+#Deriving the young, economy active and old measures
+agpop_mutated <- pop_data %>%
+  mutate(`Year` = as.character(Year))%>%
+  pivot_wider(names_from = AG, values_from = Population) %>%
+  mutate(YOUNG = rowSums(.[4:8]))%>%
+  mutate(ACTIVE = rowSums(.[9:16]))  %>%
+  mutate(OLD = rowSums(.[17:21])) %>%
+  mutate(TOTAL = rowSums(.[22:24])) %>%
+  filter(Year == 2018)%>%
+  filter(TOTAL > 0)
+```
+
+## 1. Plotting Ternary Diagram
+
+Use ***ggtern()*** function of **ggtern** package to create a simple ternary plot.
+
+### 1.1 Simple Ternary Plot
+
+```{r}
+#Building the static ternary plot
+ggtern(data=agpop_mutated,aes(x=YOUNG,y=ACTIVE, z=OLD)) +
+  geom_point()
+```
+
+### 1.2 Static Ternary Plot
+
+```{r}
+#Building the static ternary plot
+ggtern(data=agpop_mutated, aes(x=YOUNG,y=ACTIVE, z=OLD)) +
+  geom_point() +
+  labs(title="Population structure, 2015") +
+  theme_rgbw()
+```
+
+### 1.3 Interactive Ternary Plot
+
+```{r}
+# reusable function for creating annotation object
+label <- function(txt) {
+  list(
+    text = txt, 
+    x = 0.1, y = 1,
+    ax = 0, ay = 0,
+    xref = "paper", yref = "paper", 
+    align = "center",
+    font = list(family = "serif", size = 15, color = "white"),
+    bgcolor = "#b3b3b3", bordercolor = "black", borderwidth = 2
+  )
+}
+
+# reusable function for axis formatting
+axis <- function(txt) {
+  list(
+    title = txt, tickformat = ".0%", tickfont = list(size = 10)
+  )
+}
+
+ternaryAxes <- list(
+  aaxis = axis("Young"), 
+  baxis = axis("Active"), 
+  caxis = axis("Old")
+)
+
+# Initiating a plotly visualization 
+plot_ly(
+  agpop_mutated, 
+  a = ~YOUNG, 
+  b = ~ACTIVE, 
+  c = ~OLD, 
+  color = I("black"), 
+  type = "scatterternary"
+) %>%
+  layout(
+    annotations = label("Ternary Markers"), 
+    ternary = ternaryAxes
+  )
+```
+
+### 
