@@ -31,12 +31,17 @@ Using p_load() of pacman package to load and install the following libraries:
 -   `dplyr`:
 
 ```{r}
-pacman :: p_load (jsonlite, lubridate, tidygraph, ggraph, visNetwork, tidyverse)
+pacman :: p_load (jsonlite, lubridate, tidygraph, ggraph, visNetwork, tidyverse,
+                  igraph)
 ```
 
 ## 3.2 Importing Data
 
 There are 12 JSON files that will be imported into R the `fromJSON` function from `jsonlite`.
+
+```{r}
+MC2_challenge <- fromJSON("data/mc2_challenge_graph.json")
+```
 
 ```{r}
 #| code-fold: true
@@ -55,20 +60,19 @@ MC2_tuna <- fromJSON("data/bundles/tuna.json")
 
 ```
 
-```{r}
-MC2_challenge <- fromJSON("data/mc2_challenge_graph.json")
-```
-
 ## 3.3 Create Tibble Dataframe
 
 ```{r}
 MC2_challenge_nodes <-as_tibble(MC2_challenge$nodes) %>%
   select(id,dataset,shpcountry,rcvcountry)
 MC2_challenge_edges <-as_tibble(MC2_challenge$links) %>%
-  relocate(7,8,6)
+  relocate(7,8,6) %>%
+  select(source,target,arrivaldate, hscode)
 ```
 
 ```{r}
+#| code-fold: true
+
 #1_fish type :carp
 MC2_carp_nodes <-as_tibble(MC2_carp$nodes) %>%
   select(id,dataset,shpcountry,rcvcountry)
@@ -98,12 +102,6 @@ MC2_herring_nodes <-as_tibble(MC2_herring$nodes) %>%
   select(id,dataset,shpcountry,rcvcountry)
 MC2_herring_edges <-as_tibble(MC2_herring$links) %>%
   relocate(7,8,6,5,1,2,9,3,4)
-
-#6_fish type: lichen
-MC2_lichen_nodes <-as_tibble(MC2_lichen$nodes) %>%
-  select(id,dataset,shpcountry,rcvcountry)
-MC2_lichen_edges <-as_tibble(MC2_lichen$links) %>%
-    relocate(7,8,6,5,1,2,9,3,4)
 
 #6_fish type: lichen
 MC2_lichen_nodes <-as_tibble(MC2_lichen$nodes) %>%
@@ -148,7 +146,7 @@ MC2_tuna_edges <-as_tibble(MC2_tuna$links) %>%
   relocate(5,6,4,3)
 ```
 
-## 3.4 Concatenate Tibble Dataframe Edges
+## 3.4 Concatenate Tibble Dataframe
 
 Among the 12 files, there are 3 data frames which have 7 variables whereas the rest have 9 variables. As such, `bind_rows()` - a function from the `dplyr` package within the `tidyverse` is used.
 
@@ -164,7 +162,97 @@ combined_edges <- bind_rows(MC2_carp_edges,MC2_chub_mackerel_edges,
 Catfish, Mackerel, and Tuna have 7 variables while other fishes have 9 variables. It is better to concatenate with the use `blind_rows` instead of `rbind()` as the latter requires an exact match in the numbers of columns.
 :::
 
+```{r}
+combined_nodes <- bind_rows(MC2_carp_nodes,MC2_catfish_nodes, MC2_chub_mackerel_nodes,
+                            MC2_cod2_nodes, MC2_herring_nodes, MC2_lichen_nodes,
+                            MC2_mackerel_nodes, MC2_pollock_nodes, MC2_salmon_wgl_nodes,
+                            MC2_salmon_nodes, MC2_shark_nodes, MC2_tuna_nodes)
+```
+
+## Creating a Master ID data frame
+
+```{r}
+MC2_id_list <- MC2_challenge_nodes %>%
+  rename(label = id) %>%
+  mutate(
+    trade_status = case_when(
+    !is.na(shpcountry) & !is.na(rcvcountry) ~ "Import & Export",
+    !is.na(shpcountry) ~ "Export",
+    !is.na(rcvcountry) ~ "Import",
+    is.na(shpcountry) | is.na(rcvcountry) ~"Unknown"
+  )) 
+
+MC2_id_list <- MC2_id_list %>%
+  select(label,trade_status,shpcountry, rcvcountry)
+
+#master ID list for visNetwork 
+MC2_id_list_vis <- MC2_challenge_nodes %>%
+  rename(label = id) %>%
+  mutate(id = as.character(1:nrow(MC2_challenge_nodes)),
+    trade_status = case_when(
+    !is.na(shpcountry) & !is.na(rcvcountry) ~ "Import & Export",
+    !is.na(shpcountry) ~ "Export",
+    !is.na(rcvcountry) ~ "Import",
+    is.na(shpcountry) | is.na(rcvcountry) ~"Unknown"
+  )) %>%
+  filter(!is.na(trade_status))
+
+MC2_id_list_vis <- MC2_id_list_vis %>%
+  select(id,label, trade_status,shpcountry, rcvcountry)
+```
+
+```{r}
+#create df to identify companies in target column that are not in the nodes 
+ID_target <- MC2_challenge_edges %>%
+  filter(!(target %in% MC2_id_list$label)) %>%
+  distinct(target) %>%
+  #rename to match names in nodes df
+  rename(id = target) %>%
+  #dummy columns are created to bind rows together
+  mutate(dataset = NA, shpcountry = NA, rcvcountry = NA)
+
+#create df to identify companies in source column that are not in the nodes 
+ID_source <- MC2_challenge_edges %>%
+  filter(!(source %in% MC2_id_list$label)) %>%
+  distinct(source)
+
+#append the distinct companies into the nodes 
+MC2_challenge_nodes <- MC2_challenge_nodes %>%
+  rbind(ID_target) 
+```
+
+There are 24 companies on the `target` column that are not included in the list. Meanwhile, there are no data available in the `source` column that are not in the list.
+
+The `!is.na()` functions help to check for non-missing values in the specified column. In this combined_nodes data frame, the ID only corresponds to either the shipping country or the receiving country. Therefore, it is further segregated into import and export.
+
+
+
+```{r}
+any(is.na(MC2_id_list))
+```
+
 ## 3.5 Data Wrangling
+
+```{r}
+#| code-fold: true
+
+#revise the data format for arrivaldate and hscode 
+MC2_challenge_edges<- MC2_challenge_edges %>%
+  rename(sourcelabel = source, targetlabel = target) %>%
+  mutate(arrivaldate =ymd(arrivaldate),
+         hscode = as.character(hscode))
+
+#to append correspoinding id through left_join 
+MC2_challenge_edges <- MC2_challenge_edges %>%
+  left_join(MC2_id_list_vis, by = c("sourcelabel" = "label")) %>%
+  rename(source = id) %>%
+  left_join(MC2_id_list_vis, by = c("targetlabel" = "label")) %>%
+  rename(target = id) %>%
+  relocate(5,9,3,4) %>%
+  select(1:6)
+  
+
+```
 
 ```{r}
 combined_edges_cleaned<- combined_edges %>%
@@ -174,27 +262,74 @@ combined_edges_cleaned<- combined_edges %>%
 combined_edges_cleaned
 ```
 
-::: callout-Note
-collapse = "true"
-
-HS code, also known as The Harmonized System are alphanumeric codes used for classifying goods for international trade and customs purposes.
-:::
+#### 3.5.1 Data Wrangling for Bundles
 
 ```{r}
-nrow(unique(combined_edges_cleaned))
-```
+#| code-fold: true
 
-```{r}
-MC2_challenge_edges<- MC2_challenge_edges %>%
-  mutate(arrivaldate =ymd(arrivaldate),
+#1_fish type: carp
+MC2_carp_edges_cleaned <- MC2_carp_edges %>%
+    mutate(arrivaldate =ymd(arrivaldate),
          hscode = as.character(hscode))
 
-MC2_challenge_edges
+#2_fish type: catfish
+MC2_catfish_edges_cleaned <- MC2_catfish_edges %>%
+    mutate(arrivaldate =ymd(arrivaldate),
+         hscode = as.character(hscode))
+
+#3_fish type: chub_mackerel
+MC2_chub_mackerel_edges_cleaned <- MC2_chub_mackerel_edges %>%
+    mutate(arrivaldate =ymd(arrivaldate),
+         hscode = as.character(hscode))
+
+#4_fish type: cod2
+MC2_cod2_edges_cleaned <- MC2_cod2_edges %>%
+    mutate(arrivaldate =ymd(arrivaldate),
+         hscode = as.character(hscode))
+
+#5_fish type: herring
+MC2_herring_edges_cleaned <- MC2_herring_edges %>%
+    mutate(arrivaldate =ymd(arrivaldate),
+         hscode = as.character(hscode))
+
+#6_fish type: lichen
+MC2_lichen_edges_cleaned <- MC2_lichen_edges %>%
+    mutate(arrivaldate =ymd(arrivaldate),
+         hscode = as.character(hscode))
+
+#7_fish type: mackerel
+MC2_mackerel_edges_cleaned <- MC2_mackerel_edges %>%
+    mutate(arrivaldate =ymd(arrivaldate),
+         hscode = as.character(hscode))
+#8_fish type: pollock
+MC2_pollock_edges_cleaned <- MC2_pollock_edges %>%
+    mutate(arrivaldate =ymd(arrivaldate),
+         hscode = as.character(hscode))
+
+#9_fish type: salmon_wgl
+MC2_salmon_wgl_edges_cleaned <- MC2_salmon_wgl_edges %>%
+    mutate(arrivaldate =ymd(arrivaldate),
+         hscode = as.character(hscode))
+
+#10_fish type: salmon
+MC2_salmon_edges_cleaned <- MC2_salmon_edges %>%
+    mutate(arrivaldate =ymd(arrivaldate),
+         hscode = as.character(hscode))
+
+#11_fish type: shark
+MC2_shark_edges_cleaned <- MC2_shark_edges %>%
+    mutate(arrivaldate =ymd(arrivaldate),
+         hscode = as.character(hscode))
+
+#12_fish type: tuna
+MC2_tuna_edges_cleaned <- MC2_tuna_edges %>%
+    mutate(arrivaldate =ymd(arrivaldate),
+         hscode = as.character(hscode))
 ```
 
-```{r}
-glimpse(MC2_challenge_edges)
-```
+::: callout-caution
+HS code, also known as The Harmonized System are alphanumeric codes used for classifying goods for international trade and customs purposes. In this exercise, the HS code does not correspond to the respective goods.
+:::
 
 ```{r}
 #check for duplicates 
@@ -205,10 +340,161 @@ dup_reformat <- format(dup, big.mark=",")
 dup_reformat
 ```
 
+Weights: Median = 2 , Mean = 22 , Min = 1, Max, 47134
+
+### TOP 30 SOURCE AND TOP 30 TARGET
+
 ```{r}
-MC2_challenge_edges_aggregated <- MC2_challenge_edges %>%
-  group_by(source,target,hscode) %>%
+MC2_challenge_source <- MC2_challenge_edges %>%
+  group_by(sourcelabel) %>%
+  summarise(weight =n()) %>%
+  arrange(desc(weight)) %>%
+  top_n(30,weight)
+
+MC2_challenge_target <- MC2_challenge_edges %>%
+  group_by(targetlabel) %>%
+  summarise(weight =n()) %>%
+  arrange(desc(weight)) %>%
+  top_n(30,weight)
+
+MC2_challenge_source
+MC2_challenge_target
+```
+
+```{r}
+revisedlist <- MC2_challenge_edges%>%
+  filter(sourcelabel %in% MC2_challenge_source$sourcelabel) %>%
+  filter(targetlabel %in% MC2_challenge_target$targetlabel) 
+
+revisedlist
+```
+
+```{r}
+MC2_agg <- revisedlist %>%
+  group_by(sourcelabel,targetlabel) %>%
   summarise(weight =n(),
-            total_weight = sum(weightkg))
-MC2_challenge_edges_aggregated
+            duration = ((max(arrivaldate) - min(arrivaldate)))) %>%
+  filter(weight >1) %>%
+  filter(duration !=0) %>%
+  arrange(desc(weight)) %>%
+  ungroup()
+
+MC2_agg
+
+```
+
+```{r}
+check_id <- MC2_id_list %>%
+  filter(label %in% revisedlist$sourcelabel | 
+           label %in% revisedlist$targetlabel)
+
+check_id_vis <- MC2_id_list_vis %>%
+  filter(label %in% revisedlist$sourcelabel | 
+           label %in% revisedlist$targetlabel)
+
+check_id
+```
+
+```{r}
+MC2_bytop30 <- tbl_graph(nodes = check_id,
+                        edges = MC2_agg)
+
+MC2_bytop30
+```
+
+```{r}
+g <- MC2_bytop30 %>%
+  mutate(betweenness_centrality = centrality_betweenness()) %>%
+  ggraph(layout = "fr") +
+  geom_node_point(aes(color = trade_status, size =betweenness_centrality) ) +
+  scale_edge_width(range =c(0.1,5)) +
+  geom_edge_link(aes(width=weight), alpha = 0.2)
+
+g +theme_graph()
+```
+
+```{r}
+combined_edges_rev <- combined_edges %>%
+  group_by(source,target,generated_by) %>%
+  summarize(weight = n()) %>%
+  filter( source!=target) %>%
+  filter(weight >1) %>%
+  ungroup ()
+```
+
+```{r}
+combined_nodes_rev <-MC2_id_list %>%
+  filter(label %in% combined_edges_rev$source | 
+           label %in% combined_edges_rev$target)
+```
+
+```{r}
+MC2_import <- tbl_graph(nodes = combined_nodes_rev,
+                        edges = combined_edges_rev,
+                        directed = TRUE)
+
+MC2_import
+```
+
+```{r}
+MC2_import %>%
+  activate(edges) %>%
+  arrange(desc(weight))
+```
+
+```{r}
+set_graph_style()
+
+fishes <- ggraph(MC2_import, layout = "nicely") +
+  geom_node_point(aes(color = trade_status), size =2) +
+  scale_edge_width(range =c(0.1,5)) +
+  geom_edge_link(aes(width = weight, color = generated_by), alpha = 0.2)
+
+fishes
+```
+
+### create network graph for fishes
+
+```{r}
+MC2_carp_agg <- MC2_carp_edges %>%
+  group_by(source,target) %>%
+  summarize(weight =n()) %>%
+  filter(weight >1) %>%
+  ungroup()
+
+MC2_carp_nodes <- MC2_carp_nodes %>%
+  rename(label = id) %>%
+  mutate(id = 1:nrow(MC2_carp_nodes)) %>%
+  filter(label %in% MC2_carp_agg$source | label %in% MC2_carp_agg$target) %>%
+  relocate(5,1) %>%
+  select(id,label)
+```
+
+## Data Preparation for visNetwork
+
+```{r}
+MC2_agg_rev <- revisedlist %>%
+  left_join(check_id_vis, by = c("sourcelabel" = "label")) %>%
+  rename(from = id) %>%
+  left_join(check_id_vis, by = c("targetlabel" = "label")) %>%
+  rename(to = id) %>%
+  group_by(from, to) %>%
+    summarise(weight = n()) %>%
+  filter(from!=to) %>%
+  filter(weight > 1) %>%
+  ungroup()
+```
+
+```{r}
+check_id_vis <- check_id_vis %>%
+  rename(group = trade_status)
+```
+
+```{r}
+visNetwork(check_id_vis, MC2_agg_rev) %>%
+  visIgraphLayout(layout = "layout_with_fr") %>%
+    visOptions(highlightNearest = TRUE,
+             nodesIdSelection = TRUE) %>%
+  visLegend() %>%
+  visLayout(randomSeed = 123)
 ```

@@ -126,6 +126,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     "search-submit-button-title": "Submit"
   }
 }</script>
+<script src="../../site_libs/htmlwidgets-1.6.2/htmlwidgets.js"></script>
+<link href="../../site_libs/vis-9.1.0/vis-network.min.css" rel="stylesheet">
+<script src="../../site_libs/vis-9.1.0/vis-network.min.js"></script>
+<script src="../../site_libs/visNetwork-binding-2.1.2/visNetwork.js"></script>
 
 
 <link rel="stylesheet" href="../../styles.css">
@@ -226,7 +230,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../Hands-on_Ex/Hands-on_Ex06/Hands-on_Ex06_PartTwo.html" class="sidebar-item-text sidebar-link">Hands-on Exercise 6 Part Two</a>
+  <a href="../../Hands-on_Ex/Hands-on_Ex06/Hands_on_Ex06_PartTwo.html" class="sidebar-item-text sidebar-link">Hands-on Exercise 6 Part Two</a>
   </div>
 </li>
       </ul>
@@ -305,8 +309,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <li><a href="#install-r-packages" id="toc-install-r-packages" class="nav-link" data-scroll-target="#install-r-packages">3.1 Install R-packages</a></li>
   <li><a href="#importing-data" id="toc-importing-data" class="nav-link" data-scroll-target="#importing-data">3.2 Importing Data</a></li>
   <li><a href="#create-tibble-dataframe" id="toc-create-tibble-dataframe" class="nav-link" data-scroll-target="#create-tibble-dataframe">3.3 Create Tibble Dataframe</a></li>
-  <li><a href="#concatenate-tibble-dataframe-edges" id="toc-concatenate-tibble-dataframe-edges" class="nav-link" data-scroll-target="#concatenate-tibble-dataframe-edges">3.4 Concatenate Tibble Dataframe Edges</a></li>
-  <li><a href="#data-wrangling" id="toc-data-wrangling" class="nav-link" data-scroll-target="#data-wrangling">3.5 Data Wrangling</a></li>
+  <li><a href="#concatenate-tibble-dataframe" id="toc-concatenate-tibble-dataframe" class="nav-link" data-scroll-target="#concatenate-tibble-dataframe">3.4 Concatenate Tibble Dataframe</a></li>
+  <li><a href="#creating-a-master-id-data-frame" id="toc-creating-a-master-id-data-frame" class="nav-link" data-scroll-target="#creating-a-master-id-data-frame">Creating a Master ID data frame</a></li>
+  <li><a href="#data-wrangling" id="toc-data-wrangling" class="nav-link" data-scroll-target="#data-wrangling">3.5 Data Wrangling</a>
+  <ul class="collapse">
+  <li><a href="#top-30-source-and-top-30-target" id="toc-top-30-source-and-top-30-target" class="nav-link" data-scroll-target="#top-30-source-and-top-30-target">TOP 30 SOURCE AND TOP 30 TARGET</a></li>
+  <li><a href="#create-network-graph-for-fishes" id="toc-create-network-graph-for-fishes" class="nav-link" data-scroll-target="#create-network-graph-for-fishes">create network graph for fishes</a></li>
+  </ul></li>
+  <li><a href="#data-preparation-for-visnetwork" id="toc-data-preparation-for-visnetwork" class="nav-link" data-scroll-target="#data-preparation-for-visnetwork">Data Preparation for visNetwork</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -371,31 +381,32 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li><p><code>dplyr</code>:</p></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman <span class="sc">::</span> <span class="fu">p_load</span> (jsonlite, lubridate, tidygraph, ggraph, visNetwork, tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman <span class="sc">::</span> <span class="fu">p_load</span> (jsonlite, lubridate, tidygraph, ggraph, visNetwork, tidyverse,</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>                  igraph)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="importing-data" class="level2">
 <h2 class="anchored" data-anchor-id="importing-data">3.2 Importing Data</h2>
 <p>There are 12 JSON files that will be imported into R the <code>fromJSON</code> function from <code>jsonlite</code>.</p>
 <div class="cell">
-<details>
-<summary>Show the code</summary>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>MC2_carp <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/carp.json"</span>)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>MC2_catfish <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/catfish.json"</span>)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>MC2_chub_mackerel <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/chub_mackerel.json"</span>)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>MC2_cod2 <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/cod2.json"</span>)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>MC2_herring <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/herring.json"</span>)</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>MC2_lichen <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/lichen.json"</span>)</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>MC2_mackerel <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/mackerel.json"</span>)</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>MC2_pollock <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/pollock.json"</span>)</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>MC2_salmon_wgl <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/salmon_wgl.json"</span>)</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>MC2_salmon <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/salmon.json"</span>)</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>MC2_shark <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/shark.json"</span>)</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>MC2_tuna <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/tuna.json"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>MC2_challenge <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/mc2_challenge_graph.json"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>MC2_challenge <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/mc2_challenge_graph.json"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>MC2_carp <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/carp.json"</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>MC2_catfish <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/catfish.json"</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>MC2_chub_mackerel <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/chub_mackerel.json"</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>MC2_cod2 <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/cod2.json"</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>MC2_herring <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/herring.json"</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>MC2_lichen <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/lichen.json"</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>MC2_mackerel <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/mackerel.json"</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>MC2_pollock <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/pollock.json"</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>MC2_salmon_wgl <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/salmon_wgl.json"</span>)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>MC2_salmon <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/salmon.json"</span>)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>MC2_shark <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/shark.json"</span>)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>MC2_tuna <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="st">"data/bundles/tuna.json"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 </div>
 </section>
 <section id="create-tibble-dataframe" class="level2">
@@ -404,9 +415,12 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>MC2_challenge_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_challenge<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id,dataset,shpcountry,rcvcountry)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>MC2_challenge_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_challenge<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(<span class="dv">7</span>,<span class="dv">8</span>,<span class="dv">6</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(<span class="dv">7</span>,<span class="dv">8</span>,<span class="dv">6</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(source,target,arrivaldate, hscode)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
+<details>
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">#1_fish type :carp</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>MC2_carp_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_carp<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id,dataset,shpcountry,rcvcountry)</span>
@@ -443,51 +457,46 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>MC2_lichen_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_lichen<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
 <span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>    <span class="fu">relocate</span>(<span class="dv">7</span>,<span class="dv">8</span>,<span class="dv">6</span>,<span class="dv">5</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">9</span>,<span class="dv">3</span>,<span class="dv">4</span>)</span>
 <span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a><span class="co">#6_fish type: lichen</span></span>
-<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>MC2_lichen_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_lichen<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a><span class="co">#7_fish type: mackerel</span></span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>MC2_mackerel_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_mackerel<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
 <span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id,dataset,shpcountry,rcvcountry)</span>
-<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>MC2_lichen_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_lichen<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
-<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>    <span class="fu">relocate</span>(<span class="dv">7</span>,<span class="dv">8</span>,<span class="dv">6</span>,<span class="dv">5</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">9</span>,<span class="dv">3</span>,<span class="dv">4</span>)</span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>MC2_mackerel_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_mackerel<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>    <span class="fu">relocate</span>(<span class="dv">6</span>,<span class="dv">7</span>,<span class="dv">5</span>,<span class="dv">4</span>)</span>
 <span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a><span class="co">#7_fish type: mackerel</span></span>
-<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>MC2_mackerel_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_mackerel<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a><span class="co">#8_fish type: pollock</span></span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>MC2_pollock_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_pollock<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
 <span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id,dataset,shpcountry,rcvcountry)</span>
-<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>MC2_mackerel_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_mackerel<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
-<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a>    <span class="fu">relocate</span>(<span class="dv">6</span>,<span class="dv">7</span>,<span class="dv">5</span>,<span class="dv">4</span>)</span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>MC2_pollock_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_pollock<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a>    <span class="fu">relocate</span>(<span class="dv">8</span>,<span class="dv">9</span>,<span class="dv">7</span>,<span class="dv">6</span>)</span>
 <span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a><span class="co">#8_fish type: pollock</span></span>
-<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>MC2_pollock_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_pollock<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a><span class="co">#9_fish type: salmon_wgl</span></span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>MC2_salmon_wgl_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_salmon_wgl<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
 <span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id,dataset,shpcountry,rcvcountry)</span>
-<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>MC2_pollock_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_pollock<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
-<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>    <span class="fu">relocate</span>(<span class="dv">8</span>,<span class="dv">9</span>,<span class="dv">7</span>,<span class="dv">6</span>)</span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>MC2_salmon_wgl_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_salmon_wgl<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(<span class="dv">7</span>,<span class="dv">8</span>,<span class="dv">6</span>,<span class="dv">5</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">9</span>,<span class="dv">3</span>,<span class="dv">4</span>)</span>
 <span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a><span class="co">#9_fish type: salmon_wgl</span></span>
-<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a>MC2_salmon_wgl_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_salmon_wgl<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a><span class="co">#10_fish type: salmon</span></span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a>MC2_salmon_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_salmon<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
 <span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id,dataset,shpcountry,rcvcountry)</span>
-<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a>MC2_salmon_wgl_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_salmon_wgl<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
-<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(<span class="dv">7</span>,<span class="dv">8</span>,<span class="dv">6</span>,<span class="dv">5</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">9</span>,<span class="dv">3</span>,<span class="dv">4</span>)</span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a>MC2_salmon_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_salmon<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(<span class="dv">8</span>,<span class="dv">9</span>,<span class="dv">7</span>,<span class="dv">6</span>)</span>
 <span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a><span class="co">#10_fish type: salmon</span></span>
-<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a>MC2_salmon_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_salmon<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a><span class="co">#11_fish type: shark</span></span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a>MC2_shark_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_shark<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
 <span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id,dataset,shpcountry,rcvcountry)</span>
-<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a>MC2_salmon_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_salmon<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
-<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(<span class="dv">8</span>,<span class="dv">9</span>,<span class="dv">7</span>,<span class="dv">6</span>)</span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a>MC2_shark_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_shark<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a>    <span class="fu">relocate</span>(<span class="dv">7</span>,<span class="dv">8</span>,<span class="dv">6</span>,<span class="dv">5</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">9</span>,<span class="dv">3</span>,<span class="dv">4</span>)</span>
 <span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a><span class="co">#11_fish type: shark</span></span>
-<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a>MC2_shark_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_shark<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a><span class="co">#12_fish type: tuna</span></span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a>MC2_tuna_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_tuna<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
 <span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id,dataset,shpcountry,rcvcountry)</span>
-<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a>MC2_shark_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_shark<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
-<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a>    <span class="fu">relocate</span>(<span class="dv">7</span>,<span class="dv">8</span>,<span class="dv">6</span>,<span class="dv">5</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">9</span>,<span class="dv">3</span>,<span class="dv">4</span>)</span>
-<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a><span class="co">#12_fish type: tuna</span></span>
-<span id="cb5-74"><a href="#cb5-74" aria-hidden="true" tabindex="-1"></a>MC2_tuna_nodes <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_tuna<span class="sc">$</span>nodes) <span class="sc">%&gt;%</span></span>
-<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id,dataset,shpcountry,rcvcountry)</span>
-<span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a>MC2_tuna_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_tuna<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
-<span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(<span class="dv">5</span>,<span class="dv">6</span>,<span class="dv">4</span>,<span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a>MC2_tuna_edges <span class="ot">&lt;-</span><span class="fu">as_tibble</span>(MC2_tuna<span class="sc">$</span>links) <span class="sc">%&gt;%</span></span>
+<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(<span class="dv">5</span>,<span class="dv">6</span>,<span class="dv">4</span>,<span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 </div>
 </section>
-<section id="concatenate-tibble-dataframe-edges" class="level2">
-<h2 class="anchored" data-anchor-id="concatenate-tibble-dataframe-edges">3.4 Concatenate Tibble Dataframe Edges</h2>
+<section id="concatenate-tibble-dataframe" class="level2">
+<h2 class="anchored" data-anchor-id="concatenate-tibble-dataframe">3.4 Concatenate Tibble Dataframe</h2>
 <p>Among the 12 files, there are 3 data frames which have 7 variables whereas the rest have 9 variables. As such, <code>bind_rows()</code> - a function from the <code>dplyr</code> package within the <code>tidyverse</code> is used.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>combined_edges <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(MC2_carp_edges,MC2_chub_mackerel_edges,</span>
@@ -509,15 +518,99 @@ Tip
 <p>Catfish, Mackerel, and Tuna have 7 variables while other fishes have 9 variables. It is better to concatenate with the use <code>blind_rows</code> instead of <code>rbind()</code> as the latter requires an exact match in the numbers of columns.</p>
 </div>
 </div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>combined_nodes <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(MC2_carp_nodes,MC2_catfish_nodes, MC2_chub_mackerel_nodes,</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>                            MC2_cod2_nodes, MC2_herring_nodes, MC2_lichen_nodes,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>                            MC2_mackerel_nodes, MC2_pollock_nodes, MC2_salmon_wgl_nodes,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>                            MC2_salmon_nodes, MC2_shark_nodes, MC2_tuna_nodes)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="creating-a-master-id-data-frame" class="level2">
+<h2 class="anchored" data-anchor-id="creating-a-master-id-data-frame">Creating a Master ID data frame</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>MC2_id_list <span class="ot">&lt;-</span> MC2_challenge_nodes <span class="sc">%&gt;%</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">label =</span> id) <span class="sc">%&gt;%</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">trade_status =</span> <span class="fu">case_when</span>(</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="sc">!</span><span class="fu">is.na</span>(shpcountry) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(rcvcountry) <span class="sc">~</span> <span class="st">"Import &amp; Export"</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="sc">!</span><span class="fu">is.na</span>(shpcountry) <span class="sc">~</span> <span class="st">"Export"</span>,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    <span class="sc">!</span><span class="fu">is.na</span>(rcvcountry) <span class="sc">~</span> <span class="st">"Import"</span>,</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">is.na</span>(shpcountry) <span class="sc">|</span> <span class="fu">is.na</span>(rcvcountry) <span class="sc">~</span><span class="st">"Unknown"</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  )) </span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>MC2_id_list <span class="ot">&lt;-</span> MC2_id_list <span class="sc">%&gt;%</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(label,trade_status,shpcountry, rcvcountry)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="co">#master ID list for visNetwork </span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>MC2_id_list_vis <span class="ot">&lt;-</span> MC2_challenge_nodes <span class="sc">%&gt;%</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">label =</span> id) <span class="sc">%&gt;%</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">id =</span> <span class="fu">as.character</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(MC2_challenge_nodes)),</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">trade_status =</span> <span class="fu">case_when</span>(</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    <span class="sc">!</span><span class="fu">is.na</span>(shpcountry) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(rcvcountry) <span class="sc">~</span> <span class="st">"Import &amp; Export"</span>,</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    <span class="sc">!</span><span class="fu">is.na</span>(shpcountry) <span class="sc">~</span> <span class="st">"Export"</span>,</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    <span class="sc">!</span><span class="fu">is.na</span>(rcvcountry) <span class="sc">~</span> <span class="st">"Import"</span>,</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">is.na</span>(shpcountry) <span class="sc">|</span> <span class="fu">is.na</span>(rcvcountry) <span class="sc">~</span><span class="st">"Unknown"</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">%&gt;%</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(trade_status))</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>MC2_id_list_vis <span class="ot">&lt;-</span> MC2_id_list_vis <span class="sc">%&gt;%</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id,label, trade_status,shpcountry, rcvcountry)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">#create df to identify companies in target column that are not in the nodes </span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>ID_target <span class="ot">&lt;-</span> MC2_challenge_edges <span class="sc">%&gt;%</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>(target <span class="sc">%in%</span> MC2_id_list<span class="sc">$</span>label)) <span class="sc">%&gt;%</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(target) <span class="sc">%&gt;%</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">#rename to match names in nodes df</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">id =</span> target) <span class="sc">%&gt;%</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">#dummy columns are created to bind rows together</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">dataset =</span> <span class="cn">NA</span>, <span class="at">shpcountry =</span> <span class="cn">NA</span>, <span class="at">rcvcountry =</span> <span class="cn">NA</span>)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co">#create df to identify companies in source column that are not in the nodes </span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>ID_source <span class="ot">&lt;-</span> MC2_challenge_edges <span class="sc">%&gt;%</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>(source <span class="sc">%in%</span> MC2_id_list<span class="sc">$</span>label)) <span class="sc">%&gt;%</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(source)</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="co">#append the distinct companies into the nodes </span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>MC2_challenge_nodes <span class="ot">&lt;-</span> MC2_challenge_nodes <span class="sc">%&gt;%</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rbind</span>(ID_target) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>There are 24 companies on the <code>target</code> column that are not included in the list. Meanwhile, there are no data available in the <code>source</code> column that are not in the list.</p>
+<p>The <code>!is.na()</code> functions help to check for non-missing values in the specified column. In this combined_nodes data frame, the ID only corresponds to either the shipping country or the receiving country. Therefore, it is further segregated into import and export.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">any</span>(<span class="fu">is.na</span>(MC2_id_list))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] TRUE</code></pre>
+</div>
+</div>
 </section>
 <section id="data-wrangling" class="level2">
 <h2 class="anchored" data-anchor-id="data-wrangling">3.5 Data Wrangling</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>combined_edges_cleaned<span class="ot">&lt;-</span> combined_edges <span class="sc">%&gt;%</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">arrivaldate =</span><span class="fu">ymd</span>(arrivaldate),</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">hscode =</span> <span class="fu">as.character</span>(hscode))</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>combined_edges_cleaned</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">#revise the data format for arrivaldate and hscode </span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>MC2_challenge_edges<span class="ot">&lt;-</span> MC2_challenge_edges <span class="sc">%&gt;%</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">sourcelabel =</span> source, <span class="at">targetlabel =</span> target) <span class="sc">%&gt;%</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">arrivaldate =</span><span class="fu">ymd</span>(arrivaldate),</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">hscode =</span> <span class="fu">as.character</span>(hscode))</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="co">#to append correspoinding id through left_join </span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>MC2_challenge_edges <span class="ot">&lt;-</span> MC2_challenge_edges <span class="sc">%&gt;%</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(MC2_id_list_vis, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"sourcelabel"</span> <span class="ot">=</span> <span class="st">"label"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">source =</span> id) <span class="sc">%&gt;%</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(MC2_id_list_vis, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"targetlabel"</span> <span class="ot">=</span> <span class="st">"label"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">target =</span> id) <span class="sc">%&gt;%</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(<span class="dv">5</span>,<span class="dv">9</span>,<span class="dv">3</span>,<span class="dv">4</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>combined_edges_cleaned<span class="ot">&lt;-</span> combined_edges <span class="sc">%&gt;%</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">arrivaldate =</span><span class="fu">ymd</span>(arrivaldate),</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">hscode =</span> <span class="fu">as.character</span>(hscode))</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>combined_edges_cleaned</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2,569 × 9
    source        target dataset generated_by arrivaldate hscode valueofgoods_omu
@@ -536,99 +629,401 @@ Tip
 # ℹ 2 more variables: volumeteu &lt;dbl&gt;, weightkg &lt;int&gt;</code></pre>
 </div>
 </div>
-<div class="callout-Note callout callout-style-default no-icon callout-captioned">
+<section id="data-wrangling-for-bundles" class="level4">
+<h4 class="anchored" data-anchor-id="data-wrangling-for-bundles">3.5.1 Data Wrangling for Bundles</h4>
+<div class="cell">
+<details>
+<summary>Show the code</summary>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">#1_fish type: carp</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>MC2_carp_edges_cleaned <span class="ot">&lt;-</span> MC2_carp_edges <span class="sc">%&gt;%</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">arrivaldate =</span><span class="fu">ymd</span>(arrivaldate),</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">hscode =</span> <span class="fu">as.character</span>(hscode))</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="co">#2_fish type: catfish</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>MC2_catfish_edges_cleaned <span class="ot">&lt;-</span> MC2_catfish_edges <span class="sc">%&gt;%</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">arrivaldate =</span><span class="fu">ymd</span>(arrivaldate),</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">hscode =</span> <span class="fu">as.character</span>(hscode))</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="co">#3_fish type: chub_mackerel</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>MC2_chub_mackerel_edges_cleaned <span class="ot">&lt;-</span> MC2_chub_mackerel_edges <span class="sc">%&gt;%</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">arrivaldate =</span><span class="fu">ymd</span>(arrivaldate),</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>         <span class="at">hscode =</span> <span class="fu">as.character</span>(hscode))</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a><span class="co">#4_fish type: cod2</span></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>MC2_cod2_edges_cleaned <span class="ot">&lt;-</span> MC2_cod2_edges <span class="sc">%&gt;%</span></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">arrivaldate =</span><span class="fu">ymd</span>(arrivaldate),</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>         <span class="at">hscode =</span> <span class="fu">as.character</span>(hscode))</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a><span class="co">#5_fish type: herring</span></span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>MC2_herring_edges_cleaned <span class="ot">&lt;-</span> MC2_herring_edges <span class="sc">%&gt;%</span></span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">arrivaldate =</span><span class="fu">ymd</span>(arrivaldate),</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>         <span class="at">hscode =</span> <span class="fu">as.character</span>(hscode))</span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a><span class="co">#6_fish type: lichen</span></span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>MC2_lichen_edges_cleaned <span class="ot">&lt;-</span> MC2_lichen_edges <span class="sc">%&gt;%</span></span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">arrivaldate =</span><span class="fu">ymd</span>(arrivaldate),</span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>         <span class="at">hscode =</span> <span class="fu">as.character</span>(hscode))</span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a><span class="co">#7_fish type: mackerel</span></span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>MC2_mackerel_edges_cleaned <span class="ot">&lt;-</span> MC2_mackerel_edges <span class="sc">%&gt;%</span></span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">arrivaldate =</span><span class="fu">ymd</span>(arrivaldate),</span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a>         <span class="at">hscode =</span> <span class="fu">as.character</span>(hscode))</span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a><span class="co">#8_fish type: pollock</span></span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a>MC2_pollock_edges_cleaned <span class="ot">&lt;-</span> MC2_pollock_edges <span class="sc">%&gt;%</span></span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">arrivaldate =</span><span class="fu">ymd</span>(arrivaldate),</span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a>         <span class="at">hscode =</span> <span class="fu">as.character</span>(hscode))</span>
+<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a><span class="co">#9_fish type: salmon_wgl</span></span>
+<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a>MC2_salmon_wgl_edges_cleaned <span class="ot">&lt;-</span> MC2_salmon_wgl_edges <span class="sc">%&gt;%</span></span>
+<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">arrivaldate =</span><span class="fu">ymd</span>(arrivaldate),</span>
+<span id="cb15-43"><a href="#cb15-43" aria-hidden="true" tabindex="-1"></a>         <span class="at">hscode =</span> <span class="fu">as.character</span>(hscode))</span>
+<span id="cb15-44"><a href="#cb15-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-45"><a href="#cb15-45" aria-hidden="true" tabindex="-1"></a><span class="co">#10_fish type: salmon</span></span>
+<span id="cb15-46"><a href="#cb15-46" aria-hidden="true" tabindex="-1"></a>MC2_salmon_edges_cleaned <span class="ot">&lt;-</span> MC2_salmon_edges <span class="sc">%&gt;%</span></span>
+<span id="cb15-47"><a href="#cb15-47" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">arrivaldate =</span><span class="fu">ymd</span>(arrivaldate),</span>
+<span id="cb15-48"><a href="#cb15-48" aria-hidden="true" tabindex="-1"></a>         <span class="at">hscode =</span> <span class="fu">as.character</span>(hscode))</span>
+<span id="cb15-49"><a href="#cb15-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-50"><a href="#cb15-50" aria-hidden="true" tabindex="-1"></a><span class="co">#11_fish type: shark</span></span>
+<span id="cb15-51"><a href="#cb15-51" aria-hidden="true" tabindex="-1"></a>MC2_shark_edges_cleaned <span class="ot">&lt;-</span> MC2_shark_edges <span class="sc">%&gt;%</span></span>
+<span id="cb15-52"><a href="#cb15-52" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">arrivaldate =</span><span class="fu">ymd</span>(arrivaldate),</span>
+<span id="cb15-53"><a href="#cb15-53" aria-hidden="true" tabindex="-1"></a>         <span class="at">hscode =</span> <span class="fu">as.character</span>(hscode))</span>
+<span id="cb15-54"><a href="#cb15-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-55"><a href="#cb15-55" aria-hidden="true" tabindex="-1"></a><span class="co">#12_fish type: tuna</span></span>
+<span id="cb15-56"><a href="#cb15-56" aria-hidden="true" tabindex="-1"></a>MC2_tuna_edges_cleaned <span class="ot">&lt;-</span> MC2_tuna_edges <span class="sc">%&gt;%</span></span>
+<span id="cb15-57"><a href="#cb15-57" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">arrivaldate =</span><span class="fu">ymd</span>(arrivaldate),</span>
+<span id="cb15-58"><a href="#cb15-58" aria-hidden="true" tabindex="-1"></a>         <span class="at">hscode =</span> <span class="fu">as.character</span>(hscode))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="callout-caution callout callout-style-default callout-captioned">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
+<i class="callout-icon"></i>
 </div>
 <div class="callout-caption-container flex-fill">
-Note
+Danger
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>collapse = “true”</p>
-<p>HS code, also known as The Harmonized System are alphanumeric codes used for classifying goods for international trade and customs purposes.</p>
+<p>HS code, also known as The Harmonized System are alphanumeric codes used for classifying goods for international trade and customs purposes. In this exercise, the HS code does not correspond to the respective goods.</p>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(<span class="fu">unique</span>(combined_edges_cleaned))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">#check for duplicates </span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>dup <span class="ot">&lt;-</span> (<span class="fu">nrow</span>(MC2_challenge_edges) <span class="sc">-</span> <span class="fu">nrow</span>(<span class="fu">unique</span>(MC2_challenge_edges)))</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="co">#reformat output </span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>dup_reformat <span class="ot">&lt;-</span> <span class="fu">format</span>(dup, <span class="at">big.mark=</span><span class="st">","</span>)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="co">#print output</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>dup_reformat</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 1262</code></pre>
+<pre><code>[1] "1,757,878"</code></pre>
+</div>
+</div>
+<p>Weights: Median = 2 , Mean = 22 , Min = 1, Max, 47134</p>
+</section>
+<section id="top-30-source-and-top-30-target" class="level3">
+<h3 class="anchored" data-anchor-id="top-30-source-and-top-30-target">TOP 30 SOURCE AND TOP 30 TARGET</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>MC2_challenge_source <span class="ot">&lt;-</span> MC2_challenge_edges <span class="sc">%&gt;%</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(sourcelabel) <span class="sc">%&gt;%</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">weight =</span><span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(weight)) <span class="sc">%&gt;%</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">top_n</span>(<span class="dv">30</span>,weight)</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>MC2_challenge_target <span class="ot">&lt;-</span> MC2_challenge_edges <span class="sc">%&gt;%</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(targetlabel) <span class="sc">%&gt;%</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">weight =</span><span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(weight)) <span class="sc">%&gt;%</span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">top_n</span>(<span class="dv">30</span>,weight)</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>MC2_challenge_source</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 30 × 2
+   sourcelabel                                weight
+   &lt;chr&gt;                                       &lt;int&gt;
+ 1 Fresh Limited Liability Company            153363
+ 2 Uttar Pradesh s CJSC                       117216
+ 3 Chhattisgarh   Marine ecology A/S Delivery 112071
+ 4 French Crab S.p.A. Worldwide                99659
+ 5 bǐ mù yú Sagl Distribution                  90000
+ 6 Coastal Cruisers Pic Shipping               82129
+ 7 Mar y Luna Sagl                             77095
+ 8 Marine Masterminds Dry dock                 75130
+ 9 Caracola del Este Corporation Express       68683
+10 Zambezi Gorge  N.V. Transport               66562
+# ℹ 20 more rows</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>MC2_challenge_target</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 30 × 2
+   targetlabel                                  weight
+   &lt;chr&gt;                                         &lt;int&gt;
+ 1 hǎi dǎn Corporation Wharf                    456617
+ 2 Caracola del Sol Services                    192995
+ 3 Saltwater Supreme ОАО Forwading              189435
+ 4 Costa de la Felicidad Shipping               162402
+ 5 Panope Limited Liability Company             160961
+ 6 Mar del Este CJSC                            127853
+ 7 Sailors and Surfers Incorporated Enterprises 106595
+ 8 Coral Cove BV Delivery                       104338
+ 9 Pao gan SE Seal                               95546
+10 Sea Breezes GmbH &amp; Co. KG Shark               75250
+# ℹ 20 more rows</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>MC2_challenge_edges<span class="ot">&lt;-</span> MC2_challenge_edges <span class="sc">%&gt;%</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">arrivaldate =</span><span class="fu">ymd</span>(arrivaldate),</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">hscode =</span> <span class="fu">as.character</span>(hscode))</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>MC2_challenge_edges</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>revisedlist <span class="ot">&lt;-</span> MC2_challenge_edges<span class="sc">%&gt;%</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(sourcelabel <span class="sc">%in%</span> MC2_challenge_source<span class="sc">$</span>sourcelabel) <span class="sc">%&gt;%</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(targetlabel <span class="sc">%in%</span> MC2_challenge_target<span class="sc">$</span>targetlabel) </span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>revisedlist</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 5,464,378 × 9
-   source  target dataset arrivaldate hscode valueofgoods_omu volumeteu weightkg
-   &lt;chr&gt;   &lt;chr&gt;  &lt;chr&gt;   &lt;date&gt;      &lt;chr&gt;             &lt;dbl&gt;     &lt;dbl&gt;    &lt;int&gt;
- 1 AquaDe… Barin… MC2     2034-02-12  630630           141015         0     4780
- 2 AquaDe… Barin… MC2     2034-03-13  630630           141015         0     6125
- 3 AquaDe… -15045 MC2     2028-02-07  470710               NA         0    10855
- 4 AquaDe… -15045 MC2     2028-02-23  470710               NA         0    11250
- 5 AquaDe… -15045 MC2     2028-09-11  470710               NA         0    11165
- 6 AquaDe… -15045 MC2     2028-10-09  470710               NA         0    11290
- 7 AquaDe… Océan… MC2     2028-04-12  304890               NA         0     9000
- 8 AquaDe… Olas … MC2     2028-06-04  304890               NA         0    19490
- 9 AquaDe… Shou … MC2     2028-09-03  303890               NA         0     6865
-10 AquaDe… Shou … MC2     2028-09-08  306170               NA         0    19065
-# ℹ 5,464,368 more rows
-# ℹ 1 more variable: valueofgoodsusd &lt;dbl&gt;</code></pre>
+<pre><code># A tibble: 905,924 × 6
+   source target arrivaldate hscode sourcelabel                  targetlabel    
+   &lt;chr&gt;  &lt;chr&gt;  &lt;date&gt;      &lt;chr&gt;  &lt;chr&gt;                        &lt;chr&gt;          
+ 1 6      37     2028-01-02  852990 French Crab S.p.A. Worldwide Selous Game Re…
+ 2 6      37     2028-01-02  847160 French Crab S.p.A. Worldwide Selous Game Re…
+ 3 6      37     2028-01-04  847160 French Crab S.p.A. Worldwide Selous Game Re…
+ 4 6      37     2028-01-04  853690 French Crab S.p.A. Worldwide Selous Game Re…
+ 5 6      37     2028-01-04  852990 French Crab S.p.A. Worldwide Selous Game Re…
+ 6 6      37     2028-01-04  852990 French Crab S.p.A. Worldwide Selous Game Re…
+ 7 6      37     2028-01-07  847160 French Crab S.p.A. Worldwide Selous Game Re…
+ 8 6      37     2028-01-07  852990 French Crab S.p.A. Worldwide Selous Game Re…
+ 9 6      37     2028-01-11  853690 French Crab S.p.A. Worldwide Selous Game Re…
+10 6      37     2028-01-11  845090 French Crab S.p.A. Worldwide Selous Game Re…
+# ℹ 905,914 more rows</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(MC2_challenge_edges)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>MC2_agg <span class="ot">&lt;-</span> revisedlist <span class="sc">%&gt;%</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(sourcelabel,targetlabel) <span class="sc">%&gt;%</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">weight =</span><span class="fu">n</span>(),</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">duration =</span> ((<span class="fu">max</span>(arrivaldate) <span class="sc">-</span> <span class="fu">min</span>(arrivaldate)))) <span class="sc">%&gt;%</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(weight <span class="sc">&gt;</span><span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(duration <span class="sc">!=</span><span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(weight)) <span class="sc">%&gt;%</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>MC2_agg</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Rows: 5,464,378
-Columns: 9
-$ source           &lt;chr&gt; "AquaDelight Inc and Son's", "AquaDelight Inc and Son…
-$ target           &lt;chr&gt; "BaringoAmerica Marine Ges.m.b.H.", "BaringoAmerica M…
-$ dataset          &lt;chr&gt; "MC2", "MC2", "MC2", "MC2", "MC2", "MC2", "MC2", "MC2…
-$ arrivaldate      &lt;date&gt; 2034-02-12, 2034-03-13, 2028-02-07, 2028-02-23, 2028…
-$ hscode           &lt;chr&gt; "630630", "630630", "470710", "470710", "470710", "47…
-$ valueofgoods_omu &lt;dbl&gt; 141015, 141015, NA, NA, NA, NA, NA, NA, NA, NA, NA, N…
-$ volumeteu        &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,…
-$ weightkg         &lt;int&gt; 4780, 6125, 10855, 11250, 11165, 11290, 9000, 19490, …
-$ valueofgoodsusd  &lt;dbl&gt; NA, NA, NA, NA, NA, NA, 87110, 188140, NA, 221110, 58…</code></pre>
+<pre><code># A tibble: 583 × 4
+   sourcelabel                                targetlabel        weight duration
+   &lt;chr&gt;                                      &lt;chr&gt;               &lt;int&gt; &lt;drtn&gt;  
+ 1 Marine Masterminds Dry dock                Saltwater Supreme…  47134 2554 da…
+ 2 Oceanic Explorers Sashimi Inc Solutions    Oceanic Explorers…  46205 2235 da…
+ 3 French Crab S.p.A. Worldwide               Saltwater Supreme…  35898 2554 da…
+ 4 Chhattisgarh   Marine ecology A/S Delivery Chhattisgarh   Ma…  28788 2551 da…
+ 5 Coastal Cruisers Pic Shipping              Caracola del Sol …  23752 2553 da…
+ 6 Olas del Sur Sea                           Greek Sea Bass LLC  21969 2553 da…
+ 7 Uttar Pradesh s CJSC                       Sea Breezes GmbH …  20846 2553 da…
+ 8 Mar y Luna Sagl                            Panope Limited Li…  18066 2409 da…
+ 9 Mar y Luna Sagl                            Saltwater Supreme…  16547 2552 da…
+10 Caracola del Este Corporation Express      hǎi dǎn Corporati…  15966 2551 da…
+# ℹ 573 more rows</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">#check for duplicates </span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>dup <span class="ot">&lt;-</span> (<span class="fu">nrow</span>(MC2_challenge_edges) <span class="sc">-</span> <span class="fu">nrow</span>(<span class="fu">unique</span>(MC2_challenge_edges)))</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co">#reformat output </span></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>dup_reformat <span class="ot">&lt;-</span> <span class="fu">format</span>(dup, <span class="at">big.mark=</span><span class="st">","</span>)</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="co">#print output</span></span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>dup_reformat</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>check_id <span class="ot">&lt;-</span> MC2_id_list <span class="sc">%&gt;%</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(label <span class="sc">%in%</span> revisedlist<span class="sc">$</span>sourcelabel <span class="sc">|</span> </span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>           label <span class="sc">%in%</span> revisedlist<span class="sc">$</span>targetlabel)</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>check_id_vis <span class="ot">&lt;-</span> MC2_id_list_vis <span class="sc">%&gt;%</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(label <span class="sc">%in%</span> revisedlist<span class="sc">$</span>sourcelabel <span class="sc">|</span> </span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>           label <span class="sc">%in%</span> revisedlist<span class="sc">$</span>targetlabel)</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>check_id</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "155,291"</code></pre>
+<pre><code># A tibble: 58 × 4
+   label                                      trade_status shpcountry rcvcountry
+   &lt;chr&gt;                                      &lt;chr&gt;        &lt;chr&gt;      &lt;chr&gt;     
+ 1 Olas del Mar Worldwide                     Import &amp; Ex… Oceanus    Oceanus   
+ 2 French Crab S.p.A. Worldwide               Import &amp; Ex… Kondanovia Utoporiana
+ 3 Panope Limited Liability Company           Import &amp; Ex… Vesperanda Oceanus   
+ 4 hǎi dǎn Corporation Wharf                  Import &amp; Ex… Marebak    Oceanus   
+ 5 Sea Breezes GmbH &amp; Co. KG Shark            Import &amp; Ex… Oceanus    Oceanus   
+ 6 Costa de la Felicidad Shipping             Import &amp; Ex… Alverossia Oceanus   
+ 7 Mar del Este CJSC                          Import &amp; Ex… Merigrad   Oceanus   
+ 8 Black Sea Tuna Snapper                     Import &amp; Ex… Puerto Sol Oceanus   
+ 9 Sailors and Surfers Incorporated Enterpri… Import &amp; Ex… Puerto Sol Oceanus   
+10 Selous Game Reserve  S.A. de C.V.          Import &amp; Ex… Isliandor  Oceanus   
+# ℹ 48 more rows</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>MC2_challenge_edges_aggregated <span class="ot">&lt;-</span> MC2_challenge_edges <span class="sc">%&gt;%</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(source,target,hscode) <span class="sc">%&gt;%</span></span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">weight =</span><span class="fu">n</span>(),</span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">total_weight =</span> <span class="fu">sum</span>(weightkg))</span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>MC2_challenge_edges_aggregated</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>MC2_bytop30 <span class="ot">&lt;-</span> <span class="fu">tbl_graph</span>(<span class="at">nodes =</span> check_id,</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>                        <span class="at">edges =</span> MC2_agg)</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>MC2_bytop30</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 776,225 × 5
-# Groups:   source, target [245,807]
-   source                            target           hscode weight total_weight
-   &lt;chr&gt;                             &lt;chr&gt;            &lt;chr&gt;   &lt;int&gt;        &lt;dbl&gt;
- 1 " Direct Herring Company Transit" -1327            307590      5       106645
- 2 " Direct Herring Company Transit" -5678            306170      1        17400
- 3 " Direct Herring Company Transit" Adriatic Catch … 307490      1        23155
- 4 " Direct Herring Company Transit" Adriatic Tuna S… 307490      2        39095
- 5 " Direct Herring Company Transit" Adriatic Tuna S… 307590      4        52340
- 6 " Direct Herring Company Transit" Caracola Azul N… 160529      4        46105
- 7 " Direct Herring Company Transit" Caracola Azul N… 210690      1        12370
- 8 " Direct Herring Company Transit" Caracola Azul N… 306170      6       161735
- 9 " Direct Herring Company Transit" Caracola Azul N… 390110      4        68275
-10 " Direct Herring Company Transit" Caracola Azul O… 307590      2       183530
-# ℹ 776,215 more rows</code></pre>
+<pre><code># A tbl_graph: 58 nodes and 583 edges
+#
+# A directed multigraph with 1 component
+#
+# A tibble: 58 × 4
+  label                            trade_status    shpcountry rcvcountry
+  &lt;chr&gt;                            &lt;chr&gt;           &lt;chr&gt;      &lt;chr&gt;     
+1 Olas del Mar Worldwide           Import &amp; Export Oceanus    Oceanus   
+2 French Crab S.p.A. Worldwide     Import &amp; Export Kondanovia Utoporiana
+3 Panope Limited Liability Company Import &amp; Export Vesperanda Oceanus   
+4 hǎi dǎn Corporation Wharf        Import &amp; Export Marebak    Oceanus   
+5 Sea Breezes GmbH &amp; Co. KG Shark  Import &amp; Export Oceanus    Oceanus   
+6 Costa de la Felicidad Shipping   Import &amp; Export Alverossia Oceanus   
+# ℹ 52 more rows
+#
+# A tibble: 583 × 4
+   from    to weight duration 
+  &lt;int&gt; &lt;int&gt;  &lt;int&gt; &lt;drtn&gt;   
+1    40    12  47134 2554 days
+2    15    15  46205 2235 days
+3     2    12  35898 2554 days
+# ℹ 580 more rows</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>g <span class="ot">&lt;-</span> MC2_bytop30 <span class="sc">%&gt;%</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">betweenness_centrality =</span> <span class="fu">centrality_betweenness</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggraph</span>(<span class="at">layout =</span> <span class="st">"fr"</span>) <span class="sc">+</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_node_point</span>(<span class="fu">aes</span>(<span class="at">color =</span> trade_status, <span class="at">size =</span>betweenness_centrality) ) <span class="sc">+</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_edge_width</span>(<span class="at">range =</span><span class="fu">c</span>(<span class="fl">0.1</span>,<span class="dv">5</span>)) <span class="sc">+</span></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_edge_link</span>(<span class="fu">aes</span>(<span class="at">width=</span>weight), <span class="at">alpha =</span> <span class="fl">0.2</span>)</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>g <span class="sc">+</span><span class="fu">theme_graph</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>combined_edges_rev <span class="ot">&lt;-</span> combined_edges <span class="sc">%&gt;%</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(source,target,generated_by) <span class="sc">%&gt;%</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">weight =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>( source<span class="sc">!=</span>target) <span class="sc">%&gt;%</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(weight <span class="sc">&gt;</span><span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span> ()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>combined_nodes_rev <span class="ot">&lt;-</span>MC2_id_list <span class="sc">%&gt;%</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(label <span class="sc">%in%</span> combined_edges_rev<span class="sc">$</span>source <span class="sc">|</span> </span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>           label <span class="sc">%in%</span> combined_edges_rev<span class="sc">$</span>target)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>MC2_import <span class="ot">&lt;-</span> <span class="fu">tbl_graph</span>(<span class="at">nodes =</span> combined_nodes_rev,</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>                        <span class="at">edges =</span> combined_edges_rev,</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>                        <span class="at">directed =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>MC2_import</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tbl_graph: 253 nodes and 216 edges
+#
+# A directed acyclic multigraph with 70 components
+#
+# A tibble: 253 × 4
+  label                            trade_status    shpcountry  rcvcountry
+  &lt;chr&gt;                            &lt;chr&gt;           &lt;chr&gt;       &lt;chr&gt;     
+1 French Crab S.p.A. Worldwide     Import &amp; Export Kondanovia  Utoporiana
+2 hǎi dǎn Corporation Wharf        Import &amp; Export Marebak     Oceanus   
+3 Sea Breezes GmbH &amp; Co. KG Shark  Import &amp; Export Oceanus     Oceanus   
+4 Costa de la Felicidad Shipping   Import &amp; Export Alverossia  Oceanus   
+5 Mar del Este CJSC                Import &amp; Export Merigrad    Oceanus   
+6 Mandalore S.A. de C.V. Logistics Import &amp; Export Osterivaria Oceanus   
+# ℹ 247 more rows
+#
+# A tibble: 216 × 4
+   from    to generated_by  weight
+  &lt;int&gt; &lt;int&gt; &lt;chr&gt;          &lt;int&gt;
+1   131    15 chub_mackerel      2
+2    69     5 chub_mackerel      6
+3   167    29 salmon_wgl         3
+# ℹ 213 more rows</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>MC2_import <span class="sc">%&gt;%</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">activate</span>(edges) <span class="sc">%&gt;%</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(weight))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tbl_graph: 253 nodes and 216 edges
+#
+# A directed acyclic multigraph with 70 components
+#
+# A tibble: 216 × 4
+   from    to generated_by weight
+  &lt;int&gt; &lt;int&gt; &lt;chr&gt;         &lt;int&gt;
+1   160   235 cod2            105
+2   178   196 tuna            104
+3   184   111 shark            87
+4   251    15 cod2             52
+5   214    71 lichen           48
+6   163   127 cod2             36
+# ℹ 210 more rows
+#
+# A tibble: 253 × 4
+  label                           trade_status    shpcountry rcvcountry
+  &lt;chr&gt;                           &lt;chr&gt;           &lt;chr&gt;      &lt;chr&gt;     
+1 French Crab S.p.A. Worldwide    Import &amp; Export Kondanovia Utoporiana
+2 hǎi dǎn Corporation Wharf       Import &amp; Export Marebak    Oceanus   
+3 Sea Breezes GmbH &amp; Co. KG Shark Import &amp; Export Oceanus    Oceanus   
+# ℹ 250 more rows</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set_graph_style</span>()</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>fishes <span class="ot">&lt;-</span> <span class="fu">ggraph</span>(MC2_import, <span class="at">layout =</span> <span class="st">"nicely"</span>) <span class="sc">+</span></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_node_point</span>(<span class="fu">aes</span>(<span class="at">color =</span> trade_status), <span class="at">size =</span><span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_edge_width</span>(<span class="at">range =</span><span class="fu">c</span>(<span class="fl">0.1</span>,<span class="dv">5</span>)) <span class="sc">+</span></span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_edge_link</span>(<span class="fu">aes</span>(<span class="at">width =</span> weight, <span class="at">color =</span> generated_by), <span class="at">alpha =</span> <span class="fl">0.2</span>)</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>fishes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Take-Home_Ex02_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="create-network-graph-for-fishes" class="level3">
+<h3 class="anchored" data-anchor-id="create-network-graph-for-fishes">create network graph for fishes</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>MC2_carp_agg <span class="ot">&lt;-</span> MC2_carp_edges <span class="sc">%&gt;%</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(source,target) <span class="sc">%&gt;%</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">weight =</span><span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(weight <span class="sc">&gt;</span><span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>MC2_carp_nodes <span class="ot">&lt;-</span> MC2_carp_nodes <span class="sc">%&gt;%</span></span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">label =</span> id) <span class="sc">%&gt;%</span></span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">id =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(MC2_carp_nodes)) <span class="sc">%&gt;%</span></span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(label <span class="sc">%in%</span> MC2_carp_agg<span class="sc">$</span>source <span class="sc">|</span> label <span class="sc">%in%</span> MC2_carp_agg<span class="sc">$</span>target) <span class="sc">%&gt;%</span></span>
+<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(<span class="dv">5</span>,<span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(id,label)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="data-preparation-for-visnetwork" class="level2">
+<h2 class="anchored" data-anchor-id="data-preparation-for-visnetwork">Data Preparation for visNetwork</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>MC2_agg_rev <span class="ot">&lt;-</span> revisedlist <span class="sc">%&gt;%</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(check_id_vis, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"sourcelabel"</span> <span class="ot">=</span> <span class="st">"label"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">from =</span> id) <span class="sc">%&gt;%</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(check_id_vis, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"targetlabel"</span> <span class="ot">=</span> <span class="st">"label"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">to =</span> id) <span class="sc">%&gt;%</span></span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(from, to) <span class="sc">%&gt;%</span></span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">weight =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(from<span class="sc">!=</span>to) <span class="sc">%&gt;%</span></span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(weight <span class="sc">&gt;</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>check_id_vis <span class="ot">&lt;-</span> check_id_vis <span class="sc">%&gt;%</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">group =</span> trade_status)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">visNetwork</span>(check_id_vis, MC2_agg_rev) <span class="sc">%&gt;%</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">visIgraphLayout</span>(<span class="at">layout =</span> <span class="st">"layout_with_fr"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">visOptions</span>(<span class="at">highlightNearest =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">nodesIdSelection =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">visLegend</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">visLayout</span>(<span class="at">randomSeed =</span> <span class="dv">123</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="visNetwork html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-dbc356ba2cf3497a3368" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-dbc356ba2cf3497a3368">{"x":{"nodes":{"id":["5","6","8","9","11","18","19","22","26","37","44","49","52","53","59","82","84","88","94","95","97","133","162","199","206","211","215","218","226","255","268","272","291","307","326","339","364","367","376","379","394","419","449","482","488","538","539","571","581","584","629","858","964","1283","1292","1305","1721","9404"],"label":["Olas del Mar Worldwide","French Crab S.p.A. Worldwide","Panope Limited Liability Company","hǎi dǎn Corporation Wharf","Sea Breezes GmbH & Co. KG Shark","Costa de la Felicidad Shipping","Mar del Este CJSC","Black Sea Tuna Snapper","Sailors and Surfers Incorporated Enterprises","Selous Game Reserve  S.A. de C.V.","Caracola del Sol Services","Saltwater Supreme ОАО Forwading","Océano de Coral Corporation Express","Pao gan SE Seal","Oceanic Explorers Sashimi Inc Solutions","Playa de la Luna Incorporated","Uttarakhand  Market Limited Liability Company Nautical","Portuguese Tuna Incorporated Marine","Caracola Azul Oyj &","Coral Cove BV Delivery","Arunachal Pradesh s Brine","ReefRider Foods Ltd. Corporation Family","Kong zhong diao yu  Ges.m.b.H.","Náutica del Norte Kga Holdings","Ianira Starfish Sagl Import","SeaTree Ltd. Liability Co Holdings","Saltwater Supreme Pelican Ltd Enterprises","Orange River   GmbH & Co. KG Shipping","Zambezi Gorge  N.V. Transport","Chhattisgarh   Marine ecology A/S Delivery","Saltwater Symphony S.A. de C.V.","Pao gan LC Freight ","Mar y Luna Sagl","bǐ mù yú Sagl Distribution","Danish Shrimp Kga Solutions","Rift Valley fishery Inc","suō yú Incorporated Brothers","nián yú Ltd. Corporation","Fresh Limited Liability Company","Marine Masterminds Dry dock","Coastal Cruisers Pic Shipping","Marine Mates Cruise ship","Icelandic Cod Pier ОАО Transport","Arunachal Pradesh s A/S Transport","Uttar Pradesh s CJSC","Olas del Sur Sea","Greek Sea Bass LLC","Selous Game Reserve  A/S","Coastal Castaway Coast Corporation Worldwide","Dry Creek Pic Marine biology","Barents Sea Cod CJSC Export","Saltwater Sisters Inc Seafaring","Estrella del Mar Seafarer","Caracola del Este Corporation Express","Playa del Tesoro BV","Sea Breezes S.A. de C.V. Freight ","Tamil Nadu  Market Co","Fisherman's Bounty AG Solutions"],"group":["Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export","Import & Export"],"shpcountry":["Oceanus","Kondanovia","Vesperanda","Marebak","Oceanus","Alverossia","Merigrad","Puerto Sol","Puerto Sol","Isliandor","Puerto Sol","Puerto Sol","Vesperanda","Alverossia","Oceanus","Kondanovia","Helixia","Oceanus","Playa Solis","Quornova","Nalakond","Oceanus","Oceanus","Merigrad","Rio Isla","Gavanovia","Puerto Sol","Marebak","Marebak","Oceanus","Marebak","-22004","Marebak","Alverossia","Rio Isla","Puerto del Mar","Marebak","Merigrad","Marebak","Marebak","Marebak","Alverossia","Utoporiana","Oceanus","Marebak","Rio Isla","Khamseena","Rio Isla","Alverossia","Vesperanda","Marebak","Alverossia","Oceanus","Oceanus","Kondanovia","Isliandor","Talandria","Marebak"],"rcvcountry":["Oceanus","Utoporiana","Oceanus","Oceanus","Oceanus","Oceanus","Oceanus","Oceanus","Oceanus","Oceanus","Oceanus","Oceanus","Oceanus","Oceanus","Oceanus","Oceanus","Oceanus","Oceanus","Oceanus","Oceanus","Oceanus","Oceanus","Oceanus","Anderia del Mar","Sol y Oceana","Oceanus","Oceanus","Oceanus","Marebak","Oceanus","Oceanus","Oceanus","Coralmarica","Oceanus","Oceanus","Oceanus","Oceanus","Oceanus","Marebak","Coralmarica","Oceanus","Oceanus","Coralmarica","Oceanus","Oceanus","Coralmarica","Oceanus","Oceanus","Oceanus","Oceanus","Marebak","Oceanus","Oceanus","Oceanus","Oceanus","Coralmarica","Oceanus","Luminkind"],"x":[-0.00503806622351899,-0.221106480753058,0.518360038749964,0.237666917732863,0.347551293515208,0.336883651387401,-0.192116926976002,-0.155737143156136,0.225277223624879,-0.0172980353127172,0.339634916990026,0.0461553593691471,0.474856613914034,0.126238293174496,0.118748256039467,-0.490134754915292,0.201554617500167,-0.777838392468293,-0.275883651178328,0.335294999960855,0.243730441771426,0.189313709435736,0.205790145892067,-0.129556451210981,1,-0.175648290730542,0.204325270257694,-0.0932507506757874,-0.292737714732727,-0.0251507621704364,0.0574199763454848,-0.420979053246706,-0.0719371061222611,-0.149548886496109,0.822343721521075,0.127435745592533,-0.359070568479252,0.640971987360142,-0.234633478173351,0.626270617882328,-0.2946430316252,-0.743696422337907,0.73553537643697,0.0746701002668368,0.341452128757329,0.0244148733308067,-1,0.0169420345884859,-0.00667078261394738,0.429690409370679,0.0184853853800915,0.375339120972369,-0.314838423727346,-0.433176951824559,0.586259708439586,-0.479179677931217,-0.300336678790268,0.609954007871892],"y":[0.303096097202268,0.782333424869017,0.84798849299422,0.59177949688038,0.951771668811409,0.56812771105026,0.394253296915038,0.498222424562491,0.540274870373822,0.496603009385323,0.512014228203311,0.90122409246693,0.662956802581541,0.484293326042566,-1,0.753098933171318,0.940518814023092,0.699316124530122,0.886006338191058,0.804033695990581,0.747453207553681,0.358394208432122,0.425898424199447,0.601702893526159,0.696266270283699,0.957245213533529,0.650530770546474,0.670194877905907,0.724984250032712,0.108888169665627,0.777069528540862,0.880708252885713,0.813136256167176,0.728176019323562,0.558831093347688,0.812119448538991,0.659945744950799,0.382563963557787,0.670400774097527,0.97028069248808,0.593349291319478,0.839303002992266,0.732127765487712,-0.284350963167482,0.67824691668146,1,0.847417303150334,0.608636358512616,0.385945450444601,0.753466886160741,0.694284872825019,0.876832374549614,0.527387204969336,0.605353720692046,0.503858851129577,0.459042812397651,0.312161196246181,0.62389956834531]},"edges":{"from":["1283","1283","1283","1283","1283","1283","1283","1283","1283","1283","1283","1283","1283","1283","1283","1283","1283","1283","1283","1283","1283","1283","1283","1283","1283","1283","1292","1292","1292","1292","1292","1292","1292","1292","1292","1292","1292","1292","1292","1292","1292","1292","1292","1292","1292","1305","1305","1305","1305","1305","1305","1305","1305","1305","1305","1305","1305","1305","1305","1305","1305","1721","1721","1721","1721","1721","1721","1721","1721","1721","1721","1721","1721","1721","1721","1721","199","199","199","199","199","199","199","199","199","199","199","199","199","199","199","199","199","199","199","199","199","199","199","199","199","199","206","206","206","206","206","206","206","206","206","206","206","218","218","218","218","218","218","218","218","218","218","218","218","218","218","218","218","218","218","218","218","218","218","218","218","218","218","226","226","226","226","226","226","226","226","226","226","226","226","226","226","226","226","226","226","226","226","226","226","226","226","226","226","226","226","255","255","255","255","255","255","255","268","268","268","268","268","268","268","268","268","268","268","268","268","268","268","268","268","268","268","268","268","268","291","291","291","291","291","291","291","291","291","291","291","291","291","291","291","291","291","291","291","291","291","291","291","291","291","307","307","307","307","307","307","307","307","307","307","307","307","307","307","307","307","307","307","307","307","307","307","307","307","307","307","307","307","326","326","326","326","326","326","326","326","326","326","326","326","326","326","364","364","364","364","364","364","364","364","364","364","364","364","364","364","364","364","364","364","364","364","364","364","364","364","364","367","367","367","367","367","367","367","367","367","367","367","367","367","367","376","376","376","376","376","376","376","376","376","376","376","376","376","376","376","376","376","376","376","376","376","376","376","376","376","376","376","376","379","379","379","379","379","379","379","379","379","379","379","394","394","394","394","394","394","394","394","394","394","394","394","394","394","394","394","394","394","394","394","394","394","394","394","394","449","449","449","449","449","449","449","449","449","449","449","449","449","449","449","449","482","482","482","482","482","488","488","488","488","488","488","488","488","488","488","488","488","488","488","488","488","488","488","488","488","488","488","488","488","488","538","538","538","538","538","538","538","538","538","538","538","538","538","538","538","538","571","571","571","571","571","571","571","571","571","571","571","571","571","571","571","571","571","571","571","571","571","571","571","571","571","584","584","584","584","584","584","584","584","584","584","584","584","584","584","584","584","584","584","6","6","6","6","6","6","6","6","6","6","6","6","6","6","6","6","6","6","6","6","6","6","6","6","6","6","6","629","629","629","629","629","629","629","629","629","629","629","629","629","629","629","629","629","629","629","629","629","629","629","629","629","629","629","858","858","858","858","858","858","858","858","858","858","858","858","858","858","858","858","858","858","9404","9404","9404","9404","9404","9404","9404","9404","9404","9404","9404","9404","9404","9404","9404","9404","9404","9404","9404","964","964","964","964","964","964","964","964","964","964","964","964","964","964","964","964","964","964","964","964","964","964","964","964","964","964"],"to":["133","162","18","19","211","215","22","26","272","339","37","419","44","49","5","52","53","539","581","82","84","88","9","94","95","97","162","18","19","211","215","22","26","37","44","49","5","52","53","581","8","84","9","95","97","162","18","19","26","272","339","37","44","49","5","53","581","82","9","94","97","133","162","18","19","215","22","26","339","37","44","53","581","82","9","94","11","133","162","18","19","211","215","22","26","272","339","37","419","44","49","5","52","53","581","8","82","84","88","9","95","97","11","162","26","339","44","52","53","8","9","95","97","11","133","18","19","211","215","22","26","272","339","37","419","44","49","5","52","53","581","8","82","84","88","9","94","95","97","11","133","162","18","19","211","215","22","26","272","339","37","419","44","49","5","52","53","539","581","8","82","84","88","9","94","95","97","133","18","37","44","5","82","9","11","162","18","211","22","26","272","339","37","419","44","49","52","53","581","8","84","88","9","94","95","97","11","133","162","18","211","215","22","26","272","339","37","419","44","49","52","53","581","8","82","84","88","9","94","95","97","11","133","162","18","19","211","215","22","26","272","339","37","419","44","49","5","52","53","539","581","8","82","84","88","9","94","95","97","11","133","18","215","22","26","339","44","49","5","52","8","9","95","11","133","162","18","19","211","215","22","26","272","339","37","419","44","49","5","53","581","8","82","88","9","94","95","97","162","18","19","215","26","339","44","5","53","581","84","9","95","97","11","133","162","18","19","211","215","22","26","272","339","37","419","44","49","5","52","53","539","581","8","82","84","88","9","94","95","97","18","26","44","49","53","8","82","84","9","94","97","11","133","162","18","19","211","215","22","26","272","339","37","419","44","5","52","53","539","581","8","88","9","94","95","97","11","133","162","18","19","211","26","339","37","44","49","52","8","84","9","95","133","255","5","581","59","11","133","162","18","19","211","215","22","26","272","339","37","44","49","5","52","53","581","8","82","84","9","94","95","97","11","18","215","22","26","272","339","37","44","49","52","539","8","9","95","97","11","133","162","18","19","211","215","22","26","272","339","37","419","44","49","5","52","53","581","8","82","9","94","95","97","11","133","18","19","215","26","272","37","44","49","52","581","8","82","88","9","94","95","11","162","18","19","211","215","22","26","272","339","37","419","44","49","5","52","53","539","581","8","82","84","88","9","94","95","97","11","133","162","18","19","211","215","22","26","272","339","37","419","44","49","5","52","53","581","8","82","84","88","9","94","95","97","11","133","18","211","215","22","272","37","44","49","52","581","8","82","9","94","95","97","11","133","18","215","22","26","272","339","37","44","5","53","581","8","84","9","94","95","97","133","162","18","19","211","215","22","255","26","272","339","37","44","49","5","52","53","539","581","82","84","88","9","94","95","97"],"weight":[28,125,406,554,108,1364,689,274,282,282,508,15,3499,154,103,4,190,10,126,908,344,265,15966,43,1336,24,600,7827,18,42,11,11,122,4,558,1135,3,4,4,3,3,50,1759,445,267,940,632,1107,40,2,119,333,9442,179,2,4690,16,20,631,4,158,13984,340,240,1049,2,1751,143,5,86,1458,421,59,2,357,8,1330,2388,51,2675,17,77,3,4,1675,2,612,406,2758,942,5624,4,95,76,3060,5592,2,30,394,4970,6814,3,709,3,4,244,470,564,5,8941,5077,7113,2,8532,1234,1384,3,30,462,24,368,157,21,540,5266,1580,136,5,282,42,32,7187,12,11,195,8648,3952,2605,32,123,84,875,1663,328,688,304,491,792,486,848,1200,58,1567,871,996,435,1178,19,211,696,208,114,244,6154,244,957,153,16,8,3,3,78,2,4,1808,20,4165,9,9,296,32,40,141,2,514,9872,13,286,236,8675,10,92,2273,163,174,40,1734,24,159,5634,54,5,330,1132,198,89,618,2,1441,16547,13,1490,1172,18066,30,50,142,6386,453,566,60,2664,833,213,5619,44,43,91,1197,1765,785,2018,3052,187,371,13025,32,16,795,24,1068,4316,68,101,8,8707,2641,1367,75,95,159,78,92,30,4794,106,83,196,6678,1354,350,89,5,13,217,7,6665,592,2,55,2,1136,2,238,279,4347,2781,65,75,538,31,11,8,7,6665,1138,8,75,468,5989,299,834,2,5,71,91,2703,8,2,117,83,2,287,762,1072,3455,1147,626,957,1192,2415,752,1230,1372,430,2416,3080,1231,416,1531,122,505,1150,350,451,824,10598,1471,3684,672,2635,19,41,47134,8,70,15414,198,873,3,2,461,2914,29,3337,33,118,334,1211,756,4,41,44,10064,23752,3,2889,1970,25,131,538,11,6679,66,227,288,312,21,3816,15,4,3,201,451,2,568,18,329,1354,99,9399,4190,8,19,53,17,2,20846,4309,2,8889,11,23,74,235,551,1584,391,3238,6238,73,153,3137,2729,3871,15103,6,468,11367,215,126,20,42,521,367,65,243,284,53,92,24,197,11,21969,10,408,2,104,739,21,4,1527,44,2,1006,684,173,47,21,11,184,377,690,36,407,1395,3,1954,158,4492,27,150,46,6292,7,542,2,95,16,2265,438,343,512,2,562,13310,13,1301,3454,269,928,111,505,64,54,42,747,703,257,4,8,4484,18,258,35898,15,268,4,25,9,2086,1210,19,4,2052,2,63,1904,480,180,210,449,95,752,184,57,2532,155,153,429,60,848,1943,423,78,221,79,909,8,76,71,2685,283,3912,50,206,7,123,12,50,17,57,18,59,37,7,7,506,3,763,427,3237,17,3284,480,4457,2,234,2,102,409,1086,2619,18,237,4598,2683,142,2320,25,12,5,7,181,70,40,32,15,23,74,105,62,111,12,198,8,210,10,14,3,10,149,12,19,638,4,62,7]},"nodesToDataframe":true,"edgesToDataframe":true,"options":{"width":"100%","height":"100%","nodes":{"shape":"dot","physics":false},"manipulation":{"enabled":false},"edges":{"smooth":false},"physics":{"stabilization":false},"layout":{"randomSeed":123}},"groups":["Import & Export"],"width":null,"height":null,"idselection":{"enabled":true,"style":"width: 150px; height: 26px","useLabels":true,"main":"Select by id"},"byselection":{"enabled":false,"style":"width: 150px; height: 26px","multiple":false,"hideColor":"rgba(200,200,200,0.5)","highlight":false},"main":null,"submain":null,"footer":null,"background":"rgba(0, 0, 0, 0)","igraphlayout":{"type":"square"},"highlight":{"enabled":true,"hoverNearest":false,"degree":1,"algorithm":"all","hideColor":"rgba(200,200,200,0.5)","labelOnly":true},"collapse":{"enabled":false,"fit":false,"resetHighlight":true,"clusterOptions":null,"keepCoord":true,"labelSuffix":"(cluster)"},"legend":{"width":0.2,"useGroups":true,"position":"left","ncol":1,"stepX":100,"stepY":100,"zoom":true}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 
