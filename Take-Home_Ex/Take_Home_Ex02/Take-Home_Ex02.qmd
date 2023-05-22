@@ -12,11 +12,19 @@ execute:
 
 # 1. OVERVIEW
 
-## 1.1 The Task
+FishEye International is collaborating with the country of Oceanus to identify companies who could potentially engaged in illegal, unreported, and unregulated (IUU) fishing. FishEye has transformed import/export data into a knowledge graph.
+
+The country of Oceanus has sought FishEye International's help in identifying companies possibly engaged in illegal, unreported, and unregulated (IUU) fishing.
 
 With reference to [Mini-Challenge 2](https://vast-challenge.github.io/2023/MC2.html) of [VAST Challenge 2023](https://vast-challenge.github.io/2023/) and by using appropriate **static and interactive statistical graphics** methods, you are required to help FishEye identify companies that may be engaged in illegal fishing?
 
+## 1.1 The Task
+
+In this take-home exercise...
+
 # 2. Datasets
+
+The trade data is stored in *mc2_challenge_graph.json* file with a time period of 7 years from the time period 2028 to 2024. It includes a bundles with 12 types of marine species, ranging from Carp, Shark, to Tuna.
 
 # 3. Data Preparation
 
@@ -30,6 +38,8 @@ Using p_load() of pacman package to load and install the following libraries:
 
 -   `dplyr`:
 
+-   `visNetwork`:
+
 ```{r}
 pacman :: p_load (jsonlite, lubridate, tidygraph, ggraph, visNetwork, tidyverse,
                   igraph)
@@ -37,7 +47,7 @@ pacman :: p_load (jsonlite, lubridate, tidygraph, ggraph, visNetwork, tidyverse,
 
 ## 3.2 Importing Data
 
-There are 12 JSON files that will be imported into R the `fromJSON` function from `jsonlite`.
+There are 13 JSON files that will be imported into R the `fromJSON` function from `jsonlite`. The code chunk below shows the knowledge graph FishEye created from trade records.
 
 ```{r}
 MC2_challenge <- fromJSON("data/mc2_challenge_graph.json")
@@ -57,7 +67,6 @@ MC2_salmon_wgl <- fromJSON("data/bundles/salmon_wgl.json")
 MC2_salmon <- fromJSON("data/bundles/salmon.json")
 MC2_shark <- fromJSON("data/bundles/shark.json")
 MC2_tuna <- fromJSON("data/bundles/tuna.json")
-
 ```
 
 ## 3.3 Create Tibble Dataframe
@@ -225,8 +234,6 @@ There are 24 companies on the `target` column that are not included in the list.
 
 The `!is.na()` functions help to check for non-missing values in the specified column. In this combined_nodes data frame, the ID only corresponds to either the shipping country or the receiving country. Therefore, it is further segregated into import and export.
 
-
-
 ```{r}
 any(is.na(MC2_id_list))
 ```
@@ -330,15 +337,6 @@ MC2_tuna_edges_cleaned <- MC2_tuna_edges %>%
 ::: callout-caution
 HS code, also known as The Harmonized System are alphanumeric codes used for classifying goods for international trade and customs purposes. In this exercise, the HS code does not correspond to the respective goods.
 :::
-
-```{r}
-#check for duplicates 
-dup <- (nrow(MC2_challenge_edges) - nrow(unique(MC2_challenge_edges)))
-#reformat output 
-dup_reformat <- format(dup, big.mark=",")
-#print output
-dup_reformat
-```
 
 Weights: Median = 2 , Mean = 22 , Min = 1, Max, 47134
 
@@ -487,14 +485,140 @@ MC2_agg_rev <- revisedlist %>%
 
 ```{r}
 check_id_vis <- check_id_vis %>%
-  rename(group = trade_status)
+  rename(group = rcvcountry)
 ```
 
 ```{r}
-visNetwork(check_id_vis, MC2_agg_rev) %>%
+#| code-fold: true
+
+visNetwork(check_id_vis, MC2_agg_rev, main ="Top 30 source/targets") %>%
   visIgraphLayout(layout = "layout_with_fr") %>%
     visOptions(highlightNearest = TRUE,
              nodesIdSelection = TRUE) %>%
   visLegend() %>%
-  visLayout(randomSeed = 123)
+  visEdges(arrows = "to") %>% #indicate direction 
+  visLayout(randomSeed = 123) %>%
+  addFontAwesome(name = "font-awesome") %>% #add icon to network 
+  visNodes(shape = "icon", icon= list(code ="f21a", color = "#3B9AB2" )) %>% 
+  visLegend() %>%
+  visInteraction(dragNodes = FALSE, dragView = TRUE, 
+                 zoomView = TRUE, navigationButtons = TRUE) #freeze network
 ```
+
+```{r}
+top30_snt <- tbl_graph(nodes = check_id_vis,
+                       edges = MC2_agg_rev,
+                       directed = TRUE)
+
+top30_snt %>%
+  activate(edges) %>%
+  arrange(desc(weight))
+```
+
+```{r}
+snt <- top30_snt %>%
+  mutate(betweenness_centrality = centrality_betweenness()) %>%
+  ggraph(layout = "fr") +
+  geom_edge_link(aes(width = weight), alpha = 0.2) +
+  scale_edge_width(range =c(0.1,5)) +
+  geom_node_point(aes(size=betweenness_centrality))
+
+snt + theme_graph()
+```
+
+## filter unknown status
+
+```{r}
+#| code-fold: true
+
+#create df to filter list of unknown parties 
+unknownMC2_nodes <- MC2_id_list_vis %>%
+  filter(trade_status == "Unknown") %>%
+  select(1:2)
+
+#create df to filter list of exporters who solely do export or both 
+MC2_exporters <- MC2_id_list_vis %>%
+  filter(trade_status == "Export" | trade_status == "Import & Export")
+
+#append by matching exporters to the importers (list of unknown)
+unknownMC2 <- MC2_challenge_edges %>%
+  left_join(MC2_exporters, by = c("sourcelabel" = "label")) %>%
+  rename(from = id) %>%
+  left_join(unknownMC2_nodes, by = c("targetlabel" = "label")) %>%
+  rename(to = id) %>%
+  filter (!is.na(to)) %>%
+  group_by(from,to) %>%
+    summarise(weight = n()) %>%
+  filter (weight >1) %>%
+    ungroup()
+
+unknownMC2_revnodes <- MC2_id_list_vis %>%
+  filter(id %in% unknownMC2$from | id %in% unknownMC2$to) %>%
+  distinct() %>%
+  select(1:3) %>%
+  rename(group = trade_status)
+```
+
+Incorporate icons for node sharps from Font Awesome. Add in `addFontAwesome()` function and modify the shape and icon arguments to `VisNodes()`. Moreover, custom navigation have been included with the feature to zoomView, dragView.
+
+```{r}
+#| code-fold: true
+#create network diagram for exporters
+visNetwork(unknownMC2_revnodes, unknownMC2, 
+           main = "Exporters who ship to <br> Unknown Origin<br>") %>%
+  visIgraphLayout(layout = "layout_with_fr") %>%
+  visOptions(highlightNearest = TRUE,
+             nodesIdSelection = TRUE) %>%
+  visLayout (randomSeed = 123) %>% 
+  visEdges(arrows = "to") %>% #indicate direction 
+  addFontAwesome(name = "font-awesome") %>% #add icon to network 
+  #fill color and shape
+  visGroups(groupname = "Unknown", shape = "icon", 
+            icon= list(code ="f21a", color = "#E1AF00" )) %>% 
+  visGroups(groupname = "Import & Export", shape = "icon", 
+            icon= list(code ="f21a", color = "#3B9AB2" )) %>% 
+  visLegend() %>%
+  visInteraction(dragNodes = FALSE, dragView = TRUE, 
+                 zoomView = TRUE, navigationButtons = TRUE) #freeze network
+```
+
+# filter for companies with duplicated entries
+
+```{r}
+#detect duplicate rows and aggregate it 
+MC2_dup_rows <- MC2_challenge_edges[duplicated(MC2_challenge_edges),] %>%
+  rename(from = source) %>%
+  rename(to = target) %>%
+  group_by(from,to) %>%
+    summarise(weight = n()) %>%
+  filter (weight >1) %>%
+  ungroup()
+
+#create df with corresponding nodes 
+MC2_dup_nodes <- MC2_id_list_vis %>%
+  filter(id %in% MC2_dup_rows$from | id %in% MC2_dup_rows$to) %>%
+  distinct() %>%
+  select(1:3) %>%
+  rename(group = trade_status)
+
+```
+
+There are approximately 32% duplicated rows in the trade data.
+
+```{r}
+#check for duplicates 
+dup <- (nrow(MC2_challenge_edges) - nrow(unique(MC2_challenge_edges)))
+#reformat output 
+dup_reformat <- format(dup, big.mark=",")
+#print output
+dup_reformat
+```
+
+# References:
+
+https://vast-challenge.github.io/2023/MC2.html
+
+https://www.nagraj.net/notes/visnetwork/
+
+https://cran.r-project.org/web/packages/visNetwork/vignettes/Introduction-to-visNetwork.html
+
