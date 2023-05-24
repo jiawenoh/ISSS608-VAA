@@ -52,11 +52,13 @@ Using p_load() of pacman package to load and install the following libraries:
 
 `igraph`: for exploring the network
 
+`ggstatsplot`: for creating graphics with details from statistical tests included and its plot 
 `scales` : check at EOD
 
 ```{r}
 pacman :: p_load (jsonlite, lubridate, tidygraph, ggraph, visNetwork, tidyverse,
-                  igraph,ggplot2,heatmaply,hrbrthemes,scales,treemap,devtools)
+                  igraph,ggplot2,heatmaply,hrbrthemes,scales,treemap,devtools,
+                  ggstatsplot)
 
 options(scipen = 999)
 ```
@@ -468,7 +470,7 @@ heatmaply(heatmap_data, dendrogram = "none",
           plot_method = "plotly")
 ```
 
-### **Trade flow of Organizations with above 30 transactions in Mar 2023**
+## Trade flow of Organizations with above 30 transactions in Mar 2023
 
 `graph_from_data_frame` function from `[igraph]` package is used to compute the centrality between the nodes.
 
@@ -512,13 +514,11 @@ head(sort(betweenness_centrality, decreasing=TRUE))
 degree_centrality <- degree(g)
 MC2_2030_Mar_nodes$degree_centrality <- 
   degree_centrality[as.character(MC2_2030_Mar_nodes$id)]
-head(sort(degree_centrality, decreasing=TRUE))
 
 #compute closeness centrality 
 closeness_centrality <- closeness(g, normalized=TRUE)
 MC2_2030_Mar_nodes$closeness_centrality <- 
   closeness_centrality[as.character(MC2_2030_Mar_nodes$id)]
-head(sort(closeness_centrality, decreasing=TRUE))
 
 #plot network graph 
 visNetwork(MC2_2030_Mar_nodes, MC2_2030_Mar_edges, main ="Trade flow of Organizations  
@@ -537,7 +537,20 @@ visNetwork(MC2_2030_Mar_nodes, MC2_2030_Mar_edges, main ="Trade flow of Organiza
                  zoomView = TRUE, navigationButtons = TRUE) #freeze network
 ```
 
-## Distribution of Median Weight by hscode and year
+## Statistical Plot of Degree Centrality against Trade Status
+
+```{r}
+
+ggbetweenstats(data = MC2_2030_Mar_nodes,
+       x= trade_status, y= degree_centrality, type ="np",
+       xlab= "Trade Status", ylab = "Degree Centrality",
+       title = "Comparison of Degree Centrality across Trade Status",
+       pairwise.comparisons = TRUE, pairwise.display ="s", conf.level = 0.95
+       )
+
+```
+
+# Distribution of Median Weight by hscode and year
 
 A `treemap` displays hierarchical data as a set of nested rectangles, where each group is represented by an area that it proportional to its value. We would like to examine the distribution by **hscode** and **year.** The `[devtools]` package have been loaded in section 3.1. Thereafter, we install the package found in github *(highlighted in green)* by using the code and loading the `d3treeR` package.
 
@@ -564,7 +577,7 @@ We build our treemap by inputting our aggregated data frame (`MC2_hscode_weight`
 #| code-fold: true
 #| fig-width: 12
 #| fig-height: 6
-#| echo: false
+#| fig.show: hide
 
 #aggregate into new df by hscode and year before sorting in descending order 
 MC2_hscode_weight <- MC2_challenge_edges %>%
@@ -612,6 +625,25 @@ d3tree(it, rootname = "Distribution of hscode")
 
 `border.lwds` vector paints the border width to white
 :::
+
+## Network graph for Hscode and year
+
+
+## Statistical Plot of HScode against Years 
+
+```{r}
+#| code-fold: true
+MC2_challenge_edges_hscode <- MC2_challenge_edges %>%
+  filter(hscode == "306170" | hscode == "950300" | hscode =="870899" |
+         hscode == "940360" |hscode == "611020")
+
+ggbarstats(data = MC2_challenge_edges_hscode, 
+           x = hscode, y = year,
+           xlab= "Year", ylab = "hscode",
+           title = "Comparison of HScode across the Years",
+           type = "nonparametric", conf.level = 0.95
+           )
+```
 
 ## Data Preparation for visNetwork
 
