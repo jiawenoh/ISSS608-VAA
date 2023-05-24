@@ -2,8 +2,8 @@
 title: "Take Home Exercise 2"
 subtitle: " Mini Case 2 of Vast Challenge 2023"
 author: "Oh Jia Wen"
-date: "5/16/2023"
-date-modified: "5/16/2023"
+date: "5/24/2023"
+date-modified: "5/24/2023"
 execute: 
   echo: true
   eval: true
@@ -32,17 +32,27 @@ The trade data is stored in *mc2_challenge_graph.json* file with a time period o
 
 Using p_load() of pacman package to load and install the following libraries:
 
--   `jsonlite` : To import data from JSON file into R
+-   `jsonlite` : To Import Data from JSON File into R
 
--   `lubridate` : To convert date and time
+-   `lubridate` : To Convert Date and Time
 
--   `dplyr`:
+-   `visNetwork`: For Network Visualization
 
--   `visNetwork`:
+-   `tidyverse`: A collection of R packages use in everyday data analyses. It is able to support data science, data wrangling, and analysis.
+
+-   `ggplot2`:
+
+-   `hrbrthemes`: For Additional Themes, and Utilities for 'ggplot2'
+
+`heatmaply` : might not be using
+
+`scales` : check at EOD
 
 ```{r}
 pacman :: p_load (jsonlite, lubridate, tidygraph, ggraph, visNetwork, tidyverse,
-                  igraph)
+                  igraph,ggplot2,heatmaply,hrbrthemes,scales,treemap, treemapify)
+
+options(scipen = 999)
 ```
 
 ## 3.2 Importing Data
@@ -73,10 +83,10 @@ MC2_tuna <- fromJSON("data/bundles/tuna.json")
 
 ```{r}
 MC2_challenge_nodes <-as_tibble(MC2_challenge$nodes) %>%
-  select(id,dataset,shpcountry,rcvcountry)
+  select(id,shpcountry,rcvcountry)
 MC2_challenge_edges <-as_tibble(MC2_challenge$links) %>%
-  relocate(7,8,6) %>%
-  select(source,target,arrivaldate, hscode)
+  select(source,target,arrivaldate, hscode,valueofgoods_omu, 
+         volumeteu, weightkg, valueofgoodsusd)
 ```
 
 ```{r}
@@ -172,10 +182,12 @@ Catfish, Mackerel, and Tuna have 7 variables while other fishes have 9 variables
 :::
 
 ```{r}
-combined_nodes <- bind_rows(MC2_carp_nodes,MC2_catfish_nodes, MC2_chub_mackerel_nodes,
-                            MC2_cod2_nodes, MC2_herring_nodes, MC2_lichen_nodes,
-                            MC2_mackerel_nodes, MC2_pollock_nodes, MC2_salmon_wgl_nodes,
-                            MC2_salmon_nodes, MC2_shark_nodes, MC2_tuna_nodes)
+combined_nodes <- bind_rows(MC2_carp_nodes,MC2_catfish_nodes,
+                            MC2_chub_mackerel_nodes,MC2_cod2_nodes,
+                            MC2_herring_nodes, MC2_lichen_nodes,
+                            MC2_mackerel_nodes, MC2_pollock_nodes, 
+                            MC2_salmon_wgl_nodes,MC2_salmon_nodes,
+                            MC2_shark_nodes, MC2_tuna_nodes)
 ```
 
 ## Creating a Master ID data frame
@@ -223,14 +235,21 @@ ID_target <- MC2_challenge_edges %>%
 #create df to identify companies in source column that are not in the nodes 
 ID_source <- MC2_challenge_edges %>%
   filter(!(source %in% MC2_id_list$label)) %>%
-  distinct(source)
+  distinct(source) %>%
+  rename(id = source) %>%
+  mutate(dataset = NA, shpcountry = NA, rcvcountry = NA)
 
 #append the distinct companies into the nodes 
 MC2_challenge_nodes <- MC2_challenge_nodes %>%
-  rbind(ID_target) 
+  rbind(ID_target) %>%
+  rbind(ID_source)
+
+#output of ID nodes that are not in Master list
+nrow(ID_source)
+nrow(ID_target)
 ```
 
-There are 24 companies on the `target` column that are not included in the list. Meanwhile, there are no data available in the `source` column that are not in the list.
+There are 0 companies on the `target` column that are not included in the list. Meanwhile, there are no data available in the `source` column that are not in the list.
 
 The `!is.na()` functions help to check for non-missing values in the specified column. In this combined_nodes data frame, the ID only corresponds to either the shipping country or the receiving country. Therefore, it is further segregated into import and export.
 
@@ -247,7 +266,8 @@ any(is.na(MC2_id_list))
 MC2_challenge_edges<- MC2_challenge_edges %>%
   rename(sourcelabel = source, targetlabel = target) %>%
   mutate(arrivaldate =ymd(arrivaldate),
-         hscode = as.character(hscode))
+         hscode = as.character(hscode),
+         year = year(arrivaldate))
 
 #to append correspoinding id through left_join 
 MC2_challenge_edges <- MC2_challenge_edges %>%
@@ -255,10 +275,8 @@ MC2_challenge_edges <- MC2_challenge_edges %>%
   rename(source = id) %>%
   left_join(MC2_id_list_vis, by = c("targetlabel" = "label")) %>%
   rename(target = id) %>%
-  relocate(5,9,3,4) %>%
-  select(1:6)
+  relocate(10,14)
   
-
 ```
 
 ```{r}
@@ -340,77 +358,6 @@ HS code, also known as The Harmonized System are alphanumeric codes used for cla
 
 Weights: Median = 2 , Mean = 22 , Min = 1, Max, 47134
 
-### TOP 30 SOURCE AND TOP 30 TARGET
-
-```{r}
-MC2_challenge_source <- MC2_challenge_edges %>%
-  group_by(sourcelabel) %>%
-  summarise(weight =n()) %>%
-  arrange(desc(weight)) %>%
-  top_n(30,weight)
-
-MC2_challenge_target <- MC2_challenge_edges %>%
-  group_by(targetlabel) %>%
-  summarise(weight =n()) %>%
-  arrange(desc(weight)) %>%
-  top_n(30,weight)
-
-MC2_challenge_source
-MC2_challenge_target
-```
-
-```{r}
-revisedlist <- MC2_challenge_edges%>%
-  filter(sourcelabel %in% MC2_challenge_source$sourcelabel) %>%
-  filter(targetlabel %in% MC2_challenge_target$targetlabel) 
-
-revisedlist
-```
-
-```{r}
-MC2_agg <- revisedlist %>%
-  group_by(sourcelabel,targetlabel) %>%
-  summarise(weight =n(),
-            duration = ((max(arrivaldate) - min(arrivaldate)))) %>%
-  filter(weight >1) %>%
-  filter(duration !=0) %>%
-  arrange(desc(weight)) %>%
-  ungroup()
-
-MC2_agg
-
-```
-
-```{r}
-check_id <- MC2_id_list %>%
-  filter(label %in% revisedlist$sourcelabel | 
-           label %in% revisedlist$targetlabel)
-
-check_id_vis <- MC2_id_list_vis %>%
-  filter(label %in% revisedlist$sourcelabel | 
-           label %in% revisedlist$targetlabel)
-
-check_id
-```
-
-```{r}
-MC2_bytop30 <- tbl_graph(nodes = check_id,
-                        edges = MC2_agg)
-
-MC2_bytop30
-```
-
-```{r}
-g <- MC2_bytop30 %>%
-  mutate(betweenness_centrality = centrality_betweenness()) %>%
-  ggraph(layout = "fr") +
-  geom_node_point(aes(color = trade_status, size =betweenness_centrality) ) +
-  scale_edge_width(range =c(0.1,5)) +
-  geom_edge_link(aes(width=weight), alpha = 0.2)
-
-g +theme_graph()
-```
-
 ```{r}
 combined_edges_rev <- combined_edges %>%
   group_by(source,target,generated_by) %>%
@@ -451,26 +398,120 @@ fishes <- ggraph(MC2_import, layout = "nicely") +
 fishes
 ```
 
-### create network graph for fishes
+# Distribution of transactions
+
+# Plot with `ggplotly`
+
+`scale_fill_distiller` to provide a ColorBrewer palette. Diverging palettes (third list of colors), which put equal emphasis on mid-range critical values and extremes at both ends of the data range. The diverging palettes are : BrBG, PiYG, PRGn, PuOr, RdBu, RdGy, RdYlBu, RdYlGn, Spectral
 
 ```{r}
-MC2_carp_agg <- MC2_carp_edges %>%
-  group_by(source,target) %>%
-  summarize(weight =n()) %>%
-  filter(weight >1) %>%
-  ungroup()
+#| code-fold: true
 
-MC2_carp_nodes <- MC2_carp_nodes %>%
-  rename(label = id) %>%
-  mutate(id = 1:nrow(MC2_carp_nodes)) %>%
-  filter(label %in% MC2_carp_agg$source | label %in% MC2_carp_agg$target) %>%
-  relocate(5,1) %>%
-  select(id,label)
+transaction_counts_by_year <- MC2_challenge_edges %>%
+  mutate(month = round(month(arrivaldate))) %>%
+  group_by(year,month) %>%
+  summarise(count = n())
+
+heatmap <- ggplot(transaction_counts_by_year, 
+                  aes(x = year, y = month, fill = count)) +
+  geom_tile() +
+  scale_fill_distiller(palette = "RdBu") +
+  theme_ipsum() +
+  labs(x = "Year", y = "Month", title = "Number of Transactions by Year and Month") +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+  scale_y_continuous(breaks = 1:12) +
+  scale_x_continuous(breaks = 2028:2034)
+
+ggplotly(heatmap)
+```
+
+```{r}
+#| code-fold: true
+
+#aggregate to determine transactions count by year and month 
+transaction_counts_by_year <- MC2_challenge_edges %>%
+  mutate(month = round(month(arrivaldate))) %>%
+  group_by(year, month) %>%
+  summarise(count = n())
+
+#transpose df by using pivot_wider
+pivoted_data <- transaction_counts_by_year %>%
+  pivot_wider(names_from = year, values_from = count) %>%
+  #remove the month column
+  select(2:8)
+
+#convert pivoted_data into a matrix
+heatmap_data <- as.matrix(pivoted_data)
+
+#create interactive heatmap without dendrogram
+heatmaply(heatmap_data, dendrogram = "none",
+          xlab = "Year", ylab = "Month",
+          main = "Number of Transactions by Year and Month",
+          scale = "none",
+          grid_color = "white",
+          grid_width = 0.00001,
+          titleX = FALSE,
+          hide_colorbar =  FALSE,
+          label_names = c("Month:", "Year: ", "No. of Transactions:"),
+          fontsize_row = 10, fontsize_col = 10,
+          colors = "Blues",
+          labCol = colnames(heatmap_data),
+          labRow = rownames(heatmap_data),
+          plot_method = "plotly")
+```
+
+# Distribution of HScode
+
+```{r}
+MC2_hscode_weight <- MC2_challenge_edges %>%
+  group_by(hscode,year) %>%
+  summarize(weight = n(),
+            median_weight = median(weightkg))
+
+treemap(MC2_hscode_weight,
+        index=c("hscode","year","median_weight"),
+        vSize="weight",
+        vColor="median_weight",
+        type ="value",
+        palette="Blues",
+        title="Median weight(KG) by hscode",
+        title.legend = "Median Weight in KG"
+        )
 ```
 
 ## Data Preparation for visNetwork
 
+### TOP 30 SOURCE AND TOP 30 TARGET
+
 ```{r}
+#| code-fold: true
+
+#filter for top 30 source 
+MC2_challenge_source <- MC2_challenge_edges %>%
+  group_by(sourcelabel) %>%
+  summarise(weight =n()) %>%
+  arrange(desc(weight)) %>%
+  top_n(30,weight)
+
+#filter for top 30 target
+MC2_challenge_target <- MC2_challenge_edges %>%
+  group_by(targetlabel) %>%
+  summarise(weight =n()) %>%
+  arrange(desc(weight)) %>%
+  top_n(30,weight)
+
+#filter edges for transactions in top 30 source and top 30 target 
+revisedlist <- MC2_challenge_edges%>%
+  filter(sourcelabel %in% MC2_challenge_source$sourcelabel) %>%
+  filter(targetlabel %in% MC2_challenge_target$targetlabel) 
+
+#filter out nodes that are in top 30 source and top 30 target 
+check_id_vis <- MC2_id_list_vis %>%
+  filter(label %in% revisedlist$sourcelabel | 
+           label %in% revisedlist$targetlabel) %>%
+    rename(group = rcvcountry)
+
+#aggregate by weight and rename to ensure that it                                         has id in nodes and from and to column in edges 
 MC2_agg_rev <- revisedlist %>%
   left_join(check_id_vis, by = c("sourcelabel" = "label")) %>%
   rename(from = id) %>%
@@ -481,20 +522,18 @@ MC2_agg_rev <- revisedlist %>%
   filter(from!=to) %>%
   filter(weight > 1) %>%
   ungroup()
-```
 
-```{r}
-check_id_vis <- check_id_vis %>%
-  rename(group = rcvcountry)
 ```
 
 ```{r}
 #| code-fold: true
 
-visNetwork(check_id_vis, MC2_agg_rev, main ="Top 30 source/targets") %>%
+visNetwork(check_id_vis, MC2_agg_rev, main ="Top 30 source/targets 
+           <br>by receiving country<br>") %>%
   visIgraphLayout(layout = "layout_with_fr") %>%
     visOptions(highlightNearest = TRUE,
-             nodesIdSelection = TRUE) %>%
+             nodesIdSelection = TRUE,
+              selectedBy="group") %>%
   visLegend() %>%
   visEdges(arrows = "to") %>% #indicate direction 
   visLayout(randomSeed = 123) %>%
@@ -582,6 +621,10 @@ visNetwork(unknownMC2_revnodes, unknownMC2,
                  zoomView = TRUE, navigationButtons = TRUE) #freeze network
 ```
 
+Based on the network above, there are 3 companies who supply to more than 1 unknown organization.
+
+\~Hai Dan Corporation Wharf (deliver to 5 Unknown Status) \~Sailors and Surfers Incorporated Enterprises (deliver to 3 Unknown Status) \~Mar del Este CJSC (deliver to 3 Unknown Status )
+
 # filter for companies with duplicated entries
 
 ```{r}
@@ -594,9 +637,12 @@ MC2_dup_rows <- MC2_challenge_edges[duplicated(MC2_challenge_edges),] %>%
   filter (weight >1) %>%
   ungroup()
 
+MC2_dup_top10 <- MC2_dup_rows %>%
+    top_n(10,weight) 
+
 #create df with corresponding nodes 
 MC2_dup_nodes <- MC2_id_list_vis %>%
-  filter(id %in% MC2_dup_rows$from | id %in% MC2_dup_rows$to) %>%
+  filter(id %in% MC2_dup_top10$from | id %in% MC2_dup_top10$to) %>%
   distinct() %>%
   select(1:3) %>%
   rename(group = trade_status)
@@ -604,6 +650,23 @@ MC2_dup_nodes <- MC2_id_list_vis %>%
 ```
 
 There are approximately 32% duplicated rows in the trade data.
+
+```{r}
+#| code-fold: true
+#create network diagram for exporters
+visNetwork(MC2_dup_nodes, MC2_dup_top10, 
+           main = "Trade Transactions with  <br> Top 10 duplicates <br>") %>%
+  visIgraphLayout(layout = "layout_with_fr") %>%
+  visOptions(highlightNearest = TRUE,
+             nodesIdSelection = TRUE) %>%
+  visLayout (randomSeed = 123) %>% 
+  visEdges(arrows = "to") %>% #indicate direction 
+  addFontAwesome(name = "font-awesome") %>% #add icon to network 
+  #fill color and shape
+  visLegend() %>%
+  visInteraction(dragNodes = FALSE, dragView = TRUE, 
+                 zoomView = TRUE, navigationButtons = TRUE) #freeze network
+```
 
 ```{r}
 #check for duplicates 
@@ -622,3 +685,6 @@ https://www.nagraj.net/notes/visnetwork/
 
 https://cran.r-project.org/web/packages/visNetwork/vignettes/Introduction-to-visNetwork.html
 
+https://jtr13.github.io/cc21fall2/network-visualization-in-r.html
+
+https://r-graph-gallery.com/38-rcolorbrewers-palettes.html
