@@ -40,17 +40,23 @@ Using p_load() of pacman package to load and install the following libraries:
 
 -   `tidyverse`: A collection of R packages use in everyday data analyses. It is able to support data science, data wrangling, and analysis.
 
--   `ggplot2`:
+-   `ggplot2`:By
 
 -   `hrbrthemes`: For Additional Themes, and Utilities for 'ggplot2'
 
-`heatmaply` : might not be using
+-   `heatmaply`:
+
+-   `treemap`:
+
+-   `devtools`: For the installing for `d3treeR`
+
+`igraph`: for exploring the network
 
 `scales` : check at EOD
 
 ```{r}
 pacman :: p_load (jsonlite, lubridate, tidygraph, ggraph, visNetwork, tidyverse,
-                  igraph,ggplot2,heatmaply,hrbrthemes,scales,treemap, treemapify)
+                  igraph,ggplot2,heatmaply,hrbrthemes,scales,treemap,devtools)
 
 options(scipen = 999)
 ```
@@ -352,7 +358,7 @@ MC2_tuna_edges_cleaned <- MC2_tuna_edges %>%
          hscode = as.character(hscode))
 ```
 
-::: callout-caution
+::: {.callout-caution title="Important"}
 HS code, also known as The Harmonized System are alphanumeric codes used for classifying goods for international trade and customs purposes. In this exercise, the HS code does not correspond to the respective goods.
 :::
 
@@ -400,9 +406,11 @@ fishes
 
 # Distribution of transactions
 
-# Plot with `ggplotly`
+## Number of Transactions by Year and Month
 
-`scale_fill_distiller` to provide a ColorBrewer palette. Diverging palettes (third list of colors), which put equal emphasis on mid-range critical values and extremes at both ends of the data range. The diverging palettes are : BrBG, PiYG, PRGn, PuOr, RdBu, RdGy, RdYlBu, RdYlGn, Spectral
+with `ggplotly`
+
+`scale_fill_distiller` to provide a ColorBrewer palette. Sequential palettes (first list of colors), which are suited to ordered data that progress from low to high (gradient). The palettes names are : Blues, BuGn, BuPu, GnBu, Greens, Greys, Oranges, OrRd, PuBu, PuBuGn, PuRd, Purples, RdPu, Reds, YlGn, YlGnBu YlOrBr, YlOrRd.
 
 ```{r}
 #| code-fold: true
@@ -460,24 +468,150 @@ heatmaply(heatmap_data, dendrogram = "none",
           plot_method = "plotly")
 ```
 
-# Distribution of HScode
+### **Trade flow of Organizations with above 30 transactions in Mar 2023**
+
+`graph_from_data_frame` function from `[igraph]` package is used to compute the centrality between the nodes.
 
 ```{r}
+#| code-fold: true
+
+#create edges df for transactions from Mar 2030
+MC2_2030_Mar_edges <- MC2_challenge_edges %>%
+  mutate(month = round(month(arrivaldate))) %>%
+  filter(year == "2030" & month =="3") %>%
+  group_by(source, target, hscode) %>%
+  summarize(weight = n()) %>%
+  filter(source !=target) %>%
+  filter(weight >29) %>% #keep ~200 rows 
+  rename(from = source, to = target) %>%
+  select(1,2,4,3) %>% #relocate weight to 3rd column 
+  ungroup()
+
+#create nodes df for transactions from Mar 2030
+MC2_2030_Mar_nodes <- MC2_id_list_vis %>%
+  filter(id %in% MC2_2030_Mar_edges$from | id %in% MC2_2030_Mar_edges$to) %>%
+  distinct() 
+
+#create igraph object 
+g <- graph_from_data_frame(d=MC2_2030_Mar_edges, 
+                           vertices=MC2_2030_Mar_nodes, directed=TRUE) 
+```
+
+```{r}
+#compute betweeness centrality 
+betweenness_centrality <- betweenness(g)
+MC2_2030_Mar_nodes$betweenness_centrality <-
+  betweenness_centrality[as.character(MC2_2030_Mar_nodes$id)]
+head(sort(betweenness_centrality, decreasing=TRUE))
+```
+
+```{r}
+#| code-fold: true
+
+#compute degree centrality 
+degree_centrality <- degree(g)
+MC2_2030_Mar_nodes$degree_centrality <- 
+  degree_centrality[as.character(MC2_2030_Mar_nodes$id)]
+head(sort(degree_centrality, decreasing=TRUE))
+
+#compute closeness centrality 
+closeness_centrality <- closeness(g, normalized=TRUE)
+MC2_2030_Mar_nodes$closeness_centrality <- 
+  closeness_centrality[as.character(MC2_2030_Mar_nodes$id)]
+head(sort(closeness_centrality, decreasing=TRUE))
+
+#plot network graph 
+visNetwork(MC2_2030_Mar_nodes, MC2_2030_Mar_edges, main ="Trade flow of Organizations  
+           <br>with above 30 transactions in Mar 2023<br>") %>%
+  visIgraphLayout(layout = "layout_with_fr") %>%
+    visOptions(highlightNearest = TRUE,
+             nodesIdSelection = TRUE,
+              selectedBy ="degree_centrality") %>%
+  visLegend() %>%
+  visEdges(arrows = "to") %>% #indicate direction 
+  visLayout(randomSeed = 123) %>%
+  addFontAwesome(name = "font-awesome") %>% #add icon to network 
+  visNodes(shape = "icon", icon= list(code ="f21a", color = "#3B9AB2" )) %>% 
+  visLegend() %>%
+  visInteraction(dragNodes = FALSE, dragView = TRUE, 
+                 zoomView = TRUE, navigationButtons = TRUE) #freeze network
+```
+
+## Distribution of Median Weight by hscode and year
+
+A `treemap` displays hierarchical data as a set of nested rectangles, where each group is represented by an area that it proportional to its value. We would like to examine the distribution by **hscode** and **year.** The `[devtools]` package have been loaded in section 3.1. Thereafter, we install the package found in github *(highlighted in green)* by using the code and loading the `d3treeR` package.
+
+```{r}
+#install_github("timelyportfolio/d3treeR")
+library(d3treeR)
+```
+
+We will aggregate from `MC2_challenge_edges` data frame by using the `[dpylr]` package:
+
+-   `group_by` is used to aggregate it by **hscode** and **year**
+
+-   `summarize()` is used to compute the **weight** and **median_weight** of goods
+
+-   `arrange(desc())` to sort weight in descending order
+
+-   `MC2_hscode_weight[1:100,]` to retrieve the first 100 rows
+
+*(We are only interested in the highly utilized hscode)*
+
+We build our treemap by inputting our aggregated data frame (`MC2_hscode_weight`) into the `treemap()` function and saved it as an object called **it.** Thereafter, the `d3tree` function from the `[d3treeR]` package is used to build our interactive treemap.
+
+```{r}
+#| code-fold: true
+#| fig-width: 12
+#| fig-height: 6
+#| echo: false
+
+#aggregate into new df by hscode and year before sorting in descending order 
 MC2_hscode_weight <- MC2_challenge_edges %>%
   group_by(hscode,year) %>%
   summarize(weight = n(),
-            median_weight = median(weightkg))
+            median_weight = median(weightkg)) %>%
+  arrange(desc(weight)) 
 
-treemap(MC2_hscode_weight,
-        index=c("hscode","year","median_weight"),
+#retrieve the first 100 rows
+MC2_hscode_weight <- MC2_hscode_weight[1:100,]
+
+#treemap saved under 'it' object 
+it <- treemap(MC2_hscode_weight,
+        index=c("hscode","year"),
         vSize="weight",
         vColor="median_weight",
         type ="value",
+        algorithm = "pivotSize",
+        sortID = "weight",
         palette="Blues",
-        title="Median weight(KG) by hscode",
-        title.legend = "Median Weight in KG"
+        border.lwds = "white"
         )
 ```
+
+```{r}
+d3tree(it, rootname = "Distribution of hscode")
+```
+
+::: {.callout-note title="Note about Treemap" collapse="true"}
+## Note about Treemap
+
+`index` vector shows the hscode code followed by the year.
+
+`vSize` vector shows the distribution by weight(the size of the rectangles)
+
+`vColor` vector shows the different intensity by median_weight
+
+`type` vector reflects the value type treemap
+
+`algorithm` vector to pivot by size
+
+`sortID` vector to determined the order from top left to bottom right
+
+`palette` vector paints the treemap using `[rColorBrewer]` package
+
+`border.lwds` vector paints the border width to white
+:::
 
 ## Data Preparation for visNetwork
 
