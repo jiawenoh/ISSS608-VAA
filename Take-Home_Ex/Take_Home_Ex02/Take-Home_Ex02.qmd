@@ -42,7 +42,7 @@ Using p_load() of pacman package to load and install the following libraries:
 
 -   `ggplot2`:By
 
--   `hrbrthemes`: For Additional Themes, and Utilities for 'ggplot2'
+-   `hrbrthemes`: For Additional Themes, and Utilities for 'ggplot2' (might not use)
 
 -   `heatmaply`:
 
@@ -52,13 +52,16 @@ Using p_load() of pacman package to load and install the following libraries:
 
 `igraph`: for exploring the network
 
-`ggstatsplot`: for creating graphics with details from statistical tests included and its plot 
+`ggstatsplot`: for creating graphics with details from statistical tests included and its plot
+
+`RColorBrewer`:
+
 `scales` : check at EOD
 
 ```{r}
 pacman :: p_load (jsonlite, lubridate, tidygraph, ggraph, visNetwork, tidyverse,
                   igraph,ggplot2,heatmaply,hrbrthemes,scales,treemap,devtools,
-                  ggstatsplot)
+                  ggstatsplot,RColorBrewer, knitr)
 
 options(scipen = 999)
 ```
@@ -201,6 +204,8 @@ combined_nodes <- bind_rows(MC2_carp_nodes,MC2_catfish_nodes,
 ## Creating a Master ID data frame
 
 ```{r}
+#| code-fold: true
+
 MC2_id_list <- MC2_challenge_nodes %>%
   rename(label = id) %>%
   mutate(
@@ -214,7 +219,7 @@ MC2_id_list <- MC2_challenge_nodes %>%
 MC2_id_list <- MC2_id_list %>%
   select(label,trade_status,shpcountry, rcvcountry)
 
-#master ID list for visNetwork 
+#create new df and add new column called trade_status
 MC2_id_list_vis <- MC2_challenge_nodes %>%
   rename(label = id) %>%
   mutate(id = as.character(1:nrow(MC2_challenge_nodes)),
@@ -226,11 +231,10 @@ MC2_id_list_vis <- MC2_challenge_nodes %>%
   )) %>%
   filter(!is.na(trade_status))
 
+#reorder the columns 
 MC2_id_list_vis <- MC2_id_list_vis %>%
   select(id,label, trade_status,shpcountry, rcvcountry)
-```
 
-```{r}
 #create df to identify companies in target column that are not in the nodes 
 ID_target <- MC2_challenge_edges %>%
   filter(!(target %in% MC2_id_list$label)) %>%
@@ -406,34 +410,15 @@ fishes <- ggraph(MC2_import, layout = "nicely") +
 fishes
 ```
 
-# Distribution of transactions
+# 4. Distribution of transactions
 
-## Number of Transactions by Year and Month
+In this section, we will create plots with interactivity to study and explore the data from the knowledge graph. The plots are created with the use of `heatmaply`,`visNetwork`, and `igraph`packages.
 
-with `ggplotly`
+## 4.1 Number of Transactions by Year and Month
 
-`scale_fill_distiller` to provide a ColorBrewer palette. Sequential palettes (first list of colors), which are suited to ordered data that progress from low to high (gradient). The palettes names are : Blues, BuGn, BuPu, GnBu, Greens, Greys, Oranges, OrRd, PuBu, PuBuGn, PuRd, Purples, RdPu, Reds, YlGn, YlGnBu YlOrBr, YlOrRd.
+Heatmap is created to provide a graphical representation to the transactions. It uses a system of color-coding to represent different values. `[RColorBrewer]` package is used to include sequential palettes *"Blues"* showing progress from low to high (gradient).
 
-```{r}
-#| code-fold: true
-
-transaction_counts_by_year <- MC2_challenge_edges %>%
-  mutate(month = round(month(arrivaldate))) %>%
-  group_by(year,month) %>%
-  summarise(count = n())
-
-heatmap <- ggplot(transaction_counts_by_year, 
-                  aes(x = year, y = month, fill = count)) +
-  geom_tile() +
-  scale_fill_distiller(palette = "RdBu") +
-  theme_ipsum() +
-  labs(x = "Year", y = "Month", title = "Number of Transactions by Year and Month") +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
-  scale_y_continuous(breaks = 1:12) +
-  scale_x_continuous(breaks = 2028:2034)
-
-ggplotly(heatmap)
-```
+As fishing might occurs on a seasonality basis, we created an additional column called *month* before grouping it by *year and month*. To create an interactive heatmap, data frame are transpose through `pivot_wider` before converting it to matrix with the `as.matrix` function. Thereafter, `[heatmaply]` package is used.
 
 ```{r}
 #| code-fold: true
@@ -470,9 +455,31 @@ heatmaply(heatmap_data, dendrogram = "none",
           plot_method = "plotly")
 ```
 
-## Trade flow of Organizations with above 30 transactions in Mar 2023
+**Observations:**
 
-`graph_from_data_frame` function from `[igraph]` package is used to compute the centrality between the nodes.
+-   On a yearly basis, the volume of trade is decreasing at a decreasing rate. It peaks around 2028-2030 with the highest time period, occurring in 2030.
+
+-   March seems to be a period with low transactions. However, it reaches a record on Mar 2030, with the highest volume of transactions in the seven years time period.
+
+## 4.2 Trade flow of Organizations with above 30 transactions in Mar 2023
+
+Noting that Mar 2030 has a record high volume, we would like to examine the trade flow of the organizations in this time frame. We start off by creating a new edges and nodes data frame. The edges are created by aggregating it from the the master edges file `MC2_challenge_edges`.
+
+We will be using the `[dpylr]` package to create **`MC2_2030_Mar_edges`**:
+
+-   `mutate()`: to add additional column called **month**
+
+-   `filter()`: is used to filter for **year = 2030** and **month = 3**
+
+-   `group_by` is used to aggregate it by **hscode** and **year**
+
+-   `summarize()` is used to compute the **weight** and **median_weight** of goods
+
+-   `filter()` is used to remove matching name in source and target and to filter for transactions with above 30 counts. This brings up to \~200 rows.
+
+-   `rename()` is used to change the title of the column
+
+Thereafter, we create **`MC2_2030_Mar_nodes`** by filtering out the distinct ID that are in the source and label column from the master ID data frame, `MC2_id_list_vis` .
 
 ```{r}
 #| code-fold: true
@@ -494,18 +501,26 @@ MC2_2030_Mar_nodes <- MC2_id_list_vis %>%
   filter(id %in% MC2_2030_Mar_edges$from | id %in% MC2_2030_Mar_edges$to) %>%
   distinct() 
 
+```
+
+In the code chunk below, we compute the centrality between the nodes, by using the `graph_from_data_frame` function from the `[igraph]` package. As seen from the output below, the top row represents the ID of the organization while the bottom row represents their score. Given that the result of the betweenness centrality is not significant, we will would look into the degree centrality.
+
+```{r}
 #create igraph object 
 g <- graph_from_data_frame(d=MC2_2030_Mar_edges, 
                            vertices=MC2_2030_Mar_nodes, directed=TRUE) 
-```
 
-```{r}
 #compute betweeness centrality 
 betweenness_centrality <- betweenness(g)
 MC2_2030_Mar_nodes$betweenness_centrality <-
   betweenness_centrality[as.character(MC2_2030_Mar_nodes$id)]
-head(sort(betweenness_centrality, decreasing=TRUE))
+
+#output for top results
+betweenness_centrality_tb <-head(sort(betweenness_centrality, decreasing=TRUE))
+
 ```
+
+After the data preparation, `visNetwork` is used to plot the plot the interactive network graph with the `Fruchterman and Reingold` layout. Additionally, the graph uses three colors tone from the diverging palettes scheme to color-code the nodes based on degree centrality. It ranges from red - yellow - blue.
 
 ```{r}
 #| code-fold: true
@@ -520,22 +535,63 @@ closeness_centrality <- closeness(g, normalized=TRUE)
 MC2_2030_Mar_nodes$closeness_centrality <- 
   closeness_centrality[as.character(MC2_2030_Mar_nodes$id)]
 
+#add diverging palettes scheme to nodes based on degree centrality
+colors <- colorRampPalette(brewer.pal(3, "RdYlBu"))(3) # use three colors 
+MC2_2030_Mar_nodes <- MC2_2030_Mar_nodes %>%
+  mutate(shape="dot", shadow=TRUE,  
+         title=trade_status, # hover for trade_status
+         label=label, # add labels on nodes
+         size=20, # set size of nodes
+         borderWidth=1, #set border width of nodes
+         color.background=colors[degree_centrality], #set color
+         color.border="grey") #set border color 
+
 #plot network graph 
-visNetwork(MC2_2030_Mar_nodes, MC2_2030_Mar_edges, main ="Trade flow of Organizations  
+visNetwork(MC2_2030_Mar_nodes, MC2_2030_Mar_edges, 
+            main ="Trade flow of Organizations  
            <br>with above 30 transactions in Mar 2023<br>") %>%
   visIgraphLayout(layout = "layout_with_fr") %>%
-    visOptions(highlightNearest = TRUE,
+  visOptions(highlightNearest = TRUE,
              nodesIdSelection = TRUE,
-              selectedBy ="degree_centrality") %>%
-  visLegend() %>%
+             selectedBy ="degree_centrality") %>%
   visEdges(arrows = "to") %>% #indicate direction 
   visLayout(randomSeed = 123) %>%
   addFontAwesome(name = "font-awesome") %>% #add icon to network 
-  visNodes(shape = "icon", icon= list(code ="f21a", color = "#3B9AB2" )) %>% 
-  visLegend() %>%
   visInteraction(dragNodes = FALSE, dragView = TRUE, 
                  zoomView = TRUE, navigationButtons = TRUE) #freeze network
 ```
+
+::: {.callout-note title="Note about visNetwork" collapse="true"}
+## Note about visNetwork
+
+`visIgraphLayout` is used to compute coordinates. In the example above, the *Fruchterman and Reingold* layout is used.
+
+`visOptions` is an options for network visualization. We highlighted the nearest when clicking a node, a dropdown list for ID, a dropdown list by degree of centrality.
+
+`visEdges` is edges options. We includes arrow to indicate direction.
+
+`visLayout` is an layout options. `randomSeed` is included for the layout to remain the same every time.
+
+`addFontAwesome` is used to add icons to the network.
+
+`visInteraction` is used for network visualization interaction.
+
+The default setting as as follows:
+
+1.  `dragNodes` : IF TRUE, nodes can be dragged around by user.
+
+2.  `dragView` : If TRUE, view can be dragged around by user.
+
+3.  `zoomView` : If TRUE, user can zoom in.
+
+4.  `navigationButtons`: If FALSE, navigation buttons are not on the network graph
+:::
+
+**Observations:**
+
+-   Organizations who received goods (imports) have higher degree of centrality. hai dan Corporation Wharf has the highest degree of 19.
+
+-   Majority of the organizations have low degree of centrality.
 
 ## Statistical Plot of Degree Centrality against Trade Status
 
@@ -552,7 +608,9 @@ ggbetweenstats(data = MC2_2030_Mar_nodes,
 
 # Distribution of Median Weight by hscode and year
 
-A `treemap` displays hierarchical data as a set of nested rectangles, where each group is represented by an area that it proportional to its value. We would like to examine the distribution by **hscode** and **year.** The `[devtools]` package have been loaded in section 3.1. Thereafter, we install the package found in github *(highlighted in green)* by using the code and loading the `d3treeR` package.
+A `treemap` displays hierarchical data as a set of nested rectangles, where each group is represented by an area that it proportional to its value. We would like to examine the distribution by **hscode** and **year.**
+
+As per section 3.1, the `[devtools]` package have been loaded. Thereafter, we install the package found in github *(highlighted in green)* by using the code and loading the `d3treeR` package.
 
 ```{r}
 #install_github("timelyportfolio/d3treeR")
@@ -626,10 +684,78 @@ d3tree(it, rootname = "Distribution of hscode")
 `border.lwds` vector paints the border width to white
 :::
 
+**Observations:**
+
+-   As observed from top left to bottom right, `hscode '306170'` has the highest transactions count along with higher than average median weight.
+
+-   HS code that start with `30` occupies a higher weightage than the combined of code. It is composed fo six digits and could be broken down into chapter/heading/subheading with two digits each. From the graph above, hscode `306170` and `304620` are rank top and sixth position.
+
+-   `hscode '870323` has the darkest gradient in 2032. As observed in section 4.1, the transactions count did not increase. Thus, it would be ideal to observed the transactions of `hscode 870323` in year 2032.
+
+## Network graph for Hscode (306170)
+
+```{r}
+
+```
+
 ## Network graph for Hscode and year
 
+```{r}
+#| code-fold: true
 
-## Statistical Plot of HScode against Years 
+#create edges df for transactions from Mar 2030
+MC2_2032_870323_edges <- MC2_challenge_edges %>%
+  filter(year == "2032" & hscode =="870323") %>%
+  group_by(source, target, hscode) %>%
+  summarize(weight = n()) %>%
+  filter(source !=target) %>%
+  filter(weight >1) %>% #keep ~200 rows 
+  rename(from = source, to = target) %>%
+  select(1,2,4,3) %>% #relocate weight to 3rd column 
+  ungroup()
+
+#create nodes df for transactions from Mar 2030
+MC2_2032_870323_nodes <- MC2_id_list_vis %>%
+  filter(id %in% MC2_2032_870323_edges$from | id %in% MC2_2032_870323_edges$to) %>%
+  distinct() 
+
+#create igraph object 
+gg <- graph_from_data_frame(d=MC2_2032_870323_edges, 
+                           vertices=MC2_2032_870323_nodes, directed=TRUE) 
+
+#compute degree centrality 
+degree_centrality <- degree(gg)
+MC2_2032_870323_nodes$degree_centrality <- 
+  degree_centrality[as.character(MC2_2032_870323_nodes$id)]
+
+#add diverging palettes scheme to nodes based on degree centrality
+colors <- colorRampPalette(brewer.pal(3, "RdYlBu"))(3) # use three colors 
+MC2_2032_870323_nodes <- MC2_2032_870323_nodes %>%
+  mutate(shape="dot", shadow=TRUE,  
+         title=trade_status, # hover for trade_status
+         label=label, # add labels on nodes
+         size=20, # set size of nodes
+         borderWidth=1, #set border width of nodes
+         color.background=colors[degree_centrality], #set color for nodes
+         color.border="grey") #set color for border
+
+#plot network graph 
+visNetwork(MC2_2032_870323_nodes, MC2_2032_870323_edges, main ="Trade flow in 2032
+           <br>for hscode 870323<br>") %>%
+  visIgraphLayout(layout = "layout_with_fr") %>%
+    visOptions(highlightNearest = TRUE,
+             nodesIdSelection = TRUE,
+             selectedBy = "degree_centrality") %>%
+  visLegend() %>%
+  visEdges(arrows = "to") %>% #indicate direction 
+  visLayout(randomSeed = 123) %>%
+  addFontAwesome(name = "font-awesome") %>% #add icon to network 
+  visLegend() %>%
+  visInteraction(dragNodes = FALSE, dragView = TRUE, 
+                 zoomView = TRUE, navigationButtons = TRUE) #freeze network
+```
+
+## Statistical Plot of HScode against Years
 
 ```{r}
 #| code-fold: true
@@ -708,27 +834,6 @@ visNetwork(check_id_vis, MC2_agg_rev, main ="Top 30 source/targets
   visLegend() %>%
   visInteraction(dragNodes = FALSE, dragView = TRUE, 
                  zoomView = TRUE, navigationButtons = TRUE) #freeze network
-```
-
-```{r}
-top30_snt <- tbl_graph(nodes = check_id_vis,
-                       edges = MC2_agg_rev,
-                       directed = TRUE)
-
-top30_snt %>%
-  activate(edges) %>%
-  arrange(desc(weight))
-```
-
-```{r}
-snt <- top30_snt %>%
-  mutate(betweenness_centrality = centrality_betweenness()) %>%
-  ggraph(layout = "fr") +
-  geom_edge_link(aes(width = weight), alpha = 0.2) +
-  scale_edge_width(range =c(0.1,5)) +
-  geom_node_point(aes(size=betweenness_centrality))
-
-snt + theme_graph()
 ```
 
 ## filter unknown status
@@ -854,3 +959,5 @@ https://cran.r-project.org/web/packages/visNetwork/vignettes/Introduction-to-vis
 https://jtr13.github.io/cc21fall2/network-visualization-in-r.html
 
 https://r-graph-gallery.com/38-rcolorbrewers-palettes.html
+
+https://jtr13.github.io/cc21fall2/network-visualization-in-r.html#centrality-measurement
