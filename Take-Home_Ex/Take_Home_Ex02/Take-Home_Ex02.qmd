@@ -2,8 +2,8 @@
 title: "Take Home Exercise 2"
 subtitle: " Mini Case 2 of Vast Challenge 2023"
 author: "Oh Jia Wen"
-date: "5/24/2023"
-date-modified: "5/24/2023"
+date: "5/26/2023"
+date-modified: "5/26/2023"
 execute: 
   echo: true
   eval: true
@@ -20,7 +20,7 @@ With reference to [Mini-Challenge 2](https://vast-challenge.github.io/2023/MC2.h
 
 ## 1.1 The Task
 
-In this take-home exercise...
+In this take-home exercise, temporal patterns for individual entries and between entities are identified using the knowledge graph FishEye created from trade records. It categorizes the type of business relationship patterns and possibly, identify companies that fit a pattern of illegal fishing.
 
 # 2. Datasets
 
@@ -56,19 +56,23 @@ Using p_load() of pacman package to load and install the following libraries:
 
 `RColorBrewer`:
 
+`knitr`:
+
+`stringr`:
+
 `scales` : check at EOD
 
 ```{r}
 pacman :: p_load (jsonlite, lubridate, tidygraph, ggraph, visNetwork, tidyverse,
                   igraph,ggplot2,heatmaply,hrbrthemes,scales,treemap,devtools,
-                  ggstatsplot,RColorBrewer, knitr)
+                  ggstatsplot,RColorBrewer, knitr,stringr)
 
 options(scipen = 999)
 ```
 
 ## 3.2 Importing Data
 
-There are 13 JSON files that will be imported into R the `fromJSON` function from `jsonlite`. The code chunk below shows the knowledge graph FishEye created from trade records.
+The JSON files will be imported into R with the use of `fromJSON` function from `jsonlite`. The code chunk below shows the knowledge graph FishEye created from trade records.
 
 ```{r}
 MC2_challenge <- fromJSON("data/mc2_challenge_graph.json")
@@ -201,10 +205,11 @@ combined_nodes <- bind_rows(MC2_carp_nodes,MC2_catfish_nodes,
                             MC2_shark_nodes, MC2_tuna_nodes)
 ```
 
-## Creating a Master ID data frame
+## 3.6 Creating a Master ID data frame
 
 ```{r}
 #| code-fold: true
+
 
 MC2_id_list <- MC2_challenge_nodes %>%
   rename(label = id) %>%
@@ -263,11 +268,6 @@ nrow(ID_target)
 
 There are 0 companies on the `target` column that are not included in the list. Meanwhile, there are no data available in the `source` column that are not in the list.
 
-The `!is.na()` functions help to check for non-missing values in the specified column. In this combined_nodes data frame, the ID only corresponds to either the shipping country or the receiving country. Therefore, it is further segregated into import and export.
-
-```{r}
-any(is.na(MC2_id_list))
-```
 
 ## 3.5 Data Wrangling
 
@@ -299,74 +299,15 @@ combined_edges_cleaned<- combined_edges %>%
 combined_edges_cleaned
 ```
 
-#### 3.5.1 Data Wrangling for Bundles
-
-```{r}
-#| code-fold: true
-
-#1_fish type: carp
-MC2_carp_edges_cleaned <- MC2_carp_edges %>%
-    mutate(arrivaldate =ymd(arrivaldate),
-         hscode = as.character(hscode))
-
-#2_fish type: catfish
-MC2_catfish_edges_cleaned <- MC2_catfish_edges %>%
-    mutate(arrivaldate =ymd(arrivaldate),
-         hscode = as.character(hscode))
-
-#3_fish type: chub_mackerel
-MC2_chub_mackerel_edges_cleaned <- MC2_chub_mackerel_edges %>%
-    mutate(arrivaldate =ymd(arrivaldate),
-         hscode = as.character(hscode))
-
-#4_fish type: cod2
-MC2_cod2_edges_cleaned <- MC2_cod2_edges %>%
-    mutate(arrivaldate =ymd(arrivaldate),
-         hscode = as.character(hscode))
-
-#5_fish type: herring
-MC2_herring_edges_cleaned <- MC2_herring_edges %>%
-    mutate(arrivaldate =ymd(arrivaldate),
-         hscode = as.character(hscode))
-
-#6_fish type: lichen
-MC2_lichen_edges_cleaned <- MC2_lichen_edges %>%
-    mutate(arrivaldate =ymd(arrivaldate),
-         hscode = as.character(hscode))
-
-#7_fish type: mackerel
-MC2_mackerel_edges_cleaned <- MC2_mackerel_edges %>%
-    mutate(arrivaldate =ymd(arrivaldate),
-         hscode = as.character(hscode))
-#8_fish type: pollock
-MC2_pollock_edges_cleaned <- MC2_pollock_edges %>%
-    mutate(arrivaldate =ymd(arrivaldate),
-         hscode = as.character(hscode))
-
-#9_fish type: salmon_wgl
-MC2_salmon_wgl_edges_cleaned <- MC2_salmon_wgl_edges %>%
-    mutate(arrivaldate =ymd(arrivaldate),
-         hscode = as.character(hscode))
-
-#10_fish type: salmon
-MC2_salmon_edges_cleaned <- MC2_salmon_edges %>%
-    mutate(arrivaldate =ymd(arrivaldate),
-         hscode = as.character(hscode))
-
-#11_fish type: shark
-MC2_shark_edges_cleaned <- MC2_shark_edges %>%
-    mutate(arrivaldate =ymd(arrivaldate),
-         hscode = as.character(hscode))
-
-#12_fish type: tuna
-MC2_tuna_edges_cleaned <- MC2_tuna_edges %>%
-    mutate(arrivaldate =ymd(arrivaldate),
-         hscode = as.character(hscode))
-```
-
 ::: {.callout-caution title="Important"}
 HS code, also known as The Harmonized System are alphanumeric codes used for classifying goods for international trade and customs purposes. In this exercise, the HS code does not correspond to the respective goods.
 :::
+
+The `!is.na()` functions help to check for non-missing values in the specified column. In this combined_nodes data frame, the ID only corresponds to either the shipping country or the receiving country. Therefore, it is further segregated into import and export.
+
+```{r}
+any(is.na(MC2_id_list))
+```
 
 Weights: Median = 2 , Mean = 22 , Min = 1, Max, 47134
 
@@ -516,7 +457,7 @@ MC2_2030_Mar_nodes$betweenness_centrality <-
   betweenness_centrality[as.character(MC2_2030_Mar_nodes$id)]
 
 #output for top results
-betweenness_centrality_tb <-head(sort(betweenness_centrality, decreasing=TRUE))
+head(sort(betweenness_centrality, decreasing=TRUE))
 
 ```
 
@@ -606,11 +547,13 @@ ggbetweenstats(data = MC2_2030_Mar_nodes,
 
 ```
 
-# Distribution of Median Weight by hscode and year
+# 5. Distribution of Median Weight
 
-A `treemap` displays hierarchical data as a set of nested rectangles, where each group is represented by an area that it proportional to its value. We would like to examine the distribution by **hscode** and **year.**
+#### [By hscode and year]{.underline}
 
-As per section 3.1, the `[devtools]` package have been loaded. Thereafter, we install the package found in github *(highlighted in green)* by using the code and loading the `d3treeR` package.
+A `treemap` displays hierarchical data as a set of nested rectangles, where each group is represented by an area that is proportional to its value. We would like to examine the distribution by **hscode** and **year.**
+
+As per section 3.1, the `[devtools]` package have been loaded. Thereafter, we install the package found in github *(#install_github)* and load the `[d3treeR]` package.
 
 ```{r}
 #install_github("timelyportfolio/d3treeR")
@@ -688,17 +631,77 @@ d3tree(it, rootname = "Distribution of hscode")
 
 -   As observed from top left to bottom right, `hscode '306170'` has the highest transactions count along with higher than average median weight.
 
--   HS code that start with `30` occupies a higher weightage than the combined of code. It is composed fo six digits and could be broken down into chapter/heading/subheading with two digits each. From the graph above, hscode `306170` and `304620` are rank top and sixth position.
+-   As observed from the treemap, `hscode '870323` has the darkest gradient in 2032. With reference to section 4.1, the transactions count did not increase. Thus, it would be ideal to observed the transactions of hscode 870323 in year 2032.
 
--   `hscode '870323` has the darkest gradient in 2032. As observed in section 4.1, the transactions count did not increase. Thus, it would be ideal to observed the transactions of `hscode 870323` in year 2032.
+-   HS code has a hierarchical model. It is composed fo six digits and could be broken down into chapter/heading/subheading with two digits each. As observed, hscode that starts with `30` occupies a higher weightage as well. From the graph above, hscode `306170` and `304620` are rank top and sixth position.
 
-## Network graph for Hscode (306170)
+### 5.1 Network graph for Hscode (306170)
 
 ```{r}
+#| code-fold: true
 
+#create edges df for transactions for hscode 306170
+MC2_306170_edges <- MC2_challenge_edges %>%
+  filter(hscode =="306170") %>%
+  group_by(source, target) %>%
+  summarize(weight = n()) %>%
+  filter(source !=target) %>%
+  filter(weight >103) %>% #keep ~300 rows 
+  rename(from = source, to = target) %>%
+  ungroup()
+
+#create nodes df for transactions from Mar 2030
+MC2_306170_nodes <- MC2_id_list_vis %>%
+  filter(id %in% MC2_306170_edges$from | id %in% MC2_306170_edges$to) %>%
+  distinct() 
+
+#create igraph object 
+g_hscode <- graph_from_data_frame(d=MC2_306170_edges, 
+                           vertices=MC2_306170_nodes, directed=TRUE) 
+
+#compute eigen centrality 
+ev_centrality <- eigen_centrality(g_hscode)$vector
+MC2_306170_nodes$eigen_centrality <- ev_centrality
+
+# define color palette
+num_color_groups <- 3
+color_palette <- colorRampPalette(brewer.pal
+                                  (num_color_groups, "RdYlBu"))(num_color_groups)
+
+# create a color scale based on the eigenvector values range 
+min_centrality <- min(MC2_306170_nodes$eigen_centrality, na.rm = TRUE)
+max_centrality <- max(MC2_306170_nodes$eigen_centrality, na.rm = TRUE)
+color_scale <- scales::rescale(MC2_306170_nodes$eigen_centrality, to = c(0, 1))
+
+# assign colors to the nodes based on eigenvector centrality
+MC2_306170_nodes$color <- color_palette[cut(color_scale, breaks = num_color_groups)]
+
+#add diverging palettes scheme to nodes based on degree centrality
+MC2_306170_nodes <- MC2_306170_nodes %>%
+  mutate(shape="dot", shadow=TRUE,  
+         title=trade_status, # hover for trade_status
+         label=label, # add labels on nodes
+         size=20, # set size of nodes
+         borderWidth=1, #set border width of nodes
+         color.background=colors[eigen_centrality], #set color for nodes
+         color.border="grey") #set color for border
+
+#plot network graph 
+visNetwork(MC2_306170_nodes, MC2_306170_edges, main ="Trade flow for
+           <br>hscode 361070 <br>") %>%
+  visIgraphLayout(layout = "layout_with_fr") %>%
+    visOptions(highlightNearest = TRUE,
+             nodesIdSelection = TRUE) %>%
+  visEdges(arrows = "to") %>% #indicate direction 
+  visLayout(randomSeed = 123) %>%
+  addFontAwesome(name = "font-awesome") %>% #add icon to network 
+  visInteraction(dragNodes = FALSE, dragView = TRUE, 
+                 zoomView = TRUE, navigationButtons = TRUE) #freeze network
 ```
 
-## Network graph for Hscode and year
+Eigenvector centrality measures the importance or influence of a node based on its connections to other highly central nodes. A high eigenvector centrality indicates an important/influential connection to other nodes. The blue nodes above could represents key players or market leader in the network.
+
+###        5.2 Network graph for Hscode and year
 
 ```{r}
 #| code-fold: true
@@ -746,29 +749,156 @@ visNetwork(MC2_2032_870323_nodes, MC2_2032_870323_edges, main ="Trade flow in 20
     visOptions(highlightNearest = TRUE,
              nodesIdSelection = TRUE,
              selectedBy = "degree_centrality") %>%
-  visLegend() %>%
   visEdges(arrows = "to") %>% #indicate direction 
   visLayout(randomSeed = 123) %>%
   addFontAwesome(name = "font-awesome") %>% #add icon to network 
-  visLegend() %>%
   visInteraction(dragNodes = FALSE, dragView = TRUE, 
                  zoomView = TRUE, navigationButtons = TRUE) #freeze network
 ```
 
-## Statistical Plot of HScode against Years
+###   5.3 Identifying hscode
+
+Using the set of predicted knowledge graph links from FishEye, we would like to examine which types it belongs to in the marine and fishing industries.
 
 ```{r}
 #| code-fold: true
-MC2_challenge_edges_hscode <- MC2_challenge_edges %>%
-  filter(hscode == "306170" | hscode == "950300" | hscode =="870899" |
-         hscode == "940360" |hscode == "611020")
+#| fig-width: 12
+#| fig-height: 6
+#| fig.show: hide
 
-ggbarstats(data = MC2_challenge_edges_hscode, 
-           x = hscode, y = year,
-           xlab= "Year", ylab = "hscode",
-           title = "Comparison of HScode across the Years",
-           type = "nonparametric", conf.level = 0.95
-           )
+# extract hscode that starts with 30
+start_code <- str_sub(combined_edges_cleaned$hscode, start = 1, end = 2)
+
+# filter for hs code that starts with 30 
+combined_edges_cleaned_30 <- combined_edges_cleaned %>%
+  filter(start_code == "30")
+
+# create df for total count of hscode
+combined_edges_cleaned_hscount <- combined_edges_cleaned_30 %>%
+  group_by(generated_by) %>%
+  summarise(hscount = n_distinct(hscode)) %>%
+  arrange(desc(hscount))
+
+#create df for total weightage by each fish type and hs code 
+combined_edges_cleaned_30 <- combined_edges_cleaned_30 %>%
+  group_by(generated_by, hscode) %>%
+  summarise(weight = n()) %>%
+  arrange(desc(weight))
+
+# combined both df through left join 
+combined_edges_cleaned_30hscount <- left_join(combined_edges_cleaned_30,
+                                              combined_edges_cleaned_hscount,
+                                              by = "generated_by")
+
+#treemap saved under '30hscount' object 
+hscount30 <- treemap(combined_edges_cleaned_30hscount,
+        index=c("generated_by","hscode"),
+        vSize="weight",
+        vColor="hscount",
+        type ="value",
+        algorithm = "pivotSize",
+        sortID = "weight",
+        palette="Blues",
+        border.lwds = "white"
+        )
+
+```
+
+```{r}
+d3tree(hscount30, rootname = "Distribution of fish types")
+```
+
+**Observations:**
+
+-   From the predicted knowledge graph links, Cod2 have the highest amount of transactions in chapter 30. *(hscode that begins with '30')*
+-   There are multiple hscode tagged to each fish types. However, this is an exception to Lichen, which only have 1 hscode - 300510. Salmon and cod2 have a lower count, while mackerel and catfish have 15 different hs code.
+-   Upon closer inspection, It has been observed that there are various hscode that are not comprehensive. The sub-header is missing. e.g. hscode in salmon and cod2 contains five digits wheras lichen have six digits.
+
+#### 5.3.1 Incomplete hscode 
+
+Extract source and target organizations who have incomplete hscode.
+
+```{r}
+#| code-fold: true
+
+#filter for organization with 5 digits hscode 
+combined_edges_cleaned_30hscount_new <- combined_edges_cleaned_30hscount %>%
+  filter(nchar(hscode) == 5) %>%
+  ungroup()
+
+#filter the main edges file with the filtered 5 digits hscode
+combined_edges_cleaned_filtered <- combined_edges_cleaned %>%
+  filter(hscode %in% combined_edges_cleaned_30hscount_new$hscode) %>%
+  ungroup()
+
+# combined both df through left join 
+combined_edges_cleaned_newedges <- left_join(combined_edges_cleaned_filtered,
+                          combined_edges_cleaned_30hscount_new,by = "hscode")
+
+# aggregate and retrieve top 20 rows with >=10 transactions 
+combined_edges_cleaned_newedgestt <- combined_edges_cleaned_newedges %>%
+  group_by(source,target,hscode) %>%
+  summarize(weight =n()) %>%
+  filter(source!=target) %>%
+  filter(weight >9) %>% 
+  arrange(desc(weight)) %>%
+  ungroup()
+
+# filter out the nodes in newedges 
+combined_nodes_filtered <- combined_nodes %>%
+  rename(label =id) %>%
+  filter(label %in% combined_edges_cleaned_newedgestt$source |
+           label %in% combined_edges_cleaned_newedgestt$target ) %>%
+  select(1) %>%
+  distinct() %>%
+  ungroup()
+
+#left join to get id of the nodes 
+combined_nodes_filtered_addid <- combined_nodes_filtered %>%
+  filter(label %in% MC2_id_list_vis$label) %>%
+  left_join(MC2_id_list_vis,by="label") %>%
+  relocate(id,label) %>%
+  rename(group = rcvcountry) %>%
+  ungroup()
+
+#add unknown to N/A in rcvcountry 
+combined_nodes_filtered_addid$group<- ifelse(is.na(combined_nodes_filtered_addid$group), "Unknown", combined_nodes_filtered_addid$group)
+
+#append by matching exporters to the importers (list of unknown)
+combined_edges_cleaned_newedges_test <- combined_edges_cleaned_newedges %>%
+ left_join(combined_nodes_filtered_addid, by = c("source" = "label")) %>%
+  rename(from = id) %>%
+ left_join(combined_nodes_filtered_addid, by = c("target" = "label")) %>%
+  rename(to = id) %>%
+  filter (!is.na(to)) %>%
+  group_by(from,to) %>%
+  summarise(weight = n()) %>%
+  filter (weight >9) %>%
+  ungroup()
+
+#output for dataframe using knitr:: kable
+kable(head(combined_nodes_filtered), "simple")
+```
+
+
+```{r}
+#| code-fold: true
+
+visNetwork(combined_nodes_filtered_addid, combined_edges_cleaned_newedges_test, main ="Top 30 source/targets 
+           <br>by receiving country<br>") %>%
+  visIgraphLayout(layout = "layout_with_fr") %>%
+    visOptions(highlightNearest = TRUE,
+             nodesIdSelection = TRUE,
+             selectedBy = "group") %>%
+  visLegend() %>%
+  visEdges(arrows = "to") %>% #indicate direction 
+  visLayout(randomSeed = 123) %>%
+  addFontAwesome(name = "font-awesome") %>% #add icon to network 
+  visNodes(shape = "icon", icon= list(code ="f21a", color = "#3B9AB2" )) %>% 
+  visLegend() %>%
+  visInteraction(dragNodes = FALSE, dragView = TRUE, 
+                 zoomView = TRUE, navigationButtons = TRUE) #freeze network
+
 ```
 
 ## Data Preparation for visNetwork
