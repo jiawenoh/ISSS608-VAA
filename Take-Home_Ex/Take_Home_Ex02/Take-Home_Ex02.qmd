@@ -2,8 +2,8 @@
 title: "Take Home Exercise 2"
 subtitle: " Mini Case 2 of Vast Challenge 2023"
 author: "Oh Jia Wen"
-date: "5/26/2023"
-date-modified: "5/26/2023"
+date: "5/29/2023"
+date-modified: "5/29/2023"
 execute: 
   echo: true
   eval: true
@@ -26,45 +26,75 @@ In this take-home exercise, temporal patterns for individual entries and between
 
 The trade data is stored in *mc2_challenge_graph.json* file with a time period of 7 years from the time period 2028 to 2024. It includes a bundles with 12 types of marine species, ranging from Carp, Shark, to Tuna.
 
-# 3. Data Preparation
+## 2.1 Metadata
+
++------------+------------------+-------------------------------------------------------------------------------+
+| Location   | Variables Name   | Description                                                                   |
++:===========+:=================+:==============================================================================+
+| Node       | id               | Name of the company that originated (or received) the shipment                |
++------------+------------------+-------------------------------------------------------------------------------+
+| Node       | shpcountry       | Country the company most often associated with when shipping                  |
++------------+------------------+-------------------------------------------------------------------------------+
+| Node       | rcvcountry       | Country the company most often associated with when receiving                 |
++------------+------------------+-------------------------------------------------------------------------------+
+| Node, Edge | dataset          | Always 'MC2                                                                   |
++------------+------------------+-------------------------------------------------------------------------------+
+| Edge       | arrivaldate      | Date the shipment arrived at port in YYYY-MM-DD format.                       |
++------------+------------------+-------------------------------------------------------------------------------+
+| Edge       | hscode           | Harmonized System code for the shipment.                                      |
++------------+------------------+-------------------------------------------------------------------------------+
+| Edge       | valueofgoods_omu | Customs-declared value of the total shipment, in Oceanus Monetary Units (OMU) |
++------------+------------------+-------------------------------------------------------------------------------+
+| Edge       | volumeteu        | The volume of the shipment in 'Twenty-foot equivalent units'                  |
++------------+------------------+-------------------------------------------------------------------------------+
+| Edge       | weightkg         | The weight of the shipment in kilograms                                       |
++------------+------------------+-------------------------------------------------------------------------------+
+| Edge       | type             | Always 'shipment' for MC2                                                     |
++------------+------------------+-------------------------------------------------------------------------------+
+| Edge       | generated_by     | Name of the program that generated the edge (only in bundles)                 |
++------------+------------------+-------------------------------------------------------------------------------+
+
+::: {.callout-caution title="Important"}
+HS code, also known as The Harmonized System are alphanumeric codes used for classifying goods for international trade and customs purposes. It composed of six digits and could be broken down into chapter/heading/subheading (two digits each).
+:::
+
+## 3. Data Preparation
 
 ## 3.1 Install R-packages
 
 Using p_load() of pacman package to load and install the following libraries:
 
--   `jsonlite` : To Import Data from JSON File into R
+-   `jsonlite` : To import data from JSON File into R
 
--   `lubridate` : To Convert Date and Time
+-   `lubridate` : To convert Date and Time
 
 -   `visNetwork`: For Network Visualization
 
 -   `tidyverse`: A collection of R packages use in everyday data analyses. It is able to support data science, data wrangling, and analysis.
 
--   `ggplot2`:By
-
 -   `hrbrthemes`: For Additional Themes, and Utilities for 'ggplot2' (might not use)
 
--   `heatmaply`:
+-   `heatmaply`: For creating Interactive Cluster Heatmaps
 
--   `treemap`:
+-   `treemap`: For viisualizing hierarchical data using nested rectangles
 
 -   `devtools`: For the installing for `d3treeR`
 
-`igraph`: for exploring the network
+-   `igraph`: For exploring the network
+
+-   `RColorBrewer`: For visualization. Contains ready-to-use color palettes
+
+-   `knitr`: For dynamic report generation
+
+-   `stringr`: For character manipulation.
 
 `ggstatsplot`: for creating graphics with details from statistical tests included and its plot
-
-`RColorBrewer`:
-
-`knitr`:
-
-`stringr`:
 
 `scales` : check at EOD
 
 ```{r}
 pacman :: p_load (jsonlite, lubridate, tidygraph, ggraph, visNetwork, tidyverse,
-                  igraph,ggplot2,heatmaply,hrbrthemes,scales,treemap,devtools,
+                  igraph,heatmaply,hrbrthemes,scales,treemap,devtools,
                   ggstatsplot,RColorBrewer, knitr,stringr)
 
 options(scipen = 999)
@@ -77,6 +107,8 @@ The JSON files will be imported into R with the use of `fromJSON` function from 
 ```{r}
 MC2_challenge <- fromJSON("data/mc2_challenge_graph.json")
 ```
+
+The bundles which consists of Carp, Catfish, Chub_Mackerel, Cod2, Herring, Lichen, Mackerel, Pollock, Salmon_wgl, Salmon, Shark and Tuna are imported.
 
 ```{r}
 #| code-fold: true
@@ -94,7 +126,9 @@ MC2_shark <- fromJSON("data/bundles/shark.json")
 MC2_tuna <- fromJSON("data/bundles/tuna.json")
 ```
 
-## 3.3 Create Tibble Dataframe
+## 3.3 Create Tibble Data frame
+
+As the imported data is in JSON format, we will use the `as_tibble` to create a tibble from data.
 
 ```{r}
 MC2_challenge_nodes <-as_tibble(MC2_challenge$nodes) %>%
@@ -103,6 +137,8 @@ MC2_challenge_edges <-as_tibble(MC2_challenge$links) %>%
   select(source,target,arrivaldate, hscode,valueofgoods_omu, 
          volumeteu, weightkg, valueofgoodsusd)
 ```
+
+Additionally, the columns have been re-shuffled for the bundles. We used `relocate` to revise the order. The column will start from source, to target, etc. By doing so, every fish types have the same sequence.
 
 ```{r}
 #| code-fold: true
@@ -180,37 +216,51 @@ MC2_tuna_edges <-as_tibble(MC2_tuna$links) %>%
   relocate(5,6,4,3)
 ```
 
-## 3.4 Concatenate Tibble Dataframe
+## 3.4 Concatenate Data frame from Bundles
 
-Among the 12 files, there are 3 data frames which have 7 variables whereas the rest have 9 variables. As such, `bind_rows()` - a function from the `dplyr` package within the `tidyverse` is used.
+After it has been converted to tibble data frame, the bundles are concatenated. Among the 12 files, there are 3 data frames which have 7 variables whereas the rest have 9 variables. As such, `bind_rows()` - a function from the `dplyr` package within the `tidyverse` is used.
+
+Moreover, the `knitr: kable()` function is used to display the results of the combined_edges.
 
 ```{r}
+#| code-fold: true
+
+# concatenante the edges 
 combined_edges <- bind_rows(MC2_carp_edges,MC2_chub_mackerel_edges,
                         MC2_cod2_edges,MC2_herring_edges,MC2_lichen_edges,
                         MC2_pollock_edges,MC2_salmon_wgl_edges,
                         MC2_salmon_edges,MC2_shark_edges, 
                         MC2_catfish_edges,MC2_mackerel_edges,MC2_tuna_edges)
-```
 
-::: callout-Tip
-Catfish, Mackerel, and Tuna have 7 variables while other fishes have 9 variables. It is better to concatenate with the use `blind_rows` instead of `rbind()` as the latter requires an exact match in the numbers of columns.
-:::
-
-```{r}
+# concatenate the nodes 
 combined_nodes <- bind_rows(MC2_carp_nodes,MC2_catfish_nodes,
                             MC2_chub_mackerel_nodes,MC2_cod2_nodes,
                             MC2_herring_nodes, MC2_lichen_nodes,
                             MC2_mackerel_nodes, MC2_pollock_nodes, 
                             MC2_salmon_wgl_nodes,MC2_salmon_nodes,
                             MC2_shark_nodes, MC2_tuna_nodes)
+
+#output for dataframe using knitr:: kable
+kable(head(combined_edges), "simple")
+
 ```
 
-## 3.6 Creating a Master ID data frame
+::: callout-Tip
+Catfish, Mackerel, and Tuna have 7 variables while other fishes have 9 variables. It is better to concatenate with the use of `blind_rows` instead of `rbind()` as the latter requires an exact match in the numbers of columns.
+:::
+
+## 3.5 Creating a Master ID data frame
+
+Moving on, we would like to create a master ID data frame from the knowledge graph. It is unclear whether there are any missing source or target that are not reflected in the `MC_challenge_nodes`.
+
+The code chunk below will identify if there are any missing id. If it exists in either columns, it will be appended back to the `MC2_challenge_nodes` data frame. A new column called `trade_status` is created to help identify the trade status of the company. `!is.na()` functions is used to check for values. If it is N/A in both columns, the trade status will be updated as Unknown.
+
+Likewise, we rename the `id` to `label` and create an id column through `mutate` and `nrow` which becomes an unique identifier to the `label`.
 
 ```{r}
 #| code-fold: true
 
-
+#create master id dataframe and add new column for trade_status 
 MC2_id_list <- MC2_challenge_nodes %>%
   rename(label = id) %>%
   mutate(
@@ -221,6 +271,7 @@ MC2_id_list <- MC2_challenge_nodes %>%
     is.na(shpcountry) | is.na(rcvcountry) ~"Unknown"
   )) 
 
+#select the columns
 MC2_id_list <- MC2_id_list %>%
   select(label,trade_status,shpcountry, rcvcountry)
 
@@ -261,15 +312,25 @@ MC2_challenge_nodes <- MC2_challenge_nodes %>%
   rbind(ID_target) %>%
   rbind(ID_source)
 
+
+```
+
+As observed, all the companies are well stored in the `MC2_challenge_nodes` data frame.
+
+```{r}
 #output of ID nodes that are not in Master list
 nrow(ID_source)
 nrow(ID_target)
 ```
 
-There are 0 companies on the `target` column that are not included in the list. Meanwhile, there are no data available in the `source` column that are not in the list.
-
-
 ## 3.5 Data Wrangling
+
+After concatenating and creating a master ID data frame, adjustments are made to rectify the following:
+
+1.  arrivaldate is not in `date` format. \[Revised through `lubridate` in the `ymd` format\]
+2.  hscode is not in `chr` format. \[Revised from `int`\]
+3.  date is not comprehensive. \[Create new column called year\]
+4.  edge data frame does not have corresponding id to source and target. \[Rename source and target to sourcelabel and targetlabel respectively. Thereafter, Left_join with master ID `MC2_id_list_vis` data frame to get the corresponding ID\]
 
 ```{r}
 #| code-fold: true
@@ -288,10 +349,8 @@ MC2_challenge_edges <- MC2_challenge_edges %>%
   left_join(MC2_id_list_vis, by = c("targetlabel" = "label")) %>%
   rename(target = id) %>%
   relocate(10,14)
-  
-```
 
-```{r}
+#revised the same approach to the bundles 
 combined_edges_cleaned<- combined_edges %>%
   mutate(arrivaldate =ymd(arrivaldate),
          hscode = as.character(hscode))
@@ -299,61 +358,9 @@ combined_edges_cleaned<- combined_edges %>%
 combined_edges_cleaned
 ```
 
-::: {.callout-caution title="Important"}
-HS code, also known as The Harmonized System are alphanumeric codes used for classifying goods for international trade and customs purposes. In this exercise, the HS code does not correspond to the respective goods.
-:::
-
-The `!is.na()` functions help to check for non-missing values in the specified column. In this combined_nodes data frame, the ID only corresponds to either the shipping country or the receiving country. Therefore, it is further segregated into import and export.
-
-```{r}
-any(is.na(MC2_id_list))
-```
-
-Weights: Median = 2 , Mean = 22 , Min = 1, Max, 47134
-
-```{r}
-combined_edges_rev <- combined_edges %>%
-  group_by(source,target,generated_by) %>%
-  summarize(weight = n()) %>%
-  filter( source!=target) %>%
-  filter(weight >1) %>%
-  ungroup ()
-```
-
-```{r}
-combined_nodes_rev <-MC2_id_list %>%
-  filter(label %in% combined_edges_rev$source | 
-           label %in% combined_edges_rev$target)
-```
-
-```{r}
-MC2_import <- tbl_graph(nodes = combined_nodes_rev,
-                        edges = combined_edges_rev,
-                        directed = TRUE)
-
-MC2_import
-```
-
-```{r}
-MC2_import %>%
-  activate(edges) %>%
-  arrange(desc(weight))
-```
-
-```{r}
-set_graph_style()
-
-fishes <- ggraph(MC2_import, layout = "nicely") +
-  geom_node_point(aes(color = trade_status), size =2) +
-  scale_edge_width(range =c(0.1,5)) +
-  geom_edge_link(aes(width = weight, color = generated_by), alpha = 0.2)
-
-fishes
-```
-
 # 4. Distribution of transactions
 
-In this section, we will create plots with interactivity to study and explore the data from the knowledge graph. The plots are created with the use of `heatmaply`,`visNetwork`, and `igraph`packages.
+In this section, we will create plots with interactivity to study and explore the data from the knowledge graph. The plots are created with the use of `heatmaply`, `visNetwork`, and `igraph`packages.
 
 ## 4.1 Number of Transactions by Year and Month
 
@@ -400,11 +407,11 @@ heatmaply(heatmap_data, dendrogram = "none",
 
 -   On a yearly basis, the volume of trade is decreasing at a decreasing rate. It peaks around 2028-2030 with the highest time period, occurring in 2030.
 
--   March seems to be a period with low transactions. However, it reaches a record on Mar 2030, with the highest volume of transactions in the seven years time period.
+-   March seems to be a period with low transactions. However, it reaches a record in Mar 2030, with the highest volume of transactions in the seven years time period.
 
-## 4.2 Trade flow of Organizations with above 30 transactions in Mar 2023
+## 4.2 Trade flow of Company with above 30 transactions in Mar 2023
 
-Noting that Mar 2030 has a record high volume, we would like to examine the trade flow of the organizations in this time frame. We start off by creating a new edges and nodes data frame. The edges are created by aggregating it from the the master edges file `MC2_challenge_edges`.
+Noting that Mar 2030 has a record of high volume, we would like to examine the trade flow of the Company in this time frame. We start off by creating a new edges and nodes data frame. The edges are created by aggregating it from the the master edges file `MC2_challenge_edges`.
 
 We will be using the `[dpylr]` package to create **`MC2_2030_Mar_edges`**:
 
@@ -489,7 +496,7 @@ MC2_2030_Mar_nodes <- MC2_2030_Mar_nodes %>%
 
 #plot network graph 
 visNetwork(MC2_2030_Mar_nodes, MC2_2030_Mar_edges, 
-            main ="Trade flow of Organizations  
+            main ="Trade flow of Company  
            <br>with above 30 transactions in Mar 2023<br>") %>%
   visIgraphLayout(layout = "layout_with_fr") %>%
   visOptions(highlightNearest = TRUE,
@@ -530,9 +537,9 @@ The default setting as as follows:
 
 **Observations:**
 
--   Organizations who received goods (imports) have higher degree of centrality. hai dan Corporation Wharf has the highest degree of 19.
+-   Nodes in blue have higher degree of centrality. hai dan Corporation Wharf has the highest degree of 19, followed by Saltwater Supreme OAO forwarding with a score of 12.
 
--   Majority of the organizations have low degree of centrality.
+-   Majority of the Company have low degree of centrality. We identified 4 clusters who have business relationship with more than three companies with low degree of centrality( Orange).
 
 ## Statistical Plot of Degree Centrality against Trade Status
 
@@ -633,7 +640,7 @@ d3tree(it, rootname = "Distribution of hscode")
 
 -   As observed from the treemap, `hscode '870323` has the darkest gradient in 2032. With reference to section 4.1, the transactions count did not increase. Thus, it would be ideal to observed the transactions of hscode 870323 in year 2032.
 
--   HS code has a hierarchical model. It is composed fo six digits and could be broken down into chapter/heading/subheading with two digits each. As observed, hscode that starts with `30` occupies a higher weightage as well. From the graph above, hscode `306170` and `304620` are rank top and sixth position.
+-   HS code has a hierarchical model. It is composed of six digits and could be broken down into chapter/heading/subheading with two digits each. As observed, hscode that starts with `30` occupies a higher weightage as well. From the graph above, hscode `306170` and `304620` are rank in the first and sixth position.
 
 ### 5.1 Network graph for Hscode (306170)
 
@@ -701,7 +708,7 @@ visNetwork(MC2_306170_nodes, MC2_306170_edges, main ="Trade flow for
 
 Eigenvector centrality measures the importance or influence of a node based on its connections to other highly central nodes. A high eigenvector centrality indicates an important/influential connection to other nodes. The blue nodes above could represents key players or market leader in the network.
 
-###        5.2 Network graph for Hscode and year
+### 5.2 Network graph for Hscode and year
 
 ```{r}
 #| code-fold: true
@@ -756,7 +763,7 @@ visNetwork(MC2_2032_870323_nodes, MC2_2032_870323_edges, main ="Trade flow in 20
                  zoomView = TRUE, navigationButtons = TRUE) #freeze network
 ```
 
-###   5.3 Identifying hscode
+### 5.3 Identifying hscode
 
 Using the set of predicted knowledge graph links from FishEye, we would like to examine which types it belongs to in the marine and fishing industries.
 
@@ -814,9 +821,9 @@ d3tree(hscount30, rootname = "Distribution of fish types")
 -   There are multiple hscode tagged to each fish types. However, this is an exception to Lichen, which only have 1 hscode - 300510. Salmon and cod2 have a lower count, while mackerel and catfish have 15 different hs code.
 -   Upon closer inspection, It has been observed that there are various hscode that are not comprehensive. The sub-header is missing. e.g. hscode in salmon and cod2 contains five digits wheras lichen have six digits.
 
-#### 5.3.1 Incomplete hscode 
+#### 5.3.1 Incomplete hscode
 
-Extract source and target organizations who have incomplete hscode.
+Extract source and target Company who have incomplete hscode.
 
 ```{r}
 #| code-fold: true
@@ -880,12 +887,11 @@ combined_edges_cleaned_newedges_test <- combined_edges_cleaned_newedges %>%
 kable(head(combined_nodes_filtered), "simple")
 ```
 
-
 ```{r}
 #| code-fold: true
 
-visNetwork(combined_nodes_filtered_addid, combined_edges_cleaned_newedges_test, main ="Top 30 source/targets 
-           <br>by receiving country<br>") %>%
+visNetwork(combined_nodes_filtered_addid, combined_edges_cleaned_newedges_test, main ="Companies with inaccurate hs code 
+           <br>and >10 transactions <br>") %>%
   visIgraphLayout(layout = "layout_with_fr") %>%
     visOptions(highlightNearest = TRUE,
              nodesIdSelection = TRUE,
@@ -899,6 +905,17 @@ visNetwork(combined_nodes_filtered_addid, combined_edges_cleaned_newedges_test, 
   visInteraction(dragNodes = FALSE, dragView = TRUE, 
                  zoomView = TRUE, navigationButtons = TRUE) #freeze network
 
+```
+
+#### 5.3.2 Incomplete Hscode in Edges
+
+```{r}
+#filter for organization with 5 digits hscode
+MC2_challenge_edges_check <- MC2_challenge_edges %>%
+  filter(nchar(hscode) == 5) %>%
+  ungroup()
+
+any(MC2_challenge_edges_check)
 ```
 
 ## Data Preparation for visNetwork
@@ -966,7 +983,11 @@ visNetwork(check_id_vis, MC2_agg_rev, main ="Top 30 source/targets
                  zoomView = TRUE, navigationButtons = TRUE) #freeze network
 ```
 
-## filter unknown status
+## 7. Companies with Unknown Trade Status
+
+As seen in the Metadata, the shpcountry and rcvcountry refers to the country that the company are most often associated with. Therefore, a newly founded company might have an unknown status. This might be applicable for those who want to avoid detection and start up a new company under a different name. Henceforth, we would to examine the group with unknown trade status.
+
+The code chunks below filters for `unknown` in `trade_status` in the receiver end and filter for `Exporters` before doing a `left_join`.
 
 ```{r}
 #| code-fold: true
@@ -999,7 +1020,7 @@ unknownMC2_revnodes <- MC2_id_list_vis %>%
   rename(group = trade_status)
 ```
 
-Incorporate icons for node sharps from Font Awesome. Add in `addFontAwesome()` function and modify the shape and icon arguments to `VisNodes()`. Moreover, custom navigation have been included with the feature to zoomView, dragView.
+Similarly, `visNetwork` is used to plot the plot the interactive network graph with the `Fruchterman and Reingold` layout. We includes `addFontAwesome()` function to modify the color through `visGroups`. Custom navigation have been included with the feature to zoom and view, drag and view.
 
 ```{r}
 #| code-fold: true
@@ -1022,9 +1043,39 @@ visNetwork(unknownMC2_revnodes, unknownMC2,
                  zoomView = TRUE, navigationButtons = TRUE) #freeze network
 ```
 
-Based on the network above, there are 3 companies who supply to more than 1 unknown organization.
+Based on the network above, two companies are identified to ship to a receiver with unknown origin.
 
-\~Hai Dan Corporation Wharf (deliver to 5 Unknown Status) \~Sailors and Surfers Incorporated Enterprises (deliver to 3 Unknown Status) \~Mar del Este CJSC (deliver to 3 Unknown Status )
++----------------------------------------------+--------------------------------------+
+| Shipper                                      | Receiver                             |
++==============================================+======================================+
+| hǎi dǎn Corporation Wharf                    | SouthSeafood Express Corp            |
+|                                              |                                      |
+|                                              | Maacama Ocean Worldwide LLC          |
+|                                              |                                      |
+|                                              | OranjestadCreek Express Sagl         |
+|                                              |                                      |
+|                                              | SavanetaCreek Solutions NV           |
+|                                              |                                      |
+|                                              | HomabayMarine Carriers N.V.          |
++----------------------------------------------+--------------------------------------+
+| Sailors and Surfers Incorporated Enterprises | SavanetaCreek Solutions NV           |
+|                                              |                                      |
+|                                              | SumacAmerica Transport GmbH & Co. KG |
+|                                              |                                      |
+|                                              | 8.Marine United AG                   |
++----------------------------------------------+--------------------------------------+
+
+```{r}
+unknownMC2_filteredlist <- MC2_challenge_edges %>%
+  filter(sourcelabel =="hǎi dǎn Corporation Wharf" | sourcelabel == "Sailors and Surfers Incorporated Enterprises") %>%
+  filter(targetlabel == "SouthSeafood Express Corp" | 
+           targetlabel == "Maacama Ocean Worldwide LLC" |
+           targetlabel =="OranjestadCreek Express Sagl" |
+           targetlabel == "SavanetaCreek Solutions NV" | 
+           targetlabel == "HomabayMarine Carriers N.V." |
+           targetlabel == "SumacAmerica Transport GmbH & Co. KG" |
+           targetlabel == "8.Marine United AG")
+```
 
 # filter for companies with duplicated entries
 
