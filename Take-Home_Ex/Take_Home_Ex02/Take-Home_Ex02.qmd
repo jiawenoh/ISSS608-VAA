@@ -2,8 +2,8 @@
 title: "Take Home Exercise 2"
 subtitle: " Mini Case 2 of Vast Challenge 2023"
 author: "Oh Jia Wen"
-date: "5/29/2023"
-date-modified: "5/29/2023"
+date: "5/31/2023"
+date-modified: "5/31/2023"
 execute: 
   echo: true
   eval: true
@@ -14,17 +14,15 @@ execute:
 
 FishEye International is collaborating with the country of Oceanus to identify companies who could potentially engaged in illegal, unreported, and unregulated (IUU) fishing. FishEye has transformed import/export data into a knowledge graph.
 
-The country of Oceanus has sought FishEye International's help in identifying companies possibly engaged in illegal, unreported, and unregulated (IUU) fishing.
-
-With reference to [Mini-Challenge 2](https://vast-challenge.github.io/2023/MC2.html) of [VAST Challenge 2023](https://vast-challenge.github.io/2023/) and by using appropriate **static and interactive statistical graphics** methods, you are required to help FishEye identify companies that may be engaged in illegal fishing?
+The country of Oceanus has sought FishEye International's help in identifying companies possibly engaged in illegal, unreported, and unregulated (IUU) fishing. 12 groups of link suggestions with various fish types are used to reason on the knowledge graph.
 
 ## 1.1 The Task
 
-In this take-home exercise, temporal patterns for individual entries and between entities are identified using the knowledge graph FishEye created from trade records. It categorizes the type of business relationship patterns and possibly, identify companies that fit a pattern of illegal fishing.
+In this take-home exercise, temporal patterns for individual entries and between entities are identified using the knowledge graph FishEye created from trade records. It categorizes the type of business relationship patterns. In addition, we evaluate the sets of predicted knowledge graph links (Bundles) to determine which set is more reliable in completing the graph.
 
 # 2. Datasets
 
-The trade data is stored in *mc2_challenge_graph.json* file with a time period of 7 years from the time period 2028 to 2024. It includes a bundles with 12 types of marine species, ranging from Carp, Shark, to Tuna.
+The trade data is stored in *`mc2_challenge_graph.json`* file with a time period of 7 years from the time period 2028 to 2024. It includes a bundles with 12 types of marine species, ranging from Carp, Shark, to Tuna.
 
 ## 2.1 Metadata
 
@@ -54,11 +52,11 @@ The trade data is stored in *mc2_challenge_graph.json* file with a time period o
 | Edge       | generated_by     | Name of the program that generated the edge (only in bundles)                 |
 +------------+------------------+-------------------------------------------------------------------------------+
 
-::: {.callout-caution title="Important"}
+::: {.callout-note title="Important"}
 HS code, also known as The Harmonized System are alphanumeric codes used for classifying goods for international trade and customs purposes. It composed of six digits and could be broken down into chapter/heading/subheading (two digits each).
 :::
 
-## 3. Data Preparation
+# 3. Data Preparation
 
 ## 3.1 Install R-packages
 
@@ -318,6 +316,7 @@ MC2_challenge_nodes <- MC2_challenge_nodes %>%
 As observed, all the companies are well stored in the `MC2_challenge_nodes` data frame.
 
 ```{r}
+
 #output of ID nodes that are not in Master list
 nrow(ID_source)
 nrow(ID_target)
@@ -642,7 +641,11 @@ d3tree(it, rootname = "Distribution of hscode")
 
 -   HS code has a hierarchical model. It is composed of six digits and could be broken down into chapter/heading/subheading with two digits each. As observed, hscode that starts with `30` occupies a higher weightage as well. From the graph above, hscode `306170` and `304620` are rank in the first and sixth position.
 
-### 5.1 Network graph for Hscode (306170)
+### 5.1 Trade flow for Hscode 306170
+
+In this section, we will be looking into the trade flow of hscode 306170 with the use of Eigenvector centrality. It measures the importance or influence of a node based on its connections to other highly central nodes.
+
+After using similar approach as section 4.2, we retrieve the top 300 rows and create a color scale based on the range of Eigenvector. A high Eigenvector centrality indicates an important/influential connection to other nodes. The blue nodes below represents key players or market leader in the network.
 
 ```{r}
 #| code-fold: true
@@ -694,8 +697,9 @@ MC2_306170_nodes <- MC2_306170_nodes %>%
          color.border="grey") #set color for border
 
 #plot network graph 
-visNetwork(MC2_306170_nodes, MC2_306170_edges, main ="Trade flow for
-           <br>hscode 361070 <br>") %>%
+visNetwork(MC2_306170_nodes, MC2_306170_edges, 
+main ="Trade flow of top 300 transactions
+           <br> for hscode 361070<br>") %>%
   visIgraphLayout(layout = "layout_with_fr") %>%
     visOptions(highlightNearest = TRUE,
              nodesIdSelection = TRUE) %>%
@@ -706,9 +710,13 @@ visNetwork(MC2_306170_nodes, MC2_306170_edges, main ="Trade flow for
                  zoomView = TRUE, navigationButtons = TRUE) #freeze network
 ```
 
-Eigenvector centrality measures the importance or influence of a node based on its connections to other highly central nodes. A high eigenvector centrality indicates an important/influential connection to other nodes. The blue nodes above could represents key players or market leader in the network.
+**Observations:**
 
-### 5.2 Network graph for Hscode and year
+-   As observed, there are three key opinion leaders and three sub-leaders in the network.
+
+### 5.2 Trade flow for Hscode 873023 in year 2032
+
+In this section, we will be looking into the trade flow of hscode 873023 in year 2032. There is a spike increase in median_weight. It will be measured with Degree Centrality as it helps to identify node who has the greatest interaction. Moreover, we color the node because on the values. The node with the greatest value is in blue, followed by yellow, then orange.
 
 ```{r}
 #| code-fold: true
@@ -763,9 +771,13 @@ visNetwork(MC2_2032_870323_nodes, MC2_2032_870323_edges, main ="Trade flow in 20
                  zoomView = TRUE, navigationButtons = TRUE) #freeze network
 ```
 
-### 5.3 Identifying hscode
+**Observations:**
 
-Using the set of predicted knowledge graph links from FishEye, we would like to examine which types it belongs to in the marine and fishing industries.
+-   As observed, there are three key opinion leaders and three sub-leaders in the network.
+
+### 5.3 Examining Chapter 30 Hscode 
+
+Among the 17 hscode identified in the treemap, we noticed that there are two codes that belongs to Chapter 30. In terms of volume, `306170` and `304620` are ranked first and sixth respectively. Therefore, we would like to match with the set of predicted knowledge graph links from FishEye to determine if we would get any insight.
 
 ```{r}
 #| code-fold: true
@@ -812,16 +824,16 @@ hscount30 <- treemap(combined_edges_cleaned_30hscount,
 ```
 
 ```{r}
-d3tree(hscount30, rootname = "Distribution of fish types")
+d3tree(hscount30, rootname = "Distribution based on generated program")
 ```
 
 **Observations:**
 
--   From the predicted knowledge graph links, Cod2 have the highest amount of transactions in chapter 30. *(hscode that begins with '30')*
+-   From the predicted knowledge graph links, Cod2 program has the highest amount of transactions followed by salmon.
 -   There are multiple hscode tagged to each fish types. However, this is an exception to Lichen, which only have 1 hscode - 300510. Salmon and cod2 have a lower count, while mackerel and catfish have 15 different hs code.
 -   Upon closer inspection, It has been observed that there are various hscode that are not comprehensive. The sub-header is missing. e.g. hscode in salmon and cod2 contains five digits wheras lichen have six digits.
 
-#### 5.3.1 Incomplete hscode
+#### 5.3.1 Structure of Hscode 
 
 Extract source and target Company who have incomplete hscode.
 
@@ -884,7 +896,7 @@ combined_edges_cleaned_newedges_test <- combined_edges_cleaned_newedges %>%
   ungroup()
 
 #output for dataframe using knitr:: kable
-kable(head(combined_nodes_filtered), "simple")
+kable(combined_nodes_filtered, "simple")
 ```
 
 ```{r}
