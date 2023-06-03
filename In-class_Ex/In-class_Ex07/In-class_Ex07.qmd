@@ -1,0 +1,55 @@
+---
+title: "In-Class Exercise 7"
+author: "Oh Jia Wen"
+date: 6/3/2023
+date-modified: 6/3/2023
+execute: 
+  echo: true
+  eval: true
+  warning: false
+---
+
+# Getting started
+
+1.  Using p_load() of pacman package to load the required libraries
+
+```{r}
+pacman::p_load(ggHoriPlot, ggthemes, tidyverse)
+```
+
+2.  Importing data
+
+```{r}
+averp <- read_csv("data/AVERP.csv") %>%
+  mutate(`Date` = dmy(`Date`)) #to overwrite data in case system differs
+```
+
+# 1. Plotting the horizon graph 
+
+```{r}
+#| fig-height: 12 
+#| fig.width: 6
+
+averp %>% 
+  filter(Date >= "2018-01-01") %>%
+  ggplot() +
+  geom_horizon(aes(x = Date, y=Values), 
+               origin = "midpoint", 
+               horizonscale = 6)+
+  facet_grid(`Consumer Items`~.) +
+    theme_few() +
+  scale_fill_hcl(palette = 'RdBu') + 
+  #everything from above will give you the horizon graph then you tidy it up
+  theme(panel.spacing.y=unit(0, "lines"), strip.text.y = element_text(
+    size = 4, angle = 0, hjust = 0),   #trial and error for best fit 
+    legend.position = 'none',
+    axis.text.y = element_blank(),
+    axis.text.x = element_text(size=6),
+    axis.title.y = element_blank(),
+    axis.title.x = element_blank(),
+    axis.ticks.y = element_blank(),
+    panel.border = element_blank()
+    ) +
+    scale_x_date(expand=c(0,0), date_breaks = "3 month", date_labels = "%b%y") +
+  ggtitle('Average Retail Prices of Selected Consumer Items (Jan 2018 to Dec 2022)')
+```

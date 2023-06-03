@@ -1,0 +1,36 @@
+---
+title: "Take Home Exercise 3"
+subtitle: " Mini Case 3 of Vast Challenge 2023"
+author: "Oh Jia Wen"
+date: "6/4/2023"
+date-modified: "6/4/2023"
+execute: 
+  echo: true
+  eval: true
+  warning: false
+---
+
+# 1. OVERVIEW
+
+## 1.1 The Task
+
+# 2. Datasets
+
+# 3. Data Preparation
+
+## 3.1 Install R-packages
+
+Using p_load() of pacman package to load and install the following libraries:
+
+```{r}
+pacman::p_load(jsonlite, tidygraph, ggraph,visNetwork, graphlayouts,
+               ggforce, tidytext, tidyverse)
+```
+
+## 3.2 Importing Data
+
+Importing JSON file by using jsonlite package.
+
+```{r}
+MC3_challenge <- fromJSON("data/MC3.json")
+```

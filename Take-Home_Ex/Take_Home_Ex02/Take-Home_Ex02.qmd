@@ -2,8 +2,8 @@
 title: "Take Home Exercise 2"
 subtitle: " Mini Case 2 of Vast Challenge 2023"
 author: "Oh Jia Wen"
-date: "5/31/2023"
-date-modified: "5/31/2023"
+date: "6/3/2023"
+date-modified: "6/3/2023"
 execute: 
   echo: true
   eval: true
@@ -18,7 +18,7 @@ The country of Oceanus has sought FishEye International's help in identifying co
 
 ## 1.1 The Task
 
-In this take-home exercise, temporal patterns for individual entries and between entities are identified using the knowledge graph FishEye created from trade records. It categorizes the type of business relationship patterns. In addition, we evaluate the sets of predicted knowledge graph links (Bundles) to determine which set is more reliable in completing the graph.
+In this take-home exercise, temporal patterns for individual entries and between entities are identified using the knowledge graph FishEye created from trade records. In addition, we evaluate the sets of predicted knowledge graph links (Bundles) to determine which set is more reliable in completing the graph.
 
 # 2. Datasets
 
@@ -86,6 +86,8 @@ Using p_load() of pacman package to load and install the following libraries:
 
 -   `stringr`: For character manipulation.
 
+-   `ggiraph`:
+
 `ggstatsplot`: for creating graphics with details from statistical tests included and its plot
 
 `scales` : check at EOD
@@ -93,7 +95,7 @@ Using p_load() of pacman package to load and install the following libraries:
 ```{r}
 pacman :: p_load (jsonlite, lubridate, tidygraph, ggraph, visNetwork, tidyverse,
                   igraph,heatmaply,hrbrthemes,scales,treemap,devtools,
-                  ggstatsplot,RColorBrewer, knitr,stringr)
+                  ggstatsplot,RColorBrewer, knitr,stringr,ggiraph)
 
 options(scipen = 999)
 ```
@@ -450,7 +452,7 @@ MC2_2030_Mar_nodes <- MC2_id_list_vis %>%
 
 ```
 
-In the code chunk below, we compute the centrality between the nodes, by using the `graph_from_data_frame` function from the `[igraph]` package. As seen from the output below, the top row represents the ID of the organization while the bottom row represents their score. Given that the result of the betweenness centrality is not significant, we will would look into the degree centrality.
+In the code chunk below, we compute the centrality between the nodes, by using the `graph_from_data_frame` function from the `[igraph]` package. As seen from the output below, the top row represents the ID of the companies while the bottom row represents their score. Given that the result of the betweenness centrality is not significant, we will would look into the degree centrality.
 
 ```{r}
 #create igraph object 
@@ -557,7 +559,7 @@ ggbetweenstats(data = MC2_2030_Mar_nodes,
 
 #### [By hscode and year]{.underline}
 
-A `treemap` displays hierarchical data as a set of nested rectangles, where each group is represented by an area that is proportional to its value. We would like to examine the distribution by **hscode** and **year.**
+A `treemap` displays hierarchical data as a set of nested rectangles, where each group is represented by an area that is proportional to its value. We would like to examine the distribution by **hscode** and **year** of the **median weight.** Based on median weight, we will be able to identify companies who over fish.
 
 As per section 3.1, the `[devtools]` package have been loaded. Thereafter, we install the package found in github *(#install_github)* and load the `[d3treeR]` package.
 
@@ -775,9 +777,9 @@ visNetwork(MC2_2032_870323_nodes, MC2_2032_870323_edges, main ="Trade flow in 20
 
 -   As observed, there are three key opinion leaders and three sub-leaders in the network.
 
-### 5.3 Examining Chapter 30 Hscode 
+### 5.3 Examining Chapter 30 Hscode
 
-Among the 17 hscode identified in the treemap, we noticed that there are two codes that belongs to Chapter 30. In terms of volume, `306170` and `304620` are ranked first and sixth respectively. Therefore, we would like to match with the set of predicted knowledge graph links from FishEye to determine if we would get any insight.
+Among the 17 hscode identified in the treemap, we noticed that there are two codes that belongs to Chapter 30. In terms of volume, `306170` and `304620` are ranked first and sixth respectively. Therefore, we would like to match with the set of predicted knowledge graph links from FishEye to determine if we would get any insight. Interestingly, this chapter belongs to the category of Fish.
 
 ```{r}
 #| code-fold: true
@@ -833,14 +835,14 @@ d3tree(hscount30, rootname = "Distribution based on generated program")
 -   There are multiple hscode tagged to each fish types. However, this is an exception to Lichen, which only have 1 hscode - 300510. Salmon and cod2 have a lower count, while mackerel and catfish have 15 different hs code.
 -   Upon closer inspection, It has been observed that there are various hscode that are not comprehensive. The sub-header is missing. e.g. hscode in salmon and cod2 contains five digits wheras lichen have six digits.
 
-#### 5.3.1 Structure of Hscode 
+#### 5.3.1 Structure of Hscode
 
-Extract source and target Company who have incomplete hscode.
+Noting that the hscode in the bundles are not comprehensive, we would like to examine the list of companies who have incomplete hscode.
 
 ```{r}
 #| code-fold: true
 
-#filter for organization with 5 digits hscode 
+#filter for companies with 5 digits hscode 
 combined_edges_cleaned_30hscount_new <- combined_edges_cleaned_30hscount %>%
   filter(nchar(hscode) == 5) %>%
   ungroup()
@@ -911,8 +913,6 @@ visNetwork(combined_nodes_filtered_addid, combined_edges_cleaned_newedges_test, 
   visLegend() %>%
   visEdges(arrows = "to") %>% #indicate direction 
   visLayout(randomSeed = 123) %>%
-  addFontAwesome(name = "font-awesome") %>% #add icon to network 
-  visNodes(shape = "icon", icon= list(code ="f21a", color = "#3B9AB2" )) %>% 
   visLegend() %>%
   visInteraction(dragNodes = FALSE, dragView = TRUE, 
                  zoomView = TRUE, navigationButtons = TRUE) #freeze network
@@ -921,14 +921,87 @@ visNetwork(combined_nodes_filtered_addid, combined_edges_cleaned_newedges_test, 
 
 #### 5.3.2 Incomplete Hscode in Edges
 
+Notably, we did a quick check on the hscode in `MC2_challenge_edges`. From the code chunk below, we found out that all our transactions in the knowledge graph contain six digits hscode. As such, we will eliminate bundles with inaccurate hscode.
+
 ```{r}
-#filter for organization with 5 digits hscode
+#filter for companies with 5 digits hscode
 MC2_challenge_edges_check <- MC2_challenge_edges %>%
   filter(nchar(hscode) == 5) %>%
   ungroup()
 
 any(MC2_challenge_edges_check)
 ```
+
+#### 5.3.3 Accuracy of Hscode 
+
+Noting that [chapter 30]{.underline} hscode does not include `Shark`, we will examine the accuracy of hscode in this sub-section by looking at the completion of the hscode in the following steps:
+
+-   Filter for companies with 5 digits hs code, 6 digits hs code seperately
+
+-   Aggregate the two data frame by the program (generated_by) and count the occurrence
+
+-   Create new columns to add the hscode status (Complete for hscode with 6 digits, Incomplete for hscode with 5 digits)
+
+-   Combined both data frame through `rbind` since there is an exact match in the number of columns.
+
+-   Plot the interactive stacked bar chart with `plot_ly()`
+
+```{r}
+#| code-fold: true
+
+#filter for companies with 6 digits hscode 
+combined_edges_cleaned6 <- combined_edges_cleaned %>%
+  filter(nchar(hscode) == 6) %>%
+  ungroup()
+
+#filter for companies  with 5 digits hscode
+combined_edges_cleaned5 <- combined_edges_cleaned %>%
+  filter(nchar(hscode) == 5) %>%
+  ungroup()
+
+#aggregate for program with 5digits hscode 
+count5 <- combined_edges_cleaned5 %>%
+  group_by(generated_by) %>%
+  summarize(count = n()) %>%
+  ungroup ()
+
+#aggregrate for program with 6 digits hscode 
+count6 <- combined_edges_cleaned6 %>%
+  group_by(generated_by) %>%
+  summarize(count = n()) %>%
+  ungroup ()
+
+#create new column to add hscode status 
+count5$type <- "Incomplete"
+count6$type <- "Complete"
+
+#combined both df with rbind 
+combined_df <- rbind(count5,count6)
+
+# Create an interactive stacked bar plot
+plot_ly(combined_df, x = ~generated_by, 
+        y = ~count, color = ~type, type = "bar") |>
+  layout(xaxis = list(title = 'Generated Program',
+                      categoryorder = "total descending"),
+         yaxis = list(title = 'Count'), 
+         title = 'Completion of Hscode by structure', 
+         barmode = 'stack')   #create stacked barchart
+
+```
+
+**Observations:**
+
+-   High completion rate for program tools.
+
+-   Data retrieved from `Cod2` is not reliable as everything is incomplete
+
+-   Data retrieved from `Lichen` and `Shark` have the highest accuracies. Therefore, both sets are most reliable in completing the graph.
+
+FishEye has provided using visual analytics. Which sets are most reliable for completing the graph? Limit your response to 600 words and 6 images.
+
+Remove all the incomplete status
+
+Do a network with facet wrap
 
 ## Data Preparation for visNetwork
 
@@ -1025,6 +1098,7 @@ unknownMC2 <- MC2_challenge_edges %>%
   filter (weight >1) %>%
     ungroup()
 
+#filter and aggregate for the nodes 
 unknownMC2_revnodes <- MC2_id_list_vis %>%
   filter(id %in% unknownMC2$from | id %in% unknownMC2$to) %>%
   distinct() %>%
@@ -1141,16 +1215,22 @@ dup_reformat <- format(dup, big.mark=",")
 dup_reformat
 ```
 
+## 8. Conclusion: 
+
+Thus far, the detection of illegal fishing has been a challenging issues. There are many attributes that could lead to illegal, unreported, and unregulated (IUU) fishing. In our exercise, we observed the following:
+
+-   Abnormality in transaction counts in time period. Transactions decreases over the years and peak around 2028-2030. By seasonality, March seems to be a period with low transactions. From the network graph, we identified that there it is highly saturated by some companies.
+
 # References:
 
-https://vast-challenge.github.io/2023/MC2.html
+Delignette-Muller, M. L., & Dutang, C. (2020). visNetwork: Network Visualization using 'vis.js' Library. Retrieved May 28, 2023, from [**https://cran.r-project.org/web/packages/visNetwork/vignettes/Introduction-to-visNetwork.html**](https://cran.r-project.org/web/packages/visNetwork/vignettes/Introduction-to-visNetwork.html)
 
-https://www.nagraj.net/notes/visnetwork/
+Nagraj, R. (n.d.). Network Visualization in R with visNetwork. Retrieved May 28, 2023, from [**https://www.nagraj.net/notes/visnetwork/**](https://www.nagraj.net/notes/visnetwork/)
 
-https://cran.r-project.org/web/packages/visNetwork/vignettes/Introduction-to-visNetwork.html
+R Graph Gallery. (n.d.). RColorBrewer Palettes. Retrieved May 28, 2023, from [**https://r-graph-gallery.com/38-rcolorbrewers-palettes.html**](https://r-graph-gallery.com/38-rcolorbrewers-palettes.html)
 
-https://jtr13.github.io/cc21fall2/network-visualization-in-r.html
+Tran, J. (2021). Network Visualization in R - Centrality Measurement. Retrieved May 28, 2023, from [**https://jtr13.github.io/cc21fall2/network-visualization-in-r.html#centrality-measurement**](https://jtr13.github.io/cc21fall2/network-visualization-in-r.html#centrality-measurement)
 
-https://r-graph-gallery.com/38-rcolorbrewers-palettes.html
+Tran, J. (2021). Network Visualization in R. Retrieved May 28, 2023, from [**https://jtr13.github.io/cc21fall2/network-visualization-in-r.html**](https://jtr13.github.io/cc21fall2/network-visualization-in-r.html)
 
-https://jtr13.github.io/cc21fall2/network-visualization-in-r.html#centrality-measurement
+VAST Challenge (2023). VAST Challenge 2023 - Mini-Challenge 2: Fishy Business. Retrieved May 22 , 2023, from [**https://vast-challenge.github.io/2023/MC2.html**](https://vast-challenge.github.io/2023/MC2.html)
