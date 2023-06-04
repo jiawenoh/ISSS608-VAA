@@ -2,8 +2,8 @@
 title: "Take Home Exercise 2"
 subtitle: " Mini Case 2 of Vast Challenge 2023"
 author: "Oh Jia Wen"
-date: "6/3/2023"
-date-modified: "6/3/2023"
+date: "6/4/2023"
+date-modified: "6/4/2023"
 execute: 
   echo: true
   eval: true
@@ -89,7 +89,7 @@ Using p_load() of pacman package to load and install the following libraries:
 ```{r}
 pacman :: p_load (jsonlite, lubridate, tidygraph, ggraph, visNetwork, tidyverse,
                   igraph,heatmaply,hrbrthemes,treemap,devtools,
-                  ggstatsplot,RColorBrewer, knitr,stringr,ggiraph)
+                  ggstatsplot,RColorBrewer, knitr,stringr)
 
 options(scipen = 999)
 ```
@@ -1150,7 +1150,7 @@ visNetwork(MC2_dup_nodes, MC2_dup_top10,
 
 **Observations:**
 
--   Companies with duplicated transactions tends to work with exclusivity . They do not have multiple interconnections and they operates on both ends of the trade, apart from `2119` who is an importer. In depth analysis might be needed to identify individual companies.
+-   Companies with duplicated transactions tends to work with exclusivity . They do not have multiple interconnections and they operates on both ends of the trade, apart from `-2119` who is an importer. In depth analysis might be needed to identify individual companies.
 
 # 8. Conclusion:
 
