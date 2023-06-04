@@ -34,3 +34,27 @@ Importing JSON file by using jsonlite package.
 ```{r}
 MC3_challenge <- fromJSON("data/MC3.json")
 ```
+
+This is not a directed graph. There is no flow by degree (directed = FALSE)
+
+```{r}
+MC3_edges <-as_tibble(MC3_challenge$links) %>%
+  distinct() %>%
+  mutate(source = as.character(source),
+         target = as.character(target),
+         type = as.character(type)) %>%
+  group_by(source,target, type) %>%
+  summarise(weights = n()) %>%
+  filter (source != target) %>%
+  ungroup()
+```
+
+```{r}
+MC3_nodes <-as_tibble(MC3_challenge$nodes) %>%
+  mutate(country = as.character(country),
+         id = as.character(id),
+         product_services = as.character(product_services),
+         revenue_omu = as.numeric(as.character(revenue_omu)),
+         type = as.character(type)) %>%
+  select(id,country,type,revenue_omu,product_services)
+```

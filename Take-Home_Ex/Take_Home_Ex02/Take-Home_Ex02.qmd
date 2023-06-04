@@ -18,11 +18,11 @@ The country of Oceanus has sought FishEye International's help in identifying co
 
 ## 1.1 The Task
 
-In this take-home exercise, temporal patterns for individual entries and between entities are identified using the knowledge graph FishEye created from trade records. In addition, we evaluate the sets of predicted knowledge graph links (Bundles) to determine which set is more reliable in completing the graph.
+In this take-home exercise, temporal patterns for individual entries and between entities are identified using the knowledge graph FishEye created from trade records. In addition, we evaluate the sets of predicted knowledge graph links (Bundles) to determine which sets are more reliable in completing the graph.
 
 # 2. Datasets
 
-The trade data is stored in *`mc2_challenge_graph.json`* file with a time period of 7 years from the time period 2028 to 2024. It includes a bundles with 12 types of marine species, ranging from Carp, Shark, to Tuna.
+The trade data is stored in *`mc2_challenge_graph.json`* file with a time period of 7 years from the time period 2028 to 2024. There are a total of 34,576 nodes and 5,464,378 edges in the knowledge graphs. It includes a bundles with 12 types of marine species, ranging from Carp, Catfish, Chub_mackerel, Cod2, Herring, Lichen, Mackerel, Pollock, Salmon_wgl, Salmon, Shark, and Tuna.
 
 ## 2.1 Metadata
 
@@ -86,15 +86,9 @@ Using p_load() of pacman package to load and install the following libraries:
 
 -   `stringr`: For character manipulation.
 
--   `ggiraph`:
-
-`ggstatsplot`: for creating graphics with details from statistical tests included and its plot
-
-`scales` : check at EOD
-
 ```{r}
 pacman :: p_load (jsonlite, lubridate, tidygraph, ggraph, visNetwork, tidyverse,
-                  igraph,heatmaply,hrbrthemes,scales,treemap,devtools,
+                  igraph,heatmaply,hrbrthemes,treemap,devtools,
                   ggstatsplot,RColorBrewer, knitr,stringr,ggiraph)
 
 options(scipen = 999)
@@ -260,21 +254,6 @@ Likewise, we rename the `id` to `label` and create an id column through `mutate`
 ```{r}
 #| code-fold: true
 
-#create master id dataframe and add new column for trade_status 
-MC2_id_list <- MC2_challenge_nodes %>%
-  rename(label = id) %>%
-  mutate(
-    trade_status = case_when(
-    !is.na(shpcountry) & !is.na(rcvcountry) ~ "Import & Export",
-    !is.na(shpcountry) ~ "Export",
-    !is.na(rcvcountry) ~ "Import",
-    is.na(shpcountry) | is.na(rcvcountry) ~"Unknown"
-  )) 
-
-#select the columns
-MC2_id_list <- MC2_id_list %>%
-  select(label,trade_status,shpcountry, rcvcountry)
-
 #create new df and add new column called trade_status
 MC2_id_list_vis <- MC2_challenge_nodes %>%
   rename(label = id) %>%
@@ -290,6 +269,21 @@ MC2_id_list_vis <- MC2_challenge_nodes %>%
 #reorder the columns 
 MC2_id_list_vis <- MC2_id_list_vis %>%
   select(id,label, trade_status,shpcountry, rcvcountry)
+
+#create similar list 
+MC2_id_list <- MC2_challenge_nodes %>%
+  rename(label = id) %>%
+  mutate(
+    trade_status = case_when(
+    !is.na(shpcountry) & !is.na(rcvcountry) ~ "Import & Export",
+    !is.na(shpcountry) ~ "Export",
+    !is.na(rcvcountry) ~ "Import",
+    is.na(shpcountry) | is.na(rcvcountry) ~"Unknown"
+  )) 
+
+#reorder the columns 
+MC2_id_list <- MC2_id_list %>%
+  select(label,trade_status,shpcountry, rcvcountry)
 
 #create df to identify companies in target column that are not in the nodes 
 ID_target <- MC2_challenge_edges %>%
@@ -356,7 +350,21 @@ combined_edges_cleaned<- combined_edges %>%
   mutate(arrivaldate =ymd(arrivaldate),
          hscode = as.character(hscode))
 
-combined_edges_cleaned
+#output for dataframe using knitr:: kable
+kable(head(combined_edges_cleaned), "simple")
+```
+
+5.   Duplicates found \[Retain for further analyses as the purchases might be broken down into small trade to avoid detection \]
+
+```{r}
+#| code-fold: true
+
+#check for duplicates 
+dup <- (nrow(MC2_challenge_edges) - nrow(unique(MC2_challenge_edges)))
+#reformat output 
+dup_reformat <- format(dup, big.mark=",")
+#print output
+dup_reformat
 ```
 
 # 4. Distribution of transactions
@@ -452,7 +460,7 @@ MC2_2030_Mar_nodes <- MC2_id_list_vis %>%
 
 ```
 
-In the code chunk below, we compute the centrality between the nodes, by using the `graph_from_data_frame` function from the `[igraph]` package. As seen from the output below, the top row represents the ID of the companies while the bottom row represents their score. Given that the result of the betweenness centrality is not significant, we will would look into the degree centrality.
+In the code chunk below, we compute the centrality between the nodes, by using the `graph_from_data_frame` function from the `[igraph]` package. As seen from the output below, the top row represents the ID of the companies while the bottom row represents their score. Given that the result of the betweenness centrality and closeness centrality are not significant, we will would look into the degree centrality.
 
 ```{r}
 #create igraph object 
@@ -538,30 +546,19 @@ The default setting as as follows:
 
 **Observations:**
 
--   Nodes in blue have higher degree of centrality. hai dan Corporation Wharf has the highest degree of 19, followed by Saltwater Supreme OAO forwarding with a score of 12.
+-   *Blue nodes* refer to a high degree of centrality. `hǎi dǎn Corporation Wharf` has the highest degree of 19, followed by `Saltwater Supreme OAO forwarding` with a score of 12.
 
--   Majority of the Company have low degree of centrality. We identified 4 clusters who have business relationship with more than three companies with low degree of centrality( Orange).
-
-## Statistical Plot of Degree Centrality against Trade Status
-
-```{r}
-
-ggbetweenstats(data = MC2_2030_Mar_nodes,
-       x= trade_status, y= degree_centrality, type ="np",
-       xlab= "Trade Status", ylab = "Degree Centrality",
-       title = "Comparison of Degree Centrality across Trade Status",
-       pairwise.comparisons = TRUE, pairwise.display ="s", conf.level = 0.95
-       )
-
-```
+-   Majority of the Company have low degree of centrality and work exclusively with another counterpart. For companies in cluster, they generally have high degree of centrality and deals with companies with low degree of centrality *(Orange nodes).*
 
 # 5. Distribution of Median Weight
 
 #### [By hscode and year]{.underline}
 
-A `treemap` displays hierarchical data as a set of nested rectangles, where each group is represented by an area that is proportional to its value. We would like to examine the distribution by **hscode** and **year** of the **median weight.** Based on median weight, we will be able to identify companies who over fish.
+A `treemap` displays hierarchical data as a set of nested rectangles, where each group is represented by an area that is proportional to its value. We would like to examine the distribution by **hscode** and **year** of the **median weight** and **transaction counts*(weight)*.** Based on median weight, we will be able to identify companies who over fish.
 
 As per section 3.1, the `[devtools]` package have been loaded. Thereafter, we install the package found in github *(#install_github)* and load the `[d3treeR]` package.
+
+*(Note: we are only required to install the github package once)*
 
 ```{r}
 #install_github("timelyportfolio/d3treeR")
@@ -570,7 +567,7 @@ library(d3treeR)
 
 We will aggregate from `MC2_challenge_edges` data frame by using the `[dpylr]` package:
 
--   `group_by` is used to aggregate it by **hscode** and **year**
+-   `group_by()` is used to aggregate it by **hscode** and **year**
 
 -   `summarize()` is used to compute the **weight** and **median_weight** of goods
 
@@ -637,17 +634,17 @@ d3tree(it, rootname = "Distribution of hscode")
 
 **Observations:**
 
--   As observed from top left to bottom right, `hscode '306170'` has the highest transactions count along with higher than average median weight.
+-   As observed from top left to bottom right, `hscode '306170'` has the highest transactions count. Likewise, the median weight is more left-skewed.
 
--   As observed from the treemap, `hscode '870323` has the darkest gradient in 2032. With reference to section 4.1, the transactions count did not increase. Thus, it would be ideal to observed the transactions of hscode 870323 in year 2032.
+-   As observed from the treemap, `hscode '870323` has the darkest gradient in 2032. With reference to section 4.1, the transaction counts did not increased. Thus, it would be ideal to observe the transactions of hscode 870323 in year 2032.
 
--   HS code has a hierarchical model. It is composed of six digits and could be broken down into chapter/heading/subheading with two digits each. As observed, hscode that starts with `30` occupies a higher weightage as well. From the graph above, hscode `306170` and `304620` are rank in the first and sixth position.
+-   HS code is a hierarchical model. As iterated, it composes of six digits and could be broken down into chapter/heading/subheading with two digits each. As observed, hscode that starts with `30` occupies a higher weightage as well. From the graph above, hscode `306170` and `304620` are rank in the first and sixth position.
 
 ### 5.1 Trade flow for Hscode 306170
 
 In this section, we will be looking into the trade flow of hscode 306170 with the use of Eigenvector centrality. It measures the importance or influence of a node based on its connections to other highly central nodes.
 
-After using similar approach as section 4.2, we retrieve the top 300 rows and create a color scale based on the range of Eigenvector. A high Eigenvector centrality indicates an important/influential connection to other nodes. The blue nodes below represents key players or market leader in the network.
+After using similar approach as section 4.2, we retrieve the top 300 rows and create a color scale `RdYlBu` based on the range of Eigenvector. The *blue nodes* below represents key players or market leader in the network. Moreover, a high Eigenvector centrality indicates an important/influential connection to other nodes.
 
 ```{r}
 #| code-fold: true
@@ -714,11 +711,12 @@ main ="Trade flow of top 300 transactions
 
 **Observations:**
 
--   As observed, there are three key opinion leaders and three sub-leaders in the network.
+-   There are three key opinion leaders and three sub-leaders in the network where `Mar del Este CJSC` could be inferred as the market leader.
+-   Interestingly, the company with high degree of centrality in the previous section - `hǎi dǎn Corporation Wharf` do not have a high eigenvector centrality. Although they have a large number of connections who could potential reach and interact with other connection, their eigenvector remains low. We deduced that the nodes that they are connected to are not well connected.
 
 ### 5.2 Trade flow for Hscode 873023 in year 2032
 
-In this section, we will be looking into the trade flow of hscode 873023 in year 2032. There is a spike increase in median_weight. It will be measured with Degree Centrality as it helps to identify node who has the greatest interaction. Moreover, we color the node because on the values. The node with the greatest value is in blue, followed by yellow, then orange.
+In this section, we will be looking into the trade flow of hscode 873023 in year 2032 since there is a spike increase in median_weight. It will be measured with Degree Centrality as it helps to identify node who has the greatest interaction in the time period. Moreover, we color the node based on values. Blue nodes represents high degree while Orange nodes represents low degree.
 
 ```{r}
 #| code-fold: true
@@ -775,11 +773,14 @@ visNetwork(MC2_2032_870323_nodes, MC2_2032_870323_edges, main ="Trade flow in 20
 
 **Observations:**
 
--   As observed, there are three key opinion leaders and three sub-leaders in the network.
+-   In comparison to hscode 361070, there are more key opinion leaders and sub-leaders in this network. They are heavily connected to one another, with more interaction between companies with large connections.
+-   At the bottom right of the network graph, there are two distinct `hub and spoke` network which belongs to `Estrella del Mar Seafarer` and `Chhattisgarh Marine ecology A/S Delivery`. There is a central node who is directly connected to all other nodes *(spokes)* with a high degree of centrality. It receives from one company but disseminates goods to seven/eight companies.
 
 ### 5.3 Examining Chapter 30 Hscode
 
-Among the 17 hscode identified in the treemap, we noticed that there are two codes that belongs to Chapter 30. In terms of volume, `306170` and `304620` are ranked first and sixth respectively. Therefore, we would like to match with the set of predicted knowledge graph links from FishEye to determine if we would get any insight. Interestingly, this chapter belongs to the category of Fish.
+Among the 17 hscode identified in the treemap above, we noticed that there are two codes which belongs to Chapter 30. In terms of volume, `306170` and `304620` are ranked first and sixth respectively. Therefore, we would like to match with the set of predicted knowledge graph links from FishEye to determine if we would get any insight.
+
+Interestingly, this chapter belongs to the category of Fish.
 
 ```{r}
 #| code-fold: true
@@ -831,13 +832,13 @@ d3tree(hscount30, rootname = "Distribution based on generated program")
 
 **Observations:**
 
--   From the predicted knowledge graph links, Cod2 program has the highest amount of transactions followed by salmon.
--   There are multiple hscode tagged to each fish types. However, this is an exception to Lichen, which only have 1 hscode - 300510. Salmon and cod2 have a lower count, while mackerel and catfish have 15 different hs code.
--   Upon closer inspection, It has been observed that there are various hscode that are not comprehensive. The sub-header is missing. e.g. hscode in salmon and cod2 contains five digits wheras lichen have six digits.
+-   From the predicted knowledge graph links, Cod2 program has the highest amount of transaction counts followed by salmon.
+-   There are multiple hscode tagged to each fish types. However, this is an exception to Lichen, which only have 1 hscode - 300510. Salmon and cod2 have a lower count, while mackerel and catfish have 15 different hs code as identified in the differences in gradient.
+-   Upon closer inspection, It has been observed that there are various hscode that are not comprehensive. The sub-header is missing. e.g. hscode in salmon and cod2 contain five digits whereas lichen has six digits hscode.
 
 #### 5.3.1 Structure of Hscode
 
-Noting that the hscode in the bundles are not comprehensive, we would like to examine the list of companies who have incomplete hscode.
+Noting that the Hscode in the bundles are not comprehensive, we would like to examine the list of companies who have incomplete hscode. We retrieved the top 20 with more than 10 transactions and uses an `ifelse` function to include `Unknown` to rcvcountry with `N/A`. Thereafter, `rename()` is used to change [rcvcountry to group]{.underline} for color coding.
 
 ```{r}
 #| code-fold: true
@@ -856,7 +857,7 @@ combined_edges_cleaned_filtered <- combined_edges_cleaned %>%
 combined_edges_cleaned_newedges <- left_join(combined_edges_cleaned_filtered,
                           combined_edges_cleaned_30hscount_new,by = "hscode")
 
-# aggregate and retrieve top 20 rows with >=10 transactions 
+# aggregate and retrieve top 20 rows with >9 transactions 
 combined_edges_cleaned_newedgestt <- combined_edges_cleaned_newedges %>%
   group_by(source,target,hscode) %>%
   summarize(weight =n()) %>%
@@ -901,10 +902,16 @@ combined_edges_cleaned_newedges_test <- combined_edges_cleaned_newedges %>%
 kable(combined_nodes_filtered, "simple")
 ```
 
+**Observations:**
+
+-   Among the 36 companies identified with inaccurate hscode, we found out that two identified companies - `Mar del Este CJSC` and `hǎi dǎn Corporation Wharf` are included the list.
+
+Henceforth, we will plot a network graph to look into the interaction of the company and their receiving country.
+
 ```{r}
 #| code-fold: true
 
-visNetwork(combined_nodes_filtered_addid, combined_edges_cleaned_newedges_test, main ="Companies with inaccurate hs code 
+visNetwork(combined_nodes_filtered_addid, combined_edges_cleaned_newedges_test, main ="Companies with Inaccurate hs code 
            <br>and >10 transactions <br>") %>%
   visIgraphLayout(layout = "layout_with_fr") %>%
     visOptions(highlightNearest = TRUE,
@@ -914,14 +921,31 @@ visNetwork(combined_nodes_filtered_addid, combined_edges_cleaned_newedges_test, 
   visEdges(arrows = "to") %>% #indicate direction 
   visLayout(randomSeed = 123) %>%
   visLegend() %>%
+  addFontAwesome(name = "font-awesome") %>% #add icon to network 
+  visGroups(groupname = "Coralmarica", shape = "icon", 
+            icon= list(code ="f21a", color = "#EBCC2A" )) %>% 
+  visGroups(groupname = "Unknown", shape = "icon", 
+            icon= list(code ="f21a", color = "#F21A00" )) %>% 
+  visGroups(groupname = "Kuzalanda", shape = "icon", 
+            icon= list(code ="f21a", color = "#606060" )) %>% 
+  visGroups(groupname = "Merigrad", shape = "icon", 
+            icon= list(code ="f21a", color = "#00887d" )) %>% 
+    visGroups(groupname = "Oceanus", shape = "icon", 
+            icon= list(code ="f21a", color = "#3B9AB2")) %>% 
   visInteraction(dragNodes = FALSE, dragView = TRUE, 
                  zoomView = TRUE, navigationButtons = TRUE) #freeze network
 
 ```
 
+**Observations:**
+
+-   Majority of the receiving companies are associated with Oceanus with a minority receiving from companies with no association.
+
+-   There are no distinct cluster. Meanwhile, the two companies that we identified are importers who receives goods from two sources. However, there are no significant findings from the companies with incomplete Hscode and we would like to further determine if there are any incomplete Hscode in the main edges data frame.
+
 #### 5.3.2 Incomplete Hscode in Edges
 
-Notably, we did a quick check on the hscode in `MC2_challenge_edges`. From the code chunk below, we found out that all our transactions in the knowledge graph contain six digits hscode. As such, we will eliminate bundles with inaccurate hscode.
+From the code chunk below, we did a quick check on the hscode in `MC2_challenge_edges`. We found out that all our transactions in the knowledge graph contains six digits hscode. As such, we will eliminate bundles with inaccurate hscode.
 
 ```{r}
 #filter for companies with 5 digits hscode
@@ -932,19 +956,21 @@ MC2_challenge_edges_check <- MC2_challenge_edges %>%
 any(MC2_challenge_edges_check)
 ```
 
-#### 5.3.3 Accuracy of Hscode 
+#### 5.3.3 Accuracy of Hscode
 
-Noting that [chapter 30]{.underline} hscode does not include `Shark`, we will examine the accuracy of hscode in this sub-section by looking at the completion of the hscode in the following steps:
+Noting that [chapter 30]{.underline} hscode does not include `Shark`, we will examine the accuracy of hscode by looking at the completion of the hscode in the following steps:
 
--   Filter for companies with 5 digits hs code, 6 digits hs code seperately
+-   `Filter()` for companies with 5 digits hscode, 6 digits hscode separately
 
--   Aggregate the two data frame by the program (generated_by) and count the occurrence
+-   Aggregate the two data frame by the program (generated_by) using `group_by()` and count the occurrence using `summarize()`
 
--   Create new columns to add the hscode status (Complete for hscode with 6 digits, Incomplete for hscode with 5 digits)
+-   Create new columns to add the hscode status
 
--   Combined both data frame through `rbind` since there is an exact match in the number of columns.
+    *(Complete for hscode with 6 digits, Incomplete for hscode with 5 digits)*
 
--   Plot the interactive stacked bar chart with `plot_ly()`
+-   Combined both data frame through `rbind` since there is an exact match in the number of columns
+
+-   Plot the interactive stacked bar chart with `plot_ly()` in descending order
 
 ```{r}
 #| code-fold: true
@@ -991,88 +1017,13 @@ plot_ly(combined_df, x = ~generated_by,
 
 **Observations:**
 
--   High completion rate for program tools.
+-   There is a high completion rate for most program tools with the exception of `Cod2` with Incomplete data throughout. It is deem as unreliable as everything is incomplete. On the flip side, data retrieved from `Lichen` and `Shark` have the highest accuracies. Thus, we concluded that `Lichen` and `Shark` are the reliable sets which will aid in the completion of the graph.
 
--   Data retrieved from `Cod2` is not reliable as everything is incomplete
+# 6. Companies with Unknown Trade Status
 
--   Data retrieved from `Lichen` and `Shark` have the highest accuracies. Therefore, both sets are most reliable in completing the graph.
+As seen in the Section 2.1 Metadata , the shpcountry and rcvcountry refers to the country that the company are most often associated with. Therefore, a newly founded company might have an unknown status. This might be applicable for those who want to avoid detection and start up a new company under a different name.
 
-FishEye has provided using visual analytics. Which sets are most reliable for completing the graph? Limit your response to 600 words and 6 images.
-
-Remove all the incomplete status
-
-Do a network with facet wrap
-
-## Data Preparation for visNetwork
-
-### TOP 30 SOURCE AND TOP 30 TARGET
-
-```{r}
-#| code-fold: true
-
-#filter for top 30 source 
-MC2_challenge_source <- MC2_challenge_edges %>%
-  group_by(sourcelabel) %>%
-  summarise(weight =n()) %>%
-  arrange(desc(weight)) %>%
-  top_n(30,weight)
-
-#filter for top 30 target
-MC2_challenge_target <- MC2_challenge_edges %>%
-  group_by(targetlabel) %>%
-  summarise(weight =n()) %>%
-  arrange(desc(weight)) %>%
-  top_n(30,weight)
-
-#filter edges for transactions in top 30 source and top 30 target 
-revisedlist <- MC2_challenge_edges%>%
-  filter(sourcelabel %in% MC2_challenge_source$sourcelabel) %>%
-  filter(targetlabel %in% MC2_challenge_target$targetlabel) 
-
-#filter out nodes that are in top 30 source and top 30 target 
-check_id_vis <- MC2_id_list_vis %>%
-  filter(label %in% revisedlist$sourcelabel | 
-           label %in% revisedlist$targetlabel) %>%
-    rename(group = rcvcountry)
-
-#aggregate by weight and rename to ensure that it                                         has id in nodes and from and to column in edges 
-MC2_agg_rev <- revisedlist %>%
-  left_join(check_id_vis, by = c("sourcelabel" = "label")) %>%
-  rename(from = id) %>%
-  left_join(check_id_vis, by = c("targetlabel" = "label")) %>%
-  rename(to = id) %>%
-  group_by(from, to) %>%
-    summarise(weight = n()) %>%
-  filter(from!=to) %>%
-  filter(weight > 1) %>%
-  ungroup()
-
-```
-
-```{r}
-#| code-fold: true
-
-visNetwork(check_id_vis, MC2_agg_rev, main ="Top 30 source/targets 
-           <br>by receiving country<br>") %>%
-  visIgraphLayout(layout = "layout_with_fr") %>%
-    visOptions(highlightNearest = TRUE,
-             nodesIdSelection = TRUE,
-              selectedBy="group") %>%
-  visLegend() %>%
-  visEdges(arrows = "to") %>% #indicate direction 
-  visLayout(randomSeed = 123) %>%
-  addFontAwesome(name = "font-awesome") %>% #add icon to network 
-  visNodes(shape = "icon", icon= list(code ="f21a", color = "#3B9AB2" )) %>% 
-  visLegend() %>%
-  visInteraction(dragNodes = FALSE, dragView = TRUE, 
-                 zoomView = TRUE, navigationButtons = TRUE) #freeze network
-```
-
-## 7. Companies with Unknown Trade Status
-
-As seen in the Metadata, the shpcountry and rcvcountry refers to the country that the company are most often associated with. Therefore, a newly founded company might have an unknown status. This might be applicable for those who want to avoid detection and start up a new company under a different name. Henceforth, we would to examine the group with unknown trade status.
-
-The code chunks below filters for `unknown` in `trade_status` in the receiver end and filter for `Exporters` before doing a `left_join`.
+Henceforth, we would to examine the group with unknown trade status. The code has been revised previously in section 3.5 when we are creating the Trade Status Column. The code chunks below filters for `unknown` in `trade_status` in the receiver end and filter for `Exporters` before doing a `left_join`.
 
 ```{r}
 #| code-fold: true
@@ -1129,7 +1080,7 @@ visNetwork(unknownMC2_revnodes, unknownMC2,
                  zoomView = TRUE, navigationButtons = TRUE) #freeze network
 ```
 
-Based on the network above, two companies are identified to ship to a receiver with unknown origin.
+Based on the network above, two companies are identified to ship to three or more receivers with unknown origin. Further monitoring might be required for the group of receivers/importers below until they have a trade status.
 
 +----------------------------------------------+--------------------------------------+
 | Shipper                                      | Receiver                             |
@@ -1151,21 +1102,13 @@ Based on the network above, two companies are identified to ship to a receiver w
 |                                              | 8.Marine United AG                   |
 +----------------------------------------------+--------------------------------------+
 
-```{r}
-unknownMC2_filteredlist <- MC2_challenge_edges %>%
-  filter(sourcelabel =="hǎi dǎn Corporation Wharf" | sourcelabel == "Sailors and Surfers Incorporated Enterprises") %>%
-  filter(targetlabel == "SouthSeafood Express Corp" | 
-           targetlabel == "Maacama Ocean Worldwide LLC" |
-           targetlabel =="OranjestadCreek Express Sagl" |
-           targetlabel == "SavanetaCreek Solutions NV" | 
-           targetlabel == "HomabayMarine Carriers N.V." |
-           targetlabel == "SumacAmerica Transport GmbH & Co. KG" |
-           targetlabel == "8.Marine United AG")
-```
+# 7. Companies with Duplicated Entries
 
-# filter for companies with duplicated entries
+Although we have included the duplicated entries in our exercise, we would like to find out more about the companies with high duplicate counts. Thus, we filtered to the top 10 transactions by using `top_n()`.
 
 ```{r}
+#| code-fold: true
+
 #detect duplicate rows and aggregate it 
 MC2_dup_rows <- MC2_challenge_edges[duplicated(MC2_challenge_edges),] %>%
   rename(from = source) %>%
@@ -1175,9 +1118,10 @@ MC2_dup_rows <- MC2_challenge_edges[duplicated(MC2_challenge_edges),] %>%
   filter (weight >1) %>%
   ungroup()
 
+#filter top 10 transactions by weight
 MC2_dup_top10 <- MC2_dup_rows %>%
-    top_n(10,weight) 
-
+  top_n(10,weight)
+   
 #create df with corresponding nodes 
 MC2_dup_nodes <- MC2_id_list_vis %>%
   filter(id %in% MC2_dup_top10$from | id %in% MC2_dup_top10$to) %>%
@@ -1185,41 +1129,37 @@ MC2_dup_nodes <- MC2_id_list_vis %>%
   select(1:3) %>%
   rename(group = trade_status)
 
-```
-
-There are approximately 32% duplicated rows in the trade data.
-
-```{r}
-#| code-fold: true
 #create network diagram for exporters
 visNetwork(MC2_dup_nodes, MC2_dup_top10, 
-           main = "Trade Transactions with  <br> Top 10 duplicates <br>") %>%
+           main = "Top 10 duplicated transactions") %>%
   visIgraphLayout(layout = "layout_with_fr") %>%
   visOptions(highlightNearest = TRUE,
              nodesIdSelection = TRUE) %>%
-  visLayout (randomSeed = 123) %>% 
+  visLayout(randomSeed = 123) %>% 
   visEdges(arrows = "to") %>% #indicate direction 
   addFontAwesome(name = "font-awesome") %>% #add icon to network 
   #fill color and shape
   visLegend() %>%
+  visGroups(groupname = "Import", shape = "icon", 
+            icon= list(code ="f21a", color = "#E1AF00" )) %>% 
+  visGroups(groupname = "Import & Export", shape = "icon", 
+            icon= list(code ="f21a", color = "#3B9AB2" )) %>% 
   visInteraction(dragNodes = FALSE, dragView = TRUE, 
                  zoomView = TRUE, navigationButtons = TRUE) #freeze network
 ```
 
-```{r}
-#check for duplicates 
-dup <- (nrow(MC2_challenge_edges) - nrow(unique(MC2_challenge_edges)))
-#reformat output 
-dup_reformat <- format(dup, big.mark=",")
-#print output
-dup_reformat
-```
+**Observations:**
 
-## 8. Conclusion: 
+-   Companies with duplicated transactions tends to work with exclusivity . They do not have multiple interconnections and they operates on both ends of the trade, apart from `2119` who is an importer. In depth analysis might be needed to identify individual companies.
+
+# 8. Conclusion:
 
 Thus far, the detection of illegal fishing has been a challenging issues. There are many attributes that could lead to illegal, unreported, and unregulated (IUU) fishing. In our exercise, we observed the following:
 
 -   Abnormality in transaction counts in time period. Transactions decreases over the years and peak around 2028-2030. By seasonality, March seems to be a period with low transactions. From the network graph, we identified that there it is highly saturated by some companies.
+-   Hscode with highest transactions counts does not have the highest median weight. hs code `306170` ranked 1st in terms of volume and it belongs to the Chapter 30 family along with `304620`.
+-   Further analysis of Chapter 30 revealed that the bundles created are not accurate. Most reliable sets goes to `Lichen` and `Shark` which have 100% accuracy in terms of hscode.
+-   Monitoring required for companies with unknown trade status as there are companies who supplies to a group of unknown companies. Likewise, further analysis might be required to examine the patterns of companies with high duplicate counts.
 
 # References:
 
