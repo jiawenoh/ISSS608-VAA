@@ -23,8 +23,10 @@ execute:
 Using p_load() of pacman package to load and install the following libraries:
 
 ```{r}
-pacman::p_load(jsonlite, tidygraph, ggraph,visNetwork, graphlayouts,
-               ggforce, tidytext, tidyverse)
+pacman::p_load(jsonlite, tidygraph, ggraph, 
+               visNetwork, graphlayouts, ggforce, 
+               skimr, tidytext, tidyverse, DT)
+options(scipen = 999)
 ```
 
 ## 3.2 Importing Data
@@ -37,7 +39,21 @@ MC3_challenge <- fromJSON("data/MC3.json")
 
 This is not a directed graph. There is no flow by degree (directed = FALSE)
 
+### 3.2.1 Extracting Edges
+
+As the imported data file is a large list, we will extract the edges from `MC3_challenge` and save it as a tibble data frame called `MC3_edges`. The code is extracted in the following manner:
+
+-   `distinct()` is used to remove duplicated records
+
+-   `mutate()` and `as.character()` are used to convert field data type from list to character
+
+-   `group_by()` and `summarise()` are used to count the number of unique links
+
+-   `filter(source!=target)` is used to ensure that both companies are not identical
+
 ```{r}
+#| code-fold: true
+
 MC3_edges <-as_tibble(MC3_challenge$links) %>%
   distinct() %>%
   mutate(source = as.character(source),
@@ -49,6 +65,16 @@ MC3_edges <-as_tibble(MC3_challenge$links) %>%
   ungroup()
 ```
 
+### 3.2.2 Extracting Nodes
+
+Similarly, we will extract the nodes from `MC3_challenge` and save it as a tibble data frame called `MC3_nodes`. The code is extracted in the following manner:
+
+-   `mutate()` and `as.character()` are used to convert data type from list to character
+
+-   `as.numeric(as.character())` are used to convert revenue_omu from list to character before converting it to numeric data type.
+
+-   `select()` is used to reorganize the sequence
+
 ```{r}
 MC3_nodes <-as_tibble(MC3_challenge$nodes) %>%
   mutate(country = as.character(country),
@@ -57,4 +83,176 @@ MC3_nodes <-as_tibble(MC3_challenge$nodes) %>%
          revenue_omu = as.numeric(as.character(revenue_omu)),
          type = as.character(type)) %>%
   select(id,country,type,revenue_omu,product_services)
+```
+
+# 4. Data Exploration
+
+In this section, we will explore the nodes and edges data frame to identify aspects for data wrangling.
+
+## 4.1 Exploring the edges data frame
+
+`skim()` of `[skimr]` package is used to display the summary statistic of `MC3_edges` tibble data frame. As observed, there are not missing values in all fields.
+
+```{r}
+skim(MC3_edges)
+```
+
+`datatable()` of the `[DT]` package is used to display `MC3_edges` tiddle data frame as an interactive table.
+
+```{r}
+DT::datatable(MC3_edges)
+```
+
+### 4.1.1 Plotting bar chart
+
+```{r}
+ggplot(data = MC3_edges,
+       aes(x= type)) +
+  geom_bar()
+```
+
+## 4.2 Exploring the nodes
+
+`skim()` of `[skimr]` package is used to display the summary statistic of `MC3_nodes` tibble data frame. As observed, there are not missing values in all fields.
+
+```{r}
+skim(MC3_nodes)
+```
+
+```{r}
+DT:: datatable(MC3_nodes)
+```
+
+### 4.2.1 Plotting the bar chart
+
+```{r}
+ggplot(data = MC3_nodes,
+       aes(x=type)) +
+  geom_bar()
+```
+
+# 5. Network Visualization and Analysis
+
+## 5. 1 Building network model with tidygraph
+
+```{r}
+id1 <- MC3_edges %>%
+  select(source) %>%
+  rename(id = source)
+id2 <- MC3_edges %>%
+  select(target) %>%
+  rename(id = target)
+MC3_nodes_master <- rbind(id1, id2) %>%
+  distinct() %>%
+  left_join(MC3_nodes,
+            unmatched = "drop")
+```
+
+```{r}
+MC3_graph <- tbl_graph(nodes = MC3_nodes_master,
+                       edges = MC3_edges,
+                       directed = FALSE) %>%
+  mutate(betweenness_centrality = centrality_betweenness(),
+         closeness_centrality = centrality_closeness())
+
+MC3_graph %>%
+  filter(betweenness_centrality >= 100000) %>%
+ggraph(layout = "fr") +
+  geom_edge_link(aes(alpha=0.5)) +
+  geom_node_point(aes(
+    size = betweenness_centrality,
+    colors = "lightblue",
+    alpha = 0.5)) +
+  scale_size_continuous(range=c(1,10))+
+  theme_graph()
+```
+
+# 6. Text Sensing with Tidytext
+
+`[tidytext]` package
+
+## 6.1 Simple Word count
+
+```{r}
+MC3_nodes %>%
+  mutate(n_fish = str_count(product_services, "fish"))
+```
+
+## 6.2 Tokenisation
+
+Tokenisation refers to the process of breaking up a given text into units called tokens. It could be individual words, phrases or the entire sentences. `unnest_tokens()` is used. The unnested text goes to the output column - `word` after extracting it from `product_services`.
+
+```{r}
+token_nodes <- MC3_nodes %>%
+  unnest_tokens(word, 
+                product_services)
+```
+
+### 6.2.1 Visualizing the Extracted words
+
+```{r}
+token_nodes %>%
+  count(word, sort = TRUE) %>%
+  top_n(15) %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(x = word, y = n)) +
+  geom_col() +
+  xlab(NULL) +
+  coord_flip() +
+      labs(x = "Count",
+      y = "Unique words",
+      title = "Count of unique words found in product_services field")
+```
+
+### 6.3 Removing stopwords
+
+```{r}
+stopwords_removed <- token_nodes %>% 
+  anti_join(stop_words)
+
+stopwords_removed %>%
+  count(word, sort = TRUE) %>%
+  top_n(15) %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(x = word, y = n)) +
+  geom_col() +
+  xlab(NULL) +
+  coord_flip() +
+      labs(x = "Count",
+      y = "Unique words",
+      title = "Count of unique words found in product_services field")
+```
+
+Given that there are 7750 unique texts in the `word` columnwe will focus on the words that are related to illegal fishing.
+
+```{r}
+length(unique(stopwords_removed$word))
+```
+
+```{r}
+#create custom stop words vector
+custom_stopwords <- c("food")
+
+clean_text <- stopwords_removed %>%
+  filter(!word %in% custom_stopwords) %>%
+  filter(!grepl("\\d", word)) %>%  #to remove numbers 
+  filter(grepl("fish", word) | grepl("seafood", word ) | grepl("shrimp", word)) 
+
+
+#  mutate(category = case_when(
+#    grepl("products", word, ignore.case= TRUE) ~ "Products",
+#    grepl("services", word, ignore.case = TRUE) ~ "Services",
+#    TRUE ~ 'Others'))
+
+clean_text %>%
+  count(word, sort = TRUE) %>%
+  top_n(20) %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(x = word, y = n)) +
+  geom_col() +
+  xlab(NULL) +
+  coord_flip() +
+      labs(x = "Count",
+      y = "Unique words",
+      title = "Count of unique words found in product_services field")
 ```

@@ -14,13 +14,15 @@ execute:
 1.  Using p_load() of pacman package to load the required libraries
 
 ```{r}
-pacman::p_load(corrplot, ggstatsplot, tidyverse)
+pacman::p_load(corrplot, ggstatsplot, tidyverse, GGally, 
+               parallelPlot, treemap, treemapify)
 ```
 
 2.  Importing Data
 
 ```{r}
 wine <- read_csv("data/wine_quality.csv")
+realis2018 <- read_csv("data/realis2018.csv")
 ```
 
 ## 1. Plotting Correlation Matrix: pairs() method
@@ -142,7 +144,7 @@ corrplot(wine.cor)
 
 There are seven visual geometrics (parameter method) can be used to encode the attribute values. They are: circle, square, ellipse, number, shade, color and pie. The default is circle.
 
-#### Example 1: 
+#### Example 1:
 
 ```{r}
 corrplot(wine.cor, 
@@ -152,7 +154,7 @@ corrplot(wine.cor,
          tl.col = "black")    #change axis text label color to black 
 ```
 
-#### Example 2: 
+#### Example 2:
 
 ```{r}
 corrplot.mixed(wine.cor, 
@@ -163,7 +165,7 @@ corrplot.mixed(wine.cor,
                tl.col = "black")
 ```
 
-#### Example 3: Combine corrgram with significant test 
+#### Example 3: Combine corrgram with significant test
 
 ```{r}
 wine.sig = cor.mtest(wine.cor, conf.level= .95)
@@ -180,21 +182,21 @@ corrplot(wine.cor,
          sig.level = .05)
 ```
 
-#### Reordering corrgram: 
+#### Reordering corrgram:
 
-Matrix reorder is very important for mining the hiden structure and pattern in a corrgram. By default, the order of attributes of a corrgram is sorted according to the correlation matrix (i.e. \"original\"). The default setting can be over-write by using the *order* argument of *corrplot()*. Currently, **corrplot** package support four sorting methods, they are:
+Matrix reorder is very important for mining the hiden structure and pattern in a corrgram. By default, the order of attributes of a corrgram is sorted according to the correlation matrix (i.e. "original"). The default setting can be over-write by using the *order* argument of *corrplot()*. Currently, **corrplot** package support four sorting methods, they are:
 
--   \"AOE\" is for the angular order of the eigenvectors. See Michael Friendly (2002) for details.
+-   "AOE" is for the angular order of the eigenvectors. See Michael Friendly (2002) for details.
 
--   \"FPC\" for the first principal component order.
+-   "FPC" for the first principal component order.
 
--   \"hclust\" for hierarchical clustering order, and \"hclust.method\" for the agglomeration method to be used.
+-   "hclust" for hierarchical clustering order, and "hclust.method" for the agglomeration method to be used.
 
-    -   \"hclust.method\" should be one of \"ward\", \"single\", \"complete\", \"average\", \"mcquitty\", \"median\" or \"centroid\".
+    -   "hclust.method" should be one of "ward", "single", "complete", "average", "mcquitty", "median" or "centroid".
 
--   \"alphabet\" for alphabetical order.
+-   "alphabet" for alphabetical order.
 
-\"AOE\", \"FPC\", \"hclust\", \"alphabet\". More algorithms can be found in **seriation** package.
+"AOE", "FPC", "hclust", "alphabet". More algorithms can be found in **seriation** package.
 
 ```{r}
 corrplot.mixed(wine.cor, 
@@ -254,17 +256,17 @@ We will be using heatmaply in this section.
 
 **heatmaply** supports a variety of hierarchical clustering algorithm. The main arguments provided are:
 
--   *distfun*: function used to compute the distance (dissimilarity) between both rows and columns. Defaults to dist. The options \"pearson\", \"spearman\" and \"kendall\" can be used to use correlation-based clustering, which uses as.dist(1 - cor(t(x))) as the distance metric (using the specified correlation method).
+-   *distfun*: function used to compute the distance (dissimilarity) between both rows and columns. Defaults to dist. The options "pearson", "spearman" and "kendall" can be used to use correlation-based clustering, which uses as.dist(1 - cor(t(x))) as the distance metric (using the specified correlation method).
 
 -   *hclustfun*: function used to compute the hierarchical clustering when *Rowv* or *Colv* are not dendrograms. Defaults to *hclust*.
 
--   *dist_method* default is NULL, which results in \"euclidean\" to be used. It can accept alternative character strings indicating the method to be passed to distfun. By default *distfun* is \"dist\"\" hence this can be one of \"euclidean\", \"maximum\", \"manhattan\", \"canberra\", \"binary\" or \"minkowski\".
+-   *dist_method* default is NULL, which results in "euclidean" to be used. It can accept alternative character strings indicating the method to be passed to distfun. By default *distfun* is "dist"" hence this can be one of "euclidean", "maximum", "manhattan", "canberra", "binary" or "minkowski".
 
--   *hclust_method* default is NULL, which results in \"complete\" method to be used. It can accept alternative character strings indicating the method to be passed to *hclustfun*. By default hclustfun is hclust hence this can be one of \"ward.D\", \"ward.D2\", \"single\", \"complete\", \"average\" (= UPGMA), \"mcquitty\" (= WPGMA), \"median\" (= WPGMC) or \"centroid\" (= UPGMC).
+-   *hclust_method* default is NULL, which results in "complete" method to be used. It can accept alternative character strings indicating the method to be passed to *hclustfun*. By default hclustfun is hclust hence this can be one of "ward.D", "ward.D2", "single", "complete", "average" (= UPGMA), "mcquitty" (= WPGMA), "median" (= WPGMC) or "centroid" (= UPGMC).
 
-#### Clustering: Manual Approach 
+#### Clustering: Manual Approach
 
-In the code chunk below, the heatmap is plotted by using hierachical clustering algorithm with \"Euclidean distance\" and \"ward.D\" method.
+In the code chunk below, the heatmap is plotted by using hierachical clustering algorithm with "Euclidean distance" and "ward.D" method.
 
 ```{r}
 heatmaply(normalize(wh_matrix[, -c(1, 2, 4, 5)]),
@@ -272,7 +274,7 @@ heatmaply(normalize(wh_matrix[, -c(1, 2, 4, 5)]),
           hclust_method = "ward.D")
 ```
 
-#### Clustering: Statistical Approach 
+#### Clustering: Statistical Approach
 
 In order to determine the best clustering method and number of cluster the *dend_expend()* and *find_k()* functions of **dendextend** package will be used.
 
@@ -283,7 +285,7 @@ wh_d <- dist(normalize(wh_matrix[, -c(1, 2, 4, 5)]), method = "euclidean")
 dend_expend(wh_d)[[3]]
 ```
 
-The output table shows that \"average\" method should be used because it gave the high optimum value.
+The output table shows that "average" method should be used because it gave the high optimum value.
 
 Next, *find_k()* is used to determine the optimal number of cluster.
 
@@ -313,9 +315,9 @@ heatmaply(normalize(wh_matrix[, -c(1, 2, 4, 5)]),
           seriate = "OLO")
 ```
 
-The default options is \"OLO\" (Optimal leaf ordering) which optimizes the above criterion (in O(n\^4)). Another option is \"GW\" (Gruvaeus and Wainer) which aims for the same goal but uses a potentially faster heuristic.
+The default options is "OLO" (Optimal leaf ordering) which optimizes the above criterion (in O(n\^4)). Another option is "GW" (Gruvaeus and Wainer) which aims for the same goal but uses a potentially faster heuristic.
 
-#### Final outcome: 
+#### Final outcome:
 
 ```{r}
 heatmaply(normalize(wh_matrix[, -c(1, 2, 4, 5)]),
@@ -330,4 +332,104 @@ heatmaply(normalize(wh_matrix[, -c(1, 2, 4, 5)]),
           xlab = "World Happiness Indicators",
           ylab = "World Countries"
           )
+```
+
+## 5. Plotting parallel coordinates 
+
+```{r}
+wh <- read_csv("data/WHData-2018.csv")
+```
+
+### 5.1 With box plot
+
+Refer to [url](https://r4va.netlify.app/chap15.html) for more explanation.
+
+```{r}
+ggparcoord(data = wh, 
+           columns = c(7:12), 
+           groupColumn = 2,
+           scale = "uniminmax",
+           alphaLines = 0.2,
+           boxplot = TRUE, 
+           title = "Parallel Coordinates Plot of World Happines Variables")
+```
+
+###  5.2 With Facet Wrap
+
+```{r}
+ggparcoord(data = wh, 
+           columns = c(7:12), 
+           groupColumn = 2,
+           scale = "uniminmax",
+           alphaLines = 0.2,
+           boxplot = TRUE, 
+           title = "Multiple Parallel Coordinates Plots of World Happines Variables by Region") +
+  facet_wrap(~ Region)
+```
+
+### 5.3 Interactive Parallel Coordinates Plot
+
+[**parallelPlot**](https://cran.r-project.org/web/packages/parallelPlot/)is used in this section.
+
+```{r}
+wh_i <- wh |> 
+  select("Happiness score", c(7:12))
+
+```
+
+```{r}
+histo <- rep(TRUE, ncol(wh_i))
+
+parallelPlot(wh_i,
+             continuousCS = "YlOrRd",
+             rotateTitle = TRUE,
+             histoVisibility = histo)
+```
+
+## 6. Plotting treemap 
+
+Grouped summaries with pipe
+
+```{r}
+realis2018_summarised <- realis2018 %>% 
+  group_by(`Project Name`,`Planning Region`, 
+           `Planning Area`, `Property Type`, 
+           `Type of Sale`) %>%
+  summarise(`Total Unit Sold` = sum(`No. of Units`, na.rm = TRUE), 
+            `Total Area` = sum(`Area (sqm)`, na.rm = TRUE),
+            `Median Unit Price ($ psm)` = median(`Unit Price ($ psm)`, na.rm = TRUE),
+            `Median Transacted Price` = median(`Transacted Price ($)`, na.rm = TRUE))
+```
+
+Thereafter, we filter for `condominium` in property type and `resale` type of flat.
+
+```{r}
+realis2018_selected <- realis2018_summarised %>%
+  filter(`Property Type` == "Condominium", `Type of Sale` == "Resale")
+```
+
+As the file have been installed previous in Take Home Exercise 2, we will not install the github again.
+
+```{r}
+#library(devtools)
+#install_github("timelyportfolio/d3treeR")
+
+library(d3treeR) #package have been installed in Take Home Exercise 2 
+```
+
+### 6.1 Plotting interactive treemap with d3treeR
+
+```{r}
+tm <- treemap(realis2018_summarised,
+        index=c("Planning Region", "Planning Area"),
+        vSize="Total Unit Sold",
+        vColor="Median Unit Price ($ psm)",
+        type="value",
+        title="Private Residential Property Sold, 2017",
+        title.legend = "Median Unit Price (S$ per sq. m)"
+        )
+```
+
+```{r}
+d3tree(tm,rootname = "Singapore" )
 ```
