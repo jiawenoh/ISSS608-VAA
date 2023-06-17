@@ -2,8 +2,8 @@
 title: "Take Home Exercise 3"
 subtitle: " Mini Case 3 of Vast Challenge 2023"
 author: "Oh Jia Wen"
-date: "6/16/2023"
-date-modified: "6/16/2023"
+date: "6/18/2023"
+date-modified: "6/18/2023"
 execute: 
   echo: true
   eval: true
@@ -351,6 +351,8 @@ e5 <- treemap(MC3_check,
         index=c("country","type"),
         vSize="count",
         vColor="count",
+        title = "Distribution of Type by Top 10 Country",
+        title.legend = "Count",
         type ="value",
         algorithm = "pivotSize",
         sortID = "count",
@@ -359,22 +361,13 @@ e5 <- treemap(MC3_check,
         )
 
 ```
-
-## Country
-
-```{r}
-#| echo: false
-library(d3treeR)
-d3tree(e5, rootname = "Distribution of Type by Country")
-
-```
 :::
 
 **Observations:**
 
 -   Distribution by Type : There are three categories in Nodes and two categories in Edges. We observed that there are only Beneficial Owner and Company Contact in Edges whereas Company information is only available in Nodes. Therefore, we can infer that the type in Edges refer to people that they are associated with.
 
--   Distribution by Revenue: As observed, the distribution is right-skewed with higher proportion in \$10k to \$100k, followed by revenue \<\$10k. The counts decreases as revenue bins increases. There are eight ID who earns more than \$100M in revenue. However, more research have to be done to be able to determine if the revenue gain reciprocate to its strength/size/services.
+-   Distribution by Revenue: As observed, the distribution is right-skewed with higher proportion in \$10k to \$100k, followed by revenue \<\$10k. The counts decreases as revenue bins increases. There are eight ID who earns more than \$100M in revenue. However, more research have to be done to be able to determine if the revenue gain is gain over time or reciprocate to its strength/size/services.
 
 -   Distribution by Country: Among the countries, `ZH` has the highest size and it contains the darkest gradient which belongs to Beneficial Owner. Meanwhile, the rest of the countries has `company` .
 
@@ -382,7 +375,7 @@ d3tree(e5, rootname = "Distribution of Type by Country")
 
 Based on the distribution by type, we could like to explore the network distribution to identify anomalies. We create two separate networks to focus on `Beneficial Owner` and `Company Contacts` individually. We compute the centrality between the nodes, by using the `graph_from_data_frame` function from the `[igraph]` package.
 
-We used `Betweenness Centrality` in our network to identify nodes who may have considerable influence. `visNetwork` is used to plot the plot the interactive network graph with the `Fruchterman and Reingold` layout.
+We used `Betweenness Centrality` in our network to identify nodes who may have considerable influence instead of other centrality. `visNetwork` is used to plot the plot the interactive network graph with the `Fruchterman and Reingold` layout.
 
 ::: panel-tabset
 ## Beneficial Owner
@@ -608,7 +601,7 @@ MC3_anomalies <- rbind(MC3_edges_cc, MC3_edges_bc) %>%
 DT::datatable(MC3_anomalies)
 ```
 
-# 7. Product and Services 
+# 7. Product and Services
 
 Since we are unable to gain insights based on the revenue, we would like to look into the business's most important features - the product and services offered. Given an unique selling point, a product/service determine the prospect of the business.
 
@@ -625,7 +618,7 @@ kable(head(token_nodes), "simple")
 
 ```
 
-From the table above, we noticed that there are word that might not be useful for our analysis. For e.g. `and` in row 6. Therefore, we would like to exclude such word in our analysis. From the code chunk below, `stop_words()` from the `[tidytext]` package is used to aid us in the filtering progress while `anti_join()` from the `[dplyr]` package is used to remove all stop words from the analysis.
+From the table above, we noticed that there are word that might not be useful for our analysis. For e.g. `and` in row 6. Therefore, we would like to exclude such word in our analysis. From the code chunk below, `stop_words()` from the `[tidytext]` package is used to aid us in the filtering progress while `anti_join()` from the `[dplyr]` package is used to remove all stop_words from the analysis.
 
 ```{r}
 #| code-fold: true
@@ -800,7 +793,7 @@ check_text <- stopwords_removed_addcategory %>%
 kable(head(check_text), "simple")
 ```
 
-Notably, the word above remain unidentified as they might be too generic or they might have more than one category. For instance, Frozen could be applicable to Fishing, or to other type of Food. Thus, it is better to leave it.
+Notably, the word above remain unidentified as they might be too generic or they could potentially belong to more than one category. For instance, Frozen could be applicable to Fishing, or to other type of Food. Thus, it is better to remain unidentified as the keyword could be picked up in the
 
 ## 7.3 Distribution of Identified Word in each Category
 
@@ -924,7 +917,7 @@ girafe(
 
 ```
 
-**Observations:**
+**Observation:**
 
 -   Notably, there are only *company* in Apparel and Fashion.
 
@@ -968,17 +961,9 @@ girafe(
 
 ```
 
-```{r}
-stopwords_removed_new_af <- stopwords_removed_new %>%
-  filter(category == "Apparel & Fashion") %>%
-  select(id,country,word) %>%
-  distinct() 
+**Observation:**
 
-DT::datatable(stopwords_removed_new_af)
-```
-```
-
-There are more business group in ZH.
+-   The distribution by countries are spread among the countries, with higher concentration in ZH, Oceanus and Marebak. This is in line with the distribution in section 5.
 
 ::: callout-tip
 ## Tip
@@ -991,6 +976,22 @@ There are more business group in ZH.
 
 However, there is a `coord_flip()` in the code which flip the command.
 :::
+
+#### Interactive Datable
+
+```{r}
+#| code-fold: true
+
+#aggregate by category 
+stopwords_removed_new_af <- stopwords_removed_new %>%
+  filter(category == "Apparel & Fashion") %>%
+  select(id,country,word) %>%
+  distinct() %>%
+  ungroup()
+
+#output for dataframe using datatable:: dt
+DT::datatable(stopwords_removed_new_af)
+```
 
 # 8. Conclusion
 
