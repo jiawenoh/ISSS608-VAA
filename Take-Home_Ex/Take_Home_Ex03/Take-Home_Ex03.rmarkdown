@@ -10,6 +10,7 @@ execute:
   warning: false
 ---
 
+
 # 1. OVERVIEW
 
 FishEye International, a non-profit focused on countering illegal, unreported, and unregulated (IUU) fishing, has been given access to an international finance corporation's database on fishing related companies. FishEye has transformed the database into a knowledge graph which includes companies, owners, workers, and financial status.
@@ -70,6 +71,7 @@ Using p_load() of pacman package to load and install the following libraries:
 
 -   `igraph`: For exploring and analyzing networks
 
+
 ```{r}
 pacman::p_load(jsonlite, tidygraph, ggraph, visNetwork, 
               tidytext, tidyverse, RColorBrewer, wordcloud2,DT,
@@ -77,6 +79,7 @@ pacman::p_load(jsonlite, tidygraph, ggraph, visNetwork,
 
 options(scipen = 999) 
 ```
+
 
 ::: callout-tip
 ## Tip
@@ -88,9 +91,11 @@ options(scipen = 999)
 
 The JSON file will be imported into R with the use of `fromJSON` function from `[jsonlite]` package. The code chunks below shows the knowledge graph that FishEye have transformed from a database given by an international finance corporation with regards to fishing related companies.
 
+
 ```{r}
 MC3_challenge <- fromJSON("data/MC3.json")
 ```
+
 
 This is not a directed graph. There is no flow by degree (directed = FALSE)
 
@@ -106,6 +111,7 @@ As the imported data file is a large list, we will extract the edges from `MC3_c
 
 -   `filter(source!=target)` is used to ensure that both companies are not identical
 
+
 ```{r}
 MC3_edges <-as_tibble(MC3_challenge$links) %>%
   distinct() %>%
@@ -118,6 +124,7 @@ MC3_edges <-as_tibble(MC3_challenge$links) %>%
   ungroup()
 ```
 
+
 ### 3.2.2 Extracting Nodes
 
 Similarly, we will extract the nodes from `MC3_challenge` and save it as a tibble data frame called `MC3_nodes`. The code is extracted in the following manner:
@@ -127,6 +134,7 @@ Similarly, we will extract the nodes from `MC3_challenge` and save it as a tibbl
 -   `as.numeric(as.character())` are used to convert revenue_omu from list to character before converting it to numeric data type.
 
 -   `select()` is used to reorganize the sequence
+
 
 ```{r}
 MC3_nodes <-as_tibble(MC3_challenge$nodes) %>%
@@ -138,11 +146,13 @@ MC3_nodes <-as_tibble(MC3_challenge$nodes) %>%
   select(id,country,type,revenue_omu,product_services)
 ```
 
+
 # 4. Creating a Master ID data frame
 
 We would like to create a master ID data frame from the knowledge graph. As there might be `source` or `target` that are not reflected in `MC3_nodes`. The code below select the `source`, `target` column individually and concatenate it through `rbind()`. Thereafter, a `left_join()` is used to append into `MC3_nodes` data frame.
 
 Additionally, we rename the `id` to `label` and create an `id` column through `mutate()` and `nrow()` . Similarly, we rename the `source` and `target` to `sourcelabel` and `targetlabel` respectively and use `left_join()` to append the `id` before renaming it.
+
 
 ```{r}
 #| code-fold: true
@@ -185,6 +195,7 @@ MC3_edges_addID <- MC3_edges %>%
 kable(head(MC3_masternodes), "simple")
 ```
 
+
 # 5. Exploratory Data Visualization
 
 In this section, we will design plots with interactivity for users to explore the data. The plots are created with the use of `[giraph]`, and `[treemap]` packages. We examine the distribution by type for nodes and edges , the distribution of the revenue, and the distribution by country with divergent into type.
@@ -195,6 +206,7 @@ Note: The Treemap shows the Top 10 countries.
 
 ::: panel-tabset
 ## Distribution by Type (Nodes)
+
 
 ```{r}
 #| echo: false
@@ -235,7 +247,9 @@ girafe(
 
 ```
 
+
 ## Distribution by Type (Edges)
+
 
 ```{r}
 #| echo: false
@@ -275,7 +289,9 @@ girafe(
 
 ```
 
+
 ## Revenue
+
 
 ```{r}
 #| echo: false
@@ -330,7 +346,9 @@ girafe(
 
 ```
 
+
 ## Country
+
 
 ```{r}
 #| fig.width: 12
@@ -360,7 +378,9 @@ e5 <- treemap(MC3_check,
 
 ```
 
+
 ## Country
+
 
 ```{r}
 #| echo: false
@@ -368,6 +388,7 @@ library(d3treeR)
 d3tree(e5, rootname = "Distribution of Type by Country")
 
 ```
+
 :::
 
 **Observations:**
@@ -386,6 +407,7 @@ We used `Betweenness Centrality` in our network to identify nodes who may have c
 
 ::: panel-tabset
 ## Beneficial Owner
+
 
 ```{r}
 #| echo: false
@@ -429,7 +451,9 @@ visNetwork(MC3_nodes_filtered, MC3_edges_agg,
                  zoomView = TRUE, navigationButtons = TRUE) #freeze network
 ```
 
+
 ## Company Contacts
+
 
 ```{r}
 #| echo: false
@@ -468,6 +492,7 @@ visNetwork(MC3_nodes_cc, MC3_edges_agg_cc,
   visInteraction(dragNodes = FALSE, dragView = TRUE, 
                  zoomView = TRUE, navigationButtons = TRUE) #freeze network
 ```
+
 :::
 
 **Observations:**
@@ -482,6 +507,7 @@ From the network visualization, we noticed that there are people with high owner
 
 ::: panel-tabset
 ## Beneficial Owners
+
 
 ```{r}
 #| echo: false
@@ -527,7 +553,9 @@ girafe(
 
 ```
 
+
 ## Company Contacts
+
 
 ```{r}
 #| echo: false
@@ -573,6 +601,7 @@ girafe(
 )    
 
 ```
+
 :::
 
 **Observations:**
@@ -582,6 +611,7 @@ girafe(
 ## 6.2 Identify Personnel
 
 To identify the personnel with high ownership/connections, we will `filter()` them based on the criteria above and concatenate it through `rbind()`. Thereafter, we use `distinct()` to ensure that there is no duplicate ID and a `left_join()` to append from `MC3_edges_addID` data frame. With the finalized table, `datatable()` from `[DT]` package is used to display `MC3_anomalies` as an interactive table.
+
 
 ```{r}
 #| code-fold: true
@@ -608,11 +638,13 @@ MC3_anomalies <- rbind(MC3_edges_cc, MC3_edges_bc) %>%
 DT::datatable(MC3_anomalies)
 ```
 
+
 # 7. Product and Services 
 
 Since we are unable to gain insights based on the revenue, we would like to look into the business's most important features - the product and services offered. Given an unique selling point, a product/service determine the prospect of the business.
 
 To begin with, we will perform text sensing by using the `[tidytext]` package. We used tokenisation to break up the given text into units called tokens. The unit could be an individual words, phrases or the entire sentences. Thereafter, `unnest_token()` is used. The unnested text goes to the output column - `word` after extracting it from `product_services`.
+
 
 ```{r}
 #| code-fold: true
@@ -625,7 +657,9 @@ kable(head(token_nodes), "simple")
 
 ```
 
+
 From the table above, we noticed that there are word that might not be useful for our analysis. For e.g. `and` in row 6. Therefore, we would like to exclude such word in our analysis. From the code chunk below, `stop_words()` from the `[tidytext]` package is used to aid us in the filtering progress while `anti_join()` from the `[dplyr]` package is used to remove all stop words from the analysis.
+
 
 ```{r}
 #| code-fold: true
@@ -637,6 +671,7 @@ stopwords_removed <- token_nodes %>%
 kable(head(stopwords_removed), "simple")
 
 ```
+
 
 As observed, the word `and` has been removed from the analysis and have been replaced with `buses`. Despite so, it seems that the extracted word could be further categorized into a broader category.
 
@@ -651,6 +686,7 @@ To get a better graphical representations of the word frequency, a `word cloud` 
 -   `arrange(desc())` to sort in descending order
 
 The `[worldcloud2]` package is used for easy and quick insights to the text. For standardization, `set.seed()` is incorporated.
+
 
 ```{r}
 #| code-fold: true
@@ -675,6 +711,7 @@ wordcloud2(data=stopwords_removed_freq, size=1.6, color='random-dark')
 
 ```
 
+
 **Observations:**
 
 -   Fish remains the top keyword for the word cloud. However, there are multiple words that are not grouped with in the fish categories *(E.g. Shellfish, Tuna, Crab, Squids)*
@@ -686,6 +723,7 @@ wordcloud2(data=stopwords_removed_freq, size=1.6, color='random-dark')
 With the aid of the word cloud, we are able to group words into various categories. We begin by creating a custom stop words data frame to remove generic words that we deemed as unsuitable. Words like `additional`, `range` may not be part of the `stop_word()`. While creating the new data frame with a `category` column, we filtered away numbers and special character that appears in the `word` column.
 
 `grepl()` is used to extract words that could easily be extracted *(E.g. fish)* while `mutate()` is used to match words in a list. In total, we will be looking at **17 categories,** ranging from Fish, Other Food, Transportation to Apparels and Fashion. Unidentified word are filtered away from our analysis.
+
 
 ```{r}
 #| code-fold: true
@@ -778,11 +816,13 @@ stopwords_removed_new <- stopwords_removed_addcategory %>%
 kable(head(stopwords_removed_new), "simple")
 ```
 
+
 ### 7.2.1 Word Extraction
 
 While generating the categories above, we created the `check_text` data frame to cross check on high frequency words. After running the code chunk above, the identified list below helps to examine the words that might have been missed.
 
 As such, we `filter()` only for category in `other`. Given that we are only interested in word with high frequency, we did a frequency counts and examine through the top-down approach.
+
 
 ```{r}
 #| code-fold: true
@@ -800,6 +840,7 @@ check_text <- stopwords_removed_addcategory %>%
 kable(head(check_text), "simple")
 ```
 
+
 Notably, the word above remain unidentified as they might be too generic or they might have more than one category. For instance, Frozen could be applicable to Fishing, or to other type of Food. Thus, it is better to leave it.
 
 ## 7.3 Distribution of Identified Word in each Category
@@ -808,10 +849,12 @@ A `treemap` displays hierarchical data as a set of nested rectangles, where each
 
 Based on the frequency count, we are able to identify categories that are not part of the fishing. As we have installed the package found in github *(#install_github)* previously, we load the library of `[d3treeR]` instead. *Note:* *only required to install the github package once.*
 
+
 ```{r}
 #install_github("timelyportfolio/d3treeR")
 library(d3treeR)
 ```
+
 
 We will aggregate from `stopwords_removed_new` data frame by using the `[dpylr]` package:
 
@@ -820,6 +863,7 @@ We will aggregate from `stopwords_removed_new` data frame by using the `[dpylr]`
 -   `summarize()` is used to compute the **count**
 
 -   `arrange(desc())` to sort weight in descending order
+
 
 ```{r}
 #| code-fold: true
@@ -846,11 +890,14 @@ it <- treemap(clean_text,
         )
 ```
 
+
 We build our treemap by inputting our aggregated data frame (`clean_text`) into the `treemap()` function and saved it as an object called **it.** Thereafter, the `d3tree` function from the `[d3treeR]` package is used to build our interactive treemap.
+
 
 ```{r}
 d3tree(it, rootname = "Categories of Business")
 ```
+
 
 **Observations:**
 
@@ -880,6 +927,7 @@ d3tree(it, rootname = "Categories of Business")
 ## 7.4 Analyzing Apparel and Fashion
 
 In this section ,we will analyse more about the Apparel and Fashion category to see the businesses in this group are similar in nature. We begin by creating a new dataframe - `apparel_type` by aggregation. An interactive pie chart is used as the number of categories are small and we suspect that the differences among the type will be significant.
+
 
 ```{r}
 #| code-fold: true
@@ -924,9 +972,19 @@ girafe(
 
 ```
 
+
 **Observations:**
 
 -   Notably, there are only *company* in Apparel and Fashion.
+
+
+```{r}
+stopwords_removed_new_af <- stopwords_removed_new %>%
+  filter(category == "Apparel & Fashion") %>%
+  select(id,country) %>%
+  distinct() 
+  
+```
 
 ```{r}
 stopwords_removed_lessBO <- stopwords_removed_new %>%
@@ -968,15 +1026,6 @@ girafe(
 
 ```
 
-```{r}
-stopwords_removed_new_af <- stopwords_removed_new %>%
-  filter(category == "Apparel & Fashion") %>%
-  select(id,country,word) %>%
-  distinct() 
-
-DT::datatable(stopwords_removed_new_af)
-```
-```
 
 There are more business group in ZH.
 
@@ -1009,3 +1058,4 @@ Chatterjee, S. (2019, January 10). Create a Word Cloud with R. Towards Data Scie
 R4VA. (2023, June 4). 27. Network Metrics Analysis. Retrieved June 11, 2023, from [**https://r4va.netlify.app/chap27.html#network-metrics-analysisr**](https://r4va.netlify.app/chap27.html#network-metrics-analysisr)
 
 VAST Challenge. (2023). MC3: VAST Challenge 2023 - Mini Challenge 3. Retrieved June 09, 2023, from [**https://vast-challenge.github.io/2023/MC3.html**](https://vast-challenge.github.io/2023/MC3.html)
+
