@@ -34,7 +34,7 @@ The trade data is stored in *`MC3.json`* file. There are a total of 27,622 nodes
 | Edge        | source           | ID of source node                                        |
 | Edge        | target           | Id of target node                                        |
 
-## 3. Data Preparation
+# 3. Data Preparation
 
 ## 3.1 Install R-packages
 
@@ -91,8 +91,6 @@ The JSON file will be imported into R with the use of `fromJSON` function from `
 ```{r}
 MC3_challenge <- fromJSON("data/MC3.json")
 ```
-
-This is not a directed graph. There is no flow by degree (directed = FALSE)
 
 ### 3.2.1 Extracting Edges
 
@@ -220,7 +218,6 @@ e1 <- ggplot(data = MC3_nodes_type,
   scale_fill_brewer(palette="Dark2") +
   labs(title = "Distribution of Type in Nodes",
        x = "Type", y= "Count") +
-  scale_color_ipsum() +
   theme_ipsum() 
 
 girafe(                                  
@@ -353,6 +350,7 @@ e5 <- treemap(MC3_check,
         vColor="count",
         title = "Distribution of Type by Top 10 Country",
         title.legend = "Count",
+        fontsize.title = 28,
         type ="value",
         algorithm = "pivotSize",
         sortID = "count",
@@ -365,11 +363,11 @@ e5 <- treemap(MC3_check,
 
 **Observations:**
 
--   Distribution by Type : There are three categories in Nodes and two categories in Edges. We observed that there are only Beneficial Owner and Company Contact in Edges whereas Company information is only available in Nodes. Therefore, we can infer that the type in Edges refer to people that they are associated with.
+-   Distribution by Type : There are three categories in Nodes and two categories in Edges. We observed that there are only Beneficial Owner and Company Contact in Edges whereas Company information is only available in Nodes. Therefore, we can infer that the type in Edges refer to the connection/ownership that the people are often associated with.
 
--   Distribution by Revenue: As observed, the distribution is right-skewed with higher proportion in \$10k to \$100k, followed by revenue \<\$10k. The counts decreases as revenue bins increases. There are eight ID who earns more than \$100M in revenue. However, more research have to be done to be able to determine if the revenue gain is gain over time or reciprocate to its strength/size/services.
+-   Distribution by Revenue: As observed, the distribution is right-skewed with higher proportion in \$10k to \$100k, followed by revenue \<\$10k. The counts decreases as revenue bins increases. There are eight ID who earns more than \$100M in revenue. However, more research have to be done to be able to determine if the revenue gain is achieved over time or in a specifc time period that reciprocate to its strength, size, or selling proposition.
 
--   Distribution by Country: Among the countries, `ZH` has the highest size and it contains the darkest gradient which belongs to Beneficial Owner. Meanwhile, the rest of the countries has `company` .
+-   Distribution by Country: Among the countries, `ZH` has the highest size and it contains the darkest gradient that belongs to Beneficial Owner. Meanwhile, the rest of the countries only have information about the `company` .
 
 # 6. Network Visualization and Analysis
 
@@ -465,9 +463,9 @@ visNetwork(MC3_nodes_cc, MC3_edges_agg_cc,
 
 **Observations:**
 
--   Majority of Beneficial Owner have exclusivity or a partnership with 1-2 owners per company. However, we identified companies such as `Dutch Oyster Sagl Cruise ship` , `Ola de la Costa N.V.`, `Niger Bend AS Express`, `Bahia de Plata Submarine` with relatively high ownership.
+-   Majority of Beneficial Owner have exclusivity or a partnership with 1-2 owners per company. However, we identified companies such as `Dutch Oyster Sagl Cruise ship` , `Ola de la Costa N.V.` , `Niger Bend AS Express` , and `Bahia de Plata Submarine` with relatively high ownership.
 
--   Similarly, the Company Contacts maintains exclusivity/partnership with the liaise company. As observed, there are 1 company who maintain high contacts. In addition, there are contact who form multiple connections with Companies. For instances, `Jennifer Johnson` have 5 connections, `David Smith` have 4 connections, and `John Williams` have 3 connections.
+-   Similarly, the Company Contacts maintains exclusivity/partnership with the liaise company. As observed, there are 1 company who maintain high contacts. In addition, there are personnel who form multiple connections with Companies. For instances, `Jennifer Johnson` have 5 connections, `David Smith` have 4 connections, and `John Williams` have 3 connections.
 
 ## 6.1 Identify Connections
 
@@ -568,13 +566,15 @@ girafe(
 ```
 :::
 
-**Observations:**
+**Observation:**
 
--   As the ownership/connections increases, the frequency decreases. Henceforth, to detect the anomalies, we would look into Beneficial Ownerships with 4 or more companies, and Company Contacts with 3 or more.
+-   As the ownership/connections increases, the frequency decreases. Henceforth, to detect the anomalies, we would look into Beneficial Owner with 4 or more companies, and Company Contacts with 3 or more.
 
 ## 6.2 Identify Personnel
 
-To identify the personnel with high ownership/connections, we will `filter()` them based on the criteria above and concatenate it through `rbind()`. Thereafter, we use `distinct()` to ensure that there is no duplicate ID and a `left_join()` to append from `MC3_edges_addID` data frame. With the finalized table, `datatable()` from `[DT]` package is used to display `MC3_anomalies` as an interactive table.
+To identify the personnel with high ownership/connections, we will `filter()` them based on the criteria above and concatenate it through `rbind()`. Thereafter, we use `distinct()` to ensure that there is no duplicate ID and a `left_join()` to append from `MC3_edges_addID` data frame.
+
+With the finalized table, `datatable()` from `[DT]` package is used to display `MC3_anomalies` as an interactive table with search, sorting features.
 
 ```{r}
 #| code-fold: true
@@ -618,7 +618,7 @@ kable(head(token_nodes), "simple")
 
 ```
 
-From the table above, we noticed that there are word that might not be useful for our analysis. For e.g. `and` in row 6. Therefore, we would like to exclude such word in our analysis. From the code chunk below, `stop_words()` from the `[tidytext]` package is used to aid us in the filtering progress while `anti_join()` from the `[dplyr]` package is used to remove all stop_words from the analysis.
+From the table above, we noticed that there are word that might not be useful for our analysis. E.g. `and` in row 6. Therefore, we would like to exclude such word in our analysis. From the code chunk below, `stop_words()` from the `[tidytext]` package is used to aid us in the filtering progress while `anti_join()` from the `[dplyr]` package is used to remove all stop_words from the analysis.
 
 ```{r}
 #| code-fold: true
@@ -637,7 +637,7 @@ As observed, the word `and` has been removed from the analysis and have been rep
 
 To get a better graphical representations of the word frequency, a `word cloud` is used to give greater prominence to words that appears more frequently in a source text. General words such as `character`, `0`, `unknown`, `including` and `related` that do not bring insights are removed from the frequency count. Thereafter, we create a dataframe `stopword_removed_freq` through the following steps:
 
--   `filter(!)` the generic words away
+-   `filter(!)` to remove generic word
 
 -   `group_by()` word and `summarize()` by counting the frequency
 
@@ -670,15 +670,15 @@ wordcloud2(data=stopwords_removed_freq, size=1.6, color='random-dark')
 
 **Observations:**
 
--   Fish remains the top keyword for the word cloud. However, there are multiple words that are not grouped with in the fish categories *(E.g. Shellfish, Tuna, Crab, Squids)*
+-   Fish remains the top keyword for the word cloud. However, there are multiple words that are not grouped within the fish categories *(E.g. Shellfish, Tuna, Crab, Squids)*
 
--   Given that the knowledge graph should focus on fishing related companies, the word cloud identified words that are not affiliated with fishing. Words such as `bags`, `shoes`, `metal`, `power` have higher frequency counts. Therefore, they will be further categorized into broader group.
+-   Given that the knowledge graph should focus on fishing related companies, the word cloud identified words that are not affiliated with fishing. Words such as `bags`, `shoes`, `metal`, `power` have higher frequency count. Therefore, they will be further categorized into broader group.
 
 ## 7.2 Grouping Words into Categories
 
 With the aid of the word cloud, we are able to group words into various categories. We begin by creating a custom stop words data frame to remove generic words that we deemed as unsuitable. Words like `additional`, `range` may not be part of the `stop_word()`. While creating the new data frame with a `category` column, we filtered away numbers and special character that appears in the `word` column.
 
-`grepl()` is used to extract words that could easily be extracted *(E.g. fish)* while `mutate()` is used to match words in a list. In total, we will be looking at **17 categories,** ranging from Fish, Other Food, Transportation to Apparels and Fashion. Unidentified word are filtered away from our analysis.
+`grepl()` is used to extract words that could easily be extracted *(E.g. fish)* while `mutate()` is used to match word in a list. We identified **17 categories,** ranging from Fish, Other Food, Transportation to Apparels and Fashion. Unidentified word are filtered away from our analysis.
 
 ```{r}
 #| code-fold: true
@@ -793,7 +793,7 @@ check_text <- stopwords_removed_addcategory %>%
 kable(head(check_text), "simple")
 ```
 
-Notably, the word above remain unidentified as they might be too generic or they could potentially belong to more than one category. For instance, Frozen could be applicable to Fishing, or to other type of Food. Thus, it is better to remain unidentified as the keyword could be picked up in the
+Notably, the word above remain unidentified as they might be too generic or they could potentially belong to more than one category. For instance, Frozen could be applicable to Fishing, or to other type of Food. Thus, it is better to remain unidentified as the keyword in the product/service would still be identified.
 
 ## 7.3 Distribution of Identified Word in each Category
 
@@ -874,8 +874,11 @@ d3tree(it, rootname = "Categories of Business")
 
 In this section ,we will analyse more about the Apparel and Fashion category to see the businesses in this group are similar in nature. We begin by creating a new dataframe - `apparel_type` by aggregation. An interactive pie chart is used as the number of categories are small and we suspect that the differences among the type will be significant.
 
+::: panel-tabset
+
+## Distribution by Type 
 ```{r}
-#| code-fold: true
+#| echo: false
 
 #aggregate to see the type
 apparel_type <- stopwords_removed_new %>%
@@ -917,11 +920,11 @@ girafe(
 
 ```
 
-**Observation:**
-
--   Notably, there are only *company* in Apparel and Fashion.
+## Distribution by Country
 
 ```{r}
+#| echo: false
+
 stopwords_removed_lessBO <- stopwords_removed_new %>%
   filter(type == "Company" & category == "Apparel & Fashion") %>%
   select(id,country) %>%
@@ -947,7 +950,7 @@ r4 <- ggplot(stopwords_removed_lessBO,
   scale_fill_brewer(palette="Dark2") +
   theme_ipsum() +
   labs(title = "Distribution by Countries",
-       x = "Count", y= "Countries") 
+       x = "Country", y= "Count") 
 
 girafe(                                  
   ggobj = r4,                             
@@ -960,12 +963,15 @@ girafe(
 )   
 
 ```
+:::
 
-**Observation:**
+**Observations:**
 
--   The distribution by countries are spread among the countries, with higher concentration in ZH, Oceanus and Marebak. This is in line with the distribution in section 5.
+-   Notably, there are only *company* in Apparel and Fashion.
 
-::: callout-tip
+-   The distribution by countries are spread among the countries, with higher concentration in ZH, Oceanus and Marebak. This is in line with the distribution in section 5. If the business groups have to further aggregated, it is ideal to look into the country after its categories.
+
+::: {.callout-tip title="Tip" collapse="true"}
 ## Tip
 
 `reorder` command help to reorder the columns in ascending and descending order.
@@ -977,7 +983,7 @@ girafe(
 However, there is a `coord_flip()` in the code which flip the command.
 :::
 
-#### Interactive Datable
+### 7.4.1 Interactive Data Table
 
 ```{r}
 #| code-fold: true
@@ -993,11 +999,13 @@ stopwords_removed_new_af <- stopwords_removed_new %>%
 DT::datatable(stopwords_removed_new_af)
 ```
 
+As identified, there are 721 entries in the interactive data table with 431 unique companies that have product/services that are related to Apparel and Fashion. Further analysis might be needed to measure the similarity of businesses.
+
 # 8. Conclusion
 
 In our exercise, we observed the following:
 
--   Abnormality in business groups based on the type. From the network graph and point of contact, there are multiple people with high ownership/ large connections.
+-   Abnormality in business groups based on the type. From the network graph and point of contact, we identified multiple people with high ownership/ large connections.
 
 -   Multiple words that are not associated with fishing related business. The identified keyword are distinct and could be categorized into broader group.
 
