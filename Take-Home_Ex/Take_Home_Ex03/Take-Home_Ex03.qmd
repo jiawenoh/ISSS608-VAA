@@ -73,7 +73,7 @@ Using p_load() of pacman package to load and install the following libraries:
 ```{r}
 pacman::p_load(jsonlite, tidygraph, ggraph, visNetwork, 
               tidytext, tidyverse, RColorBrewer, wordcloud2,DT,
-               treemap,knitr,ggiraph,hrbrthemes,scales,igraph,devtools)
+               treemap,knitr,ggiraph,hrbrthemes,scales,igraph)
 
 options(scipen = 999) 
 ```
@@ -86,7 +86,7 @@ options(scipen = 999)
 
 ## 3.2 Importing Data
 
-The JSON file will be imported into R with the use of `fromJSON` function from `[jsonlite]` package. The code chunks below shows the knowledge graph that FishEye have transformed from a database given by an international finance corporation with regards to fishing related companies.
+The JSON file will be imported into R with the use of `fromJSON` function from `[jsonlite]` package. The code chunk below shows the knowledge graph that FishEye have transformed from a database given by an international finance corporation with regards to fishing related companies.
 
 ```{r}
 MC3_challenge <- fromJSON("data/MC3.json")
@@ -522,7 +522,7 @@ r6 <- ggplot(data = MC3_edges_bc_aggg,
        aes(x = count, y= weight , fill= count)) +
   geom_col_interactive(aes(tooltip = MC3_edges_bc_aggg$tooltip)) +
   labs(title = "Point of Contact: Beneficial Owner",
-       x = "Number of Contacts", y= "Count") +
+       x = "Number of Ownership", y= "Count") +
   theme_ipsum() 
 
 girafe(                                  
@@ -997,6 +997,8 @@ However, there is a `coord_flip()` in the code which flip the command.
 
 ### 7.4.1 Interactive Data Table
 
+As identified, there are 721 entries in the interactive data table with 431 unique companies that have product/services that are related to Apparel and Fashion. Further analysis might be needed to measure the similarity of businesses.
+
 ```{r}
 #| code-fold: true
 
@@ -1011,8 +1013,6 @@ stopwords_removed_new_af <- stopwords_removed_new %>%
 DT::datatable(stopwords_removed_new_af)
 ```
 
-As identified, there are 721 entries in the interactive data table with 431 unique companies that have product/services that are related to Apparel and Fashion. Further analysis might be needed to measure the similarity of businesses.
-
 # 8. Conclusion
 
 In our exercise, we observed the following:
@@ -1023,7 +1023,7 @@ In our exercise, we observed the following:
 
 -   Apparel and Fashion is one of the largest category that mainly includes companies and they have wide operation in various countries.
 
-#### References:
+#### **References:**
 
 Chatterjee, S. (2019, January 10). Create a Word Cloud with R. Towards Data Science. Retrieved June 11, 2023, from [**https://towardsdatascience.com/create-a-word-cloud-with-r-bde3e7422e8a**](https://towardsdatascience.com/create-a-word-cloud-with-r-bde3e7422e8a)
 
