@@ -799,11 +799,11 @@ Notably, the word above remain unidentified as they might be too generic or they
 
 A `treemap` displays hierarchical data as a set of nested rectangles, where each group is represented by an area that is proportional to its value. Based on our categorization, we would like to look into the distribution by our **design category** and the **word i**nvolved.
 
-Based on the frequency count, we are able to identify categories that are not part of the fishing. As we have installed the package found in github *(#install_github)* previously, we load the library of `[d3treeR]` instead. *Note:* *only required to install the github package once.*
+Based on the frequency count, we are able to identify categories that are not part of the fishing. As we have installed the package through `[devtools]` previously. The github *(#install_github)* is not installed. Instead, we load the library of `[d3treeR]` instead. *Note:* *only required to install the github package once.*
 
 ```{r}
 #install_github("timelyportfolio/d3treeR")
-library(d3treeR)
+#library(d3treeR)
 ```
 
 We will aggregate from `stopwords_removed_new` data frame by using the `[dpylr]` package:
@@ -842,6 +842,7 @@ it <- treemap(clean_text,
 We build our treemap by inputting our aggregated data frame (`clean_text`) into the `treemap()` function and saved it as an object called **it.** Thereafter, the `d3tree` function from the `[d3treeR]` package is used to build our interactive treemap.
 
 ```{r}
+library(d3treeR)
 d3tree(it, rootname = "Categories of Business")
 ```
 
