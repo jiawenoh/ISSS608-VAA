@@ -1,1 +1,14 @@
+---
+title: "Hands-on Exercise 8"
+author: "Oh Jia Wen"
+date: 6/18/2023
+date-modified: 6/18/2023
+execute: 
+  echo: true
+  eval: true
+  warning: false
+---
 
+# Getting started
+
+1.  Using p_load() of pacman package to load the required libraries
