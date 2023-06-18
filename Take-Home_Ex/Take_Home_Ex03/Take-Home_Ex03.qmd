@@ -25,7 +25,7 @@ The trade data is stored in *`MC3.json`* file. There are a total of 27,622 nodes
 ## 2.1 Metadata
 
 | Location    | Variables Name   | Description                                              |
-|-------------------|-------------------|----------------------------------|
+|---------------|---------------|------------------------------------------|
 | Node, Edges | id               | Identifier of the node                                   |
 | Node        | country          | Country associated with the entity                       |
 | Node,Edges  | type             | Type of node. Could be a person or a company             |
@@ -73,7 +73,7 @@ Using p_load() of pacman package to load and install the following libraries:
 ```{r}
 pacman::p_load(jsonlite, tidygraph, ggraph, visNetwork, 
               tidytext, tidyverse, RColorBrewer, wordcloud2,DT,
-               treemap,knitr,ggiraph,hrbrthemes,scales,igraph)
+               treemap,knitr,ggiraph,hrbrthemes,scales,igraph,devtools)
 
 options(scipen = 999) 
 ```
@@ -190,6 +190,8 @@ In this section, we will design plots with interactivity for users to explore th
 Bar chart is chosen to show segments of information by comparing different categorical variables. Aggregation is first performed before creating the interactive graph. Moreover, `tooltip` is used to highlight the count of the data while `scale_fill_manual()` is used to standardize the color in each graph.
 
 Note: The Treemap shows the Top 10 countries.
+
+## 5.1 Type & Revenue 
 
 ::: panel-tabset
 ## Distribution by Type (Nodes)
@@ -326,12 +328,27 @@ girafe(
 )    
 
 ```
+:::
 
-## Country
+**Observations:**
+
+-   Distribution by Type : There are three categories in Nodes and two categories in Edges. We observed that there are only Beneficial Owner and Company Contact in Edges whereas Company information is only available in Nodes. Therefore, we can infer that the type in Edges refer to the connection/ownership that the people are often associated with.
+
+-   Distribution by Revenue: As observed, the distribution is right-skewed with higher proportion in \$10k to \$100k, followed by revenue \<\$10k. The counts decreases as revenue bins increases. There are eight ID who earns more than \$100M in revenue. However, more research have to be done to be able to determine if the revenue gain is achieved over time or in a specifc time period that reciprocate to its strength, size, or selling proposition.
+
+## 5.2 Country
+
+As we have installed the package through `[devtools]` previously. The github *(#install_github)* is not installed. Instead, we load the library of `[d3treeR]` instead. *Note:* *only required to install the github package once.*
+
+```{r}
+#install_github("timelyportfolio/d3treeR")
+library(d3treeR)
+```
 
 ```{r}
 #| fig.width: 12
 #| fig.height: 6
+#| fig.show: hide
 #| echo: false
 
 #aggregate by country then type 
@@ -359,13 +376,15 @@ e5 <- treemap(MC3_check,
         )
 
 ```
-:::
 
-**Observations:**
+The `d3tree` function from the `[d3treeR]` package is used to build our interactive treemap.
 
--   Distribution by Type : There are three categories in Nodes and two categories in Edges. We observed that there are only Beneficial Owner and Company Contact in Edges whereas Company information is only available in Nodes. Therefore, we can infer that the type in Edges refer to the connection/ownership that the people are often associated with.
+```{r}
+d3tree(e5, rootname = "Categories by Country")
 
--   Distribution by Revenue: As observed, the distribution is right-skewed with higher proportion in \$10k to \$100k, followed by revenue \<\$10k. The counts decreases as revenue bins increases. There are eight ID who earns more than \$100M in revenue. However, more research have to be done to be able to determine if the revenue gain is achieved over time or in a specifc time period that reciprocate to its strength, size, or selling proposition.
+```
+
+**Observation:**
 
 -   Distribution by Country: Among the countries, `ZH` has the highest size and it contains the darkest gradient that belongs to Beneficial Owner. Meanwhile, the rest of the countries only have information about the `company` .
 
@@ -799,14 +818,7 @@ Notably, the word above remain unidentified as they might be too generic or they
 
 A `treemap` displays hierarchical data as a set of nested rectangles, where each group is represented by an area that is proportional to its value. Based on our categorization, we would like to look into the distribution by our **design category** and the **word i**nvolved.
 
-Based on the frequency count, we are able to identify categories that are not part of the fishing. As we have installed the package through `[devtools]` previously. The github *(#install_github)* is not installed. Instead, we load the library of `[d3treeR]` instead. *Note:* *only required to install the github package once.*
-
-```{r}
-#install_github("timelyportfolio/d3treeR")
-#library(d3treeR)
-```
-
-We will aggregate from `stopwords_removed_new` data frame by using the `[dpylr]` package:
+Based on the frequency count, we are able to identify categories that are not part of the fishing. We will aggregate from `stopwords_removed_new` data frame by using the `[dpylr]` package:
 
 -   `group_by()` is used to aggregate it by **category** and **word**
 
@@ -842,7 +854,6 @@ it <- treemap(clean_text,
 We build our treemap by inputting our aggregated data frame (`clean_text`) into the `treemap()` function and saved it as an object called **it.** Thereafter, the `d3tree` function from the `[d3treeR]` package is used to build our interactive treemap.
 
 ```{r}
-library(d3treeR)
 d3tree(it, rootname = "Categories of Business")
 ```
 
@@ -876,8 +887,8 @@ d3tree(it, rootname = "Categories of Business")
 In this section ,we will analyse more about the Apparel and Fashion category to see the businesses in this group are similar in nature. We begin by creating a new dataframe - `apparel_type` by aggregation. An interactive pie chart is used as the number of categories are small and we suspect that the differences among the type will be significant.
 
 ::: panel-tabset
+## Distribution by Type
 
-## Distribution by Type 
 ```{r}
 #| echo: false
 
