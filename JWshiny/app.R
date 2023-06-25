@@ -152,59 +152,27 @@ result <- ldatuning::FindTopicsNumber(
 
 FindTopicsNumber_plot(result)
 
-# number of topics
-K <- 12
-# set random number generator seed
-set.seed(1234)
-# compute the LDA model, inference via 1000 iterations of Gibbs sampling
-topicModel <- LDA(MC3_text, K, method="Gibbs", control=list(iter = 500, verbose = 25))
-
-lda_topics <- topicModel %>%
-  tidy(matrix = "beta")
-
-lda_topics <- LDA(
-  MC3_text,
-  k = 12,
-  method = "Gibbs",
-  control = list(seed=42)
-) %>%
-  tidy(matrix = "beta")
-
-word_probs <- lda_topics %>%
-  group_by(topic) %>%
-  top_n(15, beta) %>%
-  ungroup() %>%
-  mutate(term2 = fct_reorder(term, beta))
-
-leaflet_widget <- leafletOptions(attributionControl = FALSE) %>%
-  leaflet(options = .) %>%
-  addTiles()
 
 if(require(shiny)){
   library(wordcloud2)
   library(topicmodels)
   library(tidytext)
-  # Global variables can go here
+  # Global variables here
   n <- 1
-  k <- 1
   
   # Define the UI
   ui <- page_navbar(
     theme = bs_theme(bootswatch = "minty"),
     title = "Group 11 VAA Project",
-    layout_column_wrap(
-      width = 1,
-      height = 350,
     card(max_height = 250, full_screen = TRUE, card_header("Word Cloud"),
          card_body(numericInput('size', 'Size of wordcloud', n),
                    full_screen = TRUE, wordcloud2Output('wordcloud2')
-                   ))),
+                   )),
     card(full_screen = TRUE, card_header("1) Select Number of Topic Group"),
         layout_sidebar(
           fillable= TRUE,
           sidebar = sidebar(
-          varSelectInput("method","Select Method", dplyr::select_if(result,is.numeric), selected = "Gibbs"),
-           numericInput("topic_group","Number of Topic Group", value = 12, min =2, max =20, step =1),
+           numericInput("topic_group","Number of Topic Group", value = 4, min =2, max =20, step =1),
            actionButton("run_button", "Generate Result")
           ), card_body(plotlyOutput("myplot"))))
      )
@@ -215,16 +183,42 @@ if(require(shiny)){
     output$wordcloud2 <- renderWordcloud2({
       wordcloud2(data=stopwords_removed_freq, input$size)
     })
+
+    topicModel <- eventReactive(input$run_button, {
+      LDA(MC3_text, input$topic_group , method = "Gibbs", control = list(iter = 500, verbose = 25))
+    })
     
-    output$myplot <- renderPlotly({
-      ggplot(word_probs, aes(term2, beta, fill = as.factor(topic))) +
+    lda_topics <- eventReactive(input$run_button, {
+      topicModel() %>%
+        tidy(matrix = "beta")
+    })
+    
+    lda_topics <- eventReactive(input$run_button, {
+      LDA(MC3_text, input$topic_group, method = "Gibbs",control = list(seed=42)) %>%
+      tidy(matrix = "beta")
+    })
+    
+    word_probs <- eventReactive(input$run_button, {
+      lda_topics() %>%
+        group_by(topic) %>%
+        top_n(15, beta) %>%
+        ungroup() %>%
+        mutate(term2 = fct_reorder(term, beta))
+    })
+    
+    word_probs_reactive <- eventReactive(input$run_button, {
+      ggplot(word_probs(), aes(term2, beta, fill = as.factor(topic))) +
         geom_col(show.legend = FALSE) +
         facet_wrap(~ topic, scales = "free") +
         coord_flip()
     })
+    
+    output$myplot <- renderPlotly({
+      ggplotly(word_probs_reactive())
+    })
+    
+  }
 
-    }
-  
   # Return a Shiny app object
   shinyApp(ui = ui, server = server)
   }

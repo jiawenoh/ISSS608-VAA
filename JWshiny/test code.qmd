@@ -156,6 +156,11 @@ FindTopicsNumber_plot(result)
 
 ```{r}
 
+
+
+```
+
+```{r}
 # number of topics
 K <- 12
 # set random number generator seed
@@ -165,12 +170,10 @@ topicModel <- LDA(MC3_text, K, method="Gibbs", control=list(iter = 500, verbose 
 
 lda_topics <- topicModel %>%
   tidy(matrix = "beta")
-```
 
-```{r}
 lda_topics <- LDA(
   MC3_text,
-  k = 12,
+  K,
   method = "Gibbs",
   control = list(seed=42)
   ) %>%
