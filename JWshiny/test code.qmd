@@ -154,15 +154,11 @@ FindTopicsNumber_plot(result)
 
 ```
 
-```{r}
-
-
-
-```
+# TOPIC NUMBER OVER HERE 
 
 ```{r}
 # number of topics
-K <- 12
+K <- 4
 # set random number generator seed
 set.seed(1234)
 # compute the LDA model, inference via 1000 iterations of Gibbs sampling
@@ -195,19 +191,130 @@ ggplot(
 
 ```
 
+```{r}
+library(knitr)
+library(hrbrthemes)
+library(RColorBrewer)
+library(ggiraph)
+
+#analyze company based on topic 
+stopwords_removed_join <- stopwords_removed %>%
+  left_join(word_probs, by = c("word" = "term2"), unmatched= "drop") %>%
+  na.omit()
+
+#select and aggregate
+company_bytopic <- stopwords_removed_join %>%
+  select(id,topic,type) %>%
+  group_by(id,topic,type) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count)) %>%
+  ungroup()
+
+#search for distinct id 
+company_by_topic_user <- company_bytopic %>%
+  filter(id == "Assam   Limited Liability Company") %>%
+  ungroup()
+
+#create tooltip to display total count 
+company_by_topic_user$tooltip <-c(paste0(
+  "Count: ", company_by_topic_user$count))
+
+#tool_tip design
+tooltip_css <- "background-color: lightgrey; #<<
+font-style:bold; color: #446455;" #<<
+
+#create a bar chart based on distributio of topic by ID
+app <- ggplot(company_by_topic_user,
+              aes(x= topic, y= count)) +
+  geom_bar_interactive(aes(tooltip= company_by_topic_user$tooltip), 
+                       width =1, stat = "identity") +
+  scale_fill_brewer(palette= "Dark2") + #to standardize color theme
+  labs(title = "Distribution of Topic by ID",
+       x = "Topic Group", y= "Count") +
+  theme_ipsum() +
+  theme(plot.title = element_text(hjust = 0.5)) #align the title 
+
+girafe(                                  
+  ggobj = app,                             
+  width_svg = 8,                         
+  height_svg = 6*0.618,
+  options = list( #<<
+    opts_tooltip(css = tooltip_css), #<<
+    opts_hover_inv(css = "opacity:0.1;") #<<
+  )      
+)
+```
+
+# STATS FROM HERE.
+
+At 95% confidence level,
+
+Ho : No association exists between the topic group and business type H1: Association exists between the topic group and business type
 
 ```{r}
-library(plotly)
+#statistical portion 
+#library required 
+library(ggstatsplot)
 
-ggplot( word_probs, 
-        aes(term2, beta, fill=as.factor(topic)) ) + 
-  geom_col(show.legend = FALSE) +
-  facet_wrap(~ topic, scales = "free") +
-  coord_flip()
+#if want to change variable, might need to filter ID to be able to do country 
+ggbarstats(data = stopwords_removed_join, 
+           x = type, y = topic,
+           xlab= "Topic", ylab = "Type",
+           title = "Comparison of Type across Topic Group",
+           type = "nonparametric", conf.level = 0.95
+           )
+```
 
-p <- plot_ly(data = word_probs, 
-             x = ~beta, y = ~term2, type = "bar", color = ~as.factor(topic),
-             showlegend = FALSE ) 
-p
+From the test result above, **(p\<0.05)** , we conclude that there is an **association** between the topic group and business type as we **reject the null hypothesis.**
 
+# **Anova Test** 
+
+Ho : the median revenue across different topic group is the same
+
+H1: the median revenue across different topic group is not the same
+
+```{r}
+#library required 
+library(scales)
+library(ggstatsplot)
+
+#code for anova test 
+ggbetweenstats(data = stopwords_removed_join,
+       x= topic, y= revenue_omu, type ="np",
+       xlab= "Topic Group", ylab = "Revenue($)",
+       title = "Comparison of Revenue across Topic Group",
+       pairwise.comparisons = TRUE, pairwise.display ="ns", conf.level = 0.95
+       ) +
+    scale_y_continuous(labels = label_number(scale = 1e-6, suffix = "M"))
+
+
+```
+
+P-value is lower than the 0.05.
+
+\- \> **reject** the null hypothesis that the median revenue across topic group is the same.
+
+-\> by the arrows above, not all pair comparison are statistically significant. 3 Paris with p-value \>0.05. Cannot reject null hypothesis that there is no differences between the topic group and revenue.
+
+# CONFIDENCE INTERVAL
+
+```{r}
+library(ggdist)
+library(scales)
+
+#plot points and intervals 
+ggplot(data = stopwords_removed_join, 
+       aes(x = topic, y = revenue_omu)) +
+  stat_pointinterval(aes(interval_color = after_stat(level)),
+                     point_interval = "median_qi",
+                     .width = c(0.95,0.99),
+                     point_color = "#C93312") +
+  labs(title = "Visualizing Confidence Intervals of Median Revenue", 
+       x = "Topic Group", y = "Revenue($)") +
+  
+#add colors to graph 
+  scale_color_manual(values = c("#446455","#D3DDDC"), 
+                     aesthetics = "interval_color") +
+  theme(axis.text.x = element_text(vjust = 1, hjust=1)) +
+  scale_y_continuous(labels = label_number(scale = 1e-6, suffix = "M"))
 ```
